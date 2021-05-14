@@ -1,0 +1,13 @@
+# python related temporary files
+__pycache__/
+.ipynb_checkpoints/
+
+# confidential 
+*.pub
+
+# data files (usually huge or reproducible)
+*.pkl
+
+# local files
+env_e15190/
+dev*.py
