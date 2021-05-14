@@ -1,0 +1,25 @@
+name: env_e15190
+channels:
+   - anaconda
+   - conda-forge
+dependencies:
+   - python=3.8
+
+   # common scientific tools
+   - numpy>=1.19.0
+   - numba>=0.51.0
+   - astropy>=4.0
+   - scipy>=1.6
+
+   # data structure and files I/O
+   - pandas>=1.1.0
+   - root=6.22.6
+   - pymysql>=1.0.1
+
+   # statistical tools and machine learning
+   - scikit-learn>=0.24.0
+
+   # plotting
+   - matplotlib>=3.3.0
+
+   # miscellaneous
