@@ -58,7 +58,7 @@ class Downloader:
         for table_name in table_names:
             print(f'> Serializing {table_name}...')
             df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
-            pkl_path = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'hahaha', f'{table_name}.pkl')
+            pkl_path = pathlib.Path(PROJECT_DIR, 'database', 'runlog', f'{table_name}.pkl')
             pkl_path.parent.mkdir(parents=True, exist_ok=True)
             df.to_pickle(str(pkl_path), protocol=5)
 
