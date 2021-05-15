@@ -6,6 +6,7 @@ __pycache__/
 *.pub
 
 # data files (usually huge or reproducible)
+wmu_mysql_database.h5
 *.pkl
 
 # local files

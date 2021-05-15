@@ -12,6 +12,7 @@ dependencies:
    - scipy>=1.6
 
    # data structure and files I/O
+   - pytables>=3.6.1
    - pandas>=1.1.0
    - root=6.22.6
    - pymysql>=1.0.1

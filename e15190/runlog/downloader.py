@@ -54,13 +54,14 @@ class Downloader:
         self.cursor.execute('SHOW TABLES')
         table_names = self.cursor.fetchall()
 
-        # picklize tables into pandas dataframes
-        for table_name in table_names:
-            print(f'> Serializing {table_name}...')
-            df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
-            pkl_path = pathlib.Path(PROJECT_DIR, 'database', 'runlog', f'{table_name}.pkl')
-            pkl_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_pickle(str(pkl_path), protocol=5)
+        # convert tables into pandas dataframes and save into an HDF file
+        download_path = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'wmu_mysql_database.h5')
+        download_path.parent.mkdir(parents=True, exist_ok=True)
+        with pd.HDFStore(download_path, 'w') as file:
+            for table_name in table_names:
+                print(f'> Converting and saving {table_name}...')
+                df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
+                file.append(table_name, df)
 
         if auto_disconnect:
             self.disconnect()
