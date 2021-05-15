@@ -1,3 +1,4 @@
+import inspect
 import json
 import pathlib
 
@@ -10,9 +11,9 @@ pymysql.install_as_MySQLdb() # WMU uses MySQL
 PROJECT_DIR = pathlib.Path(__file__).parent.parent.parent.resolve()
 
 class Downloader:
-    def __init__(self, auto_connect=True):
+    def __init__(self, auto_connect=True, public_key_path=None):
         if auto_connect:
-            self.connect()
+            self.connect(public_key_path=public_key_path)
 
     @staticmethod
     def decorate(func_that_returns_tuples_of_tuples):
@@ -26,9 +27,16 @@ class Downloader:
             return arr
         return inner
 
-    def connect(self):
+    def connect(self, public_key_path=None):
         # get public key (same for all scripts in this repository; not committed to github)
-        key_path = pathlib.Path(PROJECT_DIR, 'database', 'key_for_all.pub')
+        key_path = pathlib.Path(PROJECT_DIR, 'database', 'key_for_all.pub') if public_key_path is None else public_key_path
+        if not key_path.is_file():
+            raise Exception(inspect.cleandoc(
+                f'''Public key is not found at
+                "{str(key_path)}"
+                If the key has been provided to you, please check if the path is correct.
+                Otherwise, contact the owner of this repository for more help.
+                ''')
         with open(key_path, 'r') as f:
             pub_key = f.readline().encode('utf-8')
 
