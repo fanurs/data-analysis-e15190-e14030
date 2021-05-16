@@ -8,7 +8,8 @@ import pymysql
 
 pymysql.install_as_MySQLdb() # WMU uses MySQL
 
-PROJECT_DIR = pathlib.Path(__file__).parent.parent.parent.resolve()
+from .. import PROJECT_DIR
+from . import DOWNLOAD_PATH
 
 class Downloader:
     def __init__(self, auto_connect=True, public_key_path=None):
@@ -36,7 +37,7 @@ class Downloader:
                 "{str(key_path)}"
                 If the key has been provided to you, please check if the path is correct.
                 Otherwise, contact the owner of this repository for more help.
-                ''')
+                '''))
         with open(key_path, 'r') as f:
             pub_key = f.readline().encode('utf-8')
 
@@ -59,17 +60,32 @@ class Downloader:
         self.cursor.fetchone = Downloader.decorate(self.cursor.fetchone)
     
     def download(self, auto_disconnect=True):
+        """Convert tables into pandas dataframes and save into an HDF file
+        """
+        print('Attempting to download run log from WMU MySQL database...')
         self.cursor.execute('SHOW TABLES')
         table_names = self.cursor.fetchall()
 
-        # convert tables into pandas dataframes and save into an HDF file
-        download_path = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'wmu_mysql_database.h5')
-        download_path.parent.mkdir(parents=True, exist_ok=True)
-        with pd.HDFStore(download_path, 'w') as file:
-            for table_name in table_names:
-                print(f'> Converting and saving {table_name}...')
-                df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
-                file.append(table_name, df)
+        DOWNLOAD_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if DOWNLOAD_PATH.is_file():
+            resp = input(inspect.cleandoc(
+                f'''HDF file already exists at
+                "{DOWNLOAD_PATH}".
+                Do you want to re-download from WMU MySQL database? This will overwrite the existing file.
+                (y/n)
+                > '''
+                ))
+
+            if resp.lower().strip() == 'y':
+                DOWNLOAD_PATH.unlink()
+                with pd.HDFStore(DOWNLOAD_PATH, 'w') as file:
+                    for table_name in table_names:
+                        print(f'> Converting and saving {table_name}...')
+                        df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
+                        file.append(table_name, df)
+                print(f'All tables have been saved to\n"{str(DOWNLOAD_PATH)}"')
+            else:
+                print('No re-download will be performed.')
 
         if auto_disconnect:
             self.disconnect()
