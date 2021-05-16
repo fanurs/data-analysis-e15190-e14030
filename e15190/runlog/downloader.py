@@ -1,6 +1,7 @@
 import inspect
 import json
 import pathlib
+import urllib.request
 
 from cryptography.fernet import Fernet
 import pandas as pd
@@ -9,9 +10,10 @@ import pymysql
 pymysql.install_as_MySQLdb() # WMU uses MySQL
 
 from .. import PROJECT_DIR
-from . import DOWNLOAD_PATH
+from . import MYSQL_DOWNLOAD_PATH, ELOG_DOWNLOAD_PATH
+ELOG_URL = 'http://neutronstar.physics.wmich.edu/runlog/index.php?op=list'
 
-class Downloader:
+class MySqlDownloader:
     def __init__(self, auto_connect=True, public_key_path=None):
         if auto_connect:
             self.connect(public_key_path=public_key_path)
@@ -55,9 +57,9 @@ class Downloader:
         del credential
         self.cursor = self.connection.cursor()
         
-        self.cursor.fetchall = Downloader.decorate(self.cursor.fetchall)
-        self.cursor.fetchmany = Downloader.decorate(self.cursor.fetchmany)
-        self.cursor.fetchone = Downloader.decorate(self.cursor.fetchone)
+        self.cursor.fetchall = MySqlDownloader.decorate(self.cursor.fetchall)
+        self.cursor.fetchmany = MySqlDownloader.decorate(self.cursor.fetchmany)
+        self.cursor.fetchone = MySqlDownloader.decorate(self.cursor.fetchone)
     
     def download(self, auto_disconnect=True):
         """Convert tables into pandas dataframes and save into an HDF file
@@ -66,24 +68,25 @@ class Downloader:
         self.cursor.execute('SHOW TABLES')
         table_names = self.cursor.fetchall()
 
-        DOWNLOAD_PATH.parent.mkdir(parents=True, exist_ok=True)
-        if DOWNLOAD_PATH.is_file():
+        MYSQL_DOWNLOAD_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if MYSQL_DOWNLOAD_PATH.is_file():
             resp = input(inspect.cleandoc(
                 f'''HDF file already exists at
-                "{DOWNLOAD_PATH}".
+                "{MYSQL_DOWNLOAD_PATH}".
                 Do you want to re-download from WMU MySQL database? This will overwrite the existing file.
                 (y/n)
                 > '''
                 ))
 
             if resp.lower().strip() == 'y':
-                DOWNLOAD_PATH.unlink()
-                with pd.HDFStore(DOWNLOAD_PATH, 'w') as file:
+                MYSQL_DOWNLOAD_PATH.unlink()
+                with pd.HDFStore(MYSQL_DOWNLOAD_PATH, 'w') as file:
                     for table_name in table_names:
-                        print(f'> Converting and saving {table_name}...')
+                        print(f'> Converting and saving {table_name}... ', end='', flush=True)
                         df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
                         file.append(table_name, df)
-                print(f'All tables have been saved to\n"{str(DOWNLOAD_PATH)}"')
+                        print('Done!')
+                print(f'All tables have been saved to\n"{str(MYSQL_DOWNLOAD_PATH)}"')
             else:
                 print('No re-download will be performed.')
 
@@ -92,3 +95,14 @@ class Downloader:
         
     def disconnect(self):
         self.connection.close()
+
+class ElogDownloader:
+    def __init__(self):
+        pass
+
+    def download(self):
+        print(f'Attempting to download web content from\n"{ELOG_URL}"... ', end='', flush=True)
+        web_content = urllib.request.urlopen(ELOG_URL).read()
+        with open(ELOG_DOWNLOAD_PATH, 'wb') as file:
+            file.write(web_content)
+        print('Done!')
