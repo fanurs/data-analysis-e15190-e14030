@@ -98,8 +98,8 @@ class ElogCleanser:
         self.elog['Comments'] = self.elog['Comments'].str.strip()
         self.elog.rename(columns={'Comments': 'Comment'})
 
-        # use only lowercase for column names
-        self.elog.columns = [col.lower() for col in self.elog.columns]
+        # use only lowercase for column names and replace spaces with underscores
+        self.elog.columns = [col.lower().replace(' ', '_') for col in self.elog.columns]
 
     def _cleanse_events(self):
         self.events['Entry'] = self.events['End time']
