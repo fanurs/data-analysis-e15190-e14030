@@ -21,11 +21,17 @@ ELOG_CLEANSED_CSV_DIR = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_cl
 ELOG_CLEANSED_CSV_DIR.mkdir(parents=True, exist_ok=True)
 ELOG_CLEANSED_PATH = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_cleansed.h5')
 
+ELOG_VALID_CSV_DIR = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_valid_csv')
+ELOG_VALID_CSV_DIR.mkdir(parents=True, exist_ok=True)
+ELOG_VALID_PATH = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_valid.h5')
+
 class ElogCleanser:
     """This is a class of methods to perform data cleansing on the table downloaded from ELOG webpage at WMU.
     """
     def __init__(self):
-        pass
+        self.elog = None
+        self.events = None
+        self.valid_elog = None
 
     def cleanse(self):
         with open(ELOG_DOWNLOAD_PATH, 'r') as file:
@@ -106,6 +112,36 @@ class ElogCleanser:
         self.events.replace({'Comments': '(?i)nan'}, 'none', regex=True, inplace=True)
         self.events = self.events[['RUN', 'Begin time', 'Entry', 'Comments']]
         self.events.columns = ['run', 'time', 'entry', 'comment']
+
+    def generate_valid_runs(self):
+        # get a copy of elog to filter for valid runs
+        if self.elog is None:
+            with pd.HDFStore(ELOG_CLEANSED_PATH, 'r') as file:
+                self.valid_elog = file['elog'].copy()
+        else:
+            self.valid_elog = self.elog.copy()
+
+        # select valid runs only
+        conditions = [
+            '(run >= 2000 & run < 3000) | (run >= 4000 & run < 5000)',
+            'elapse > @pd.Timedelta(minutes=5.0)',
+            'daq == "Merged"',
+            'type == "data"',
+            'target in ["Ni58", "Ni64", "Sn112", "Sn124"]',
+            'beam in ["Ca40 56 MeV/u", "Ca40 140 MeV/u", "Ca48 56 MeV/u", "Ca48 140 MeV/u"]',
+            'trigger_rate > 1000.0',
+        ]
+        self.valid_elog = self.valid_elog.query('(' + ') & ('.join(conditions) + ')', engine='python')
+
+        # drop redundant columns
+        self.valid_elog.drop(columns=['daq', 'type'], inplace=True)
+
+        # save to files
+        with pd.HDFStore(ELOG_VALID_PATH, 'w') as file:
+            file.append('valid_elog', self.valid_elog)
+        
+        path = pathlib.Path(ELOG_VALID_CSV_DIR, 'valid_elog.csv')
+        self.valid_elog.to_csv(path, index=False)
 
 class MySqlCleanser:
     """This is a class of methods to perform data cleansing on the tables freshly downloaded from MySQL at WMU.
