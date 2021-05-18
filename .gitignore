@@ -13,3 +13,4 @@ wmu_mysql_database.h5
 # local files
 env_e15190/
 dev*.py
+database/local_paths.json
