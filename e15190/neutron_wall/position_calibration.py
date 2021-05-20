@@ -10,9 +10,11 @@ from sklearn import neighbors
 import uproot
 
 from .. import PROJECT_DIR
-from ..utilities import local_manager
+from ..utilities import local_manager, tables
 
 DATABASE_DIR = pathlib.Path(PROJECT_DIR, 'database', 'neutron_wall', 'position_calibration')
+CALIB_PARAMS_DIR = pathlib.Path(DATABASE_DIR, 'calib_params')
+CALIB_PARAMS_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_DIR = pathlib.Path(DATABASE_DIR, 'cache')
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -44,6 +46,8 @@ class NWBPositionCalibrator:
         self.calib_params = None
 
     def read_run(self, run, use_cache=False, save_cache=True, raise_not_found=True):
+        self.run = run
+
         # check for existing cache
         cache_path = pathlib.Path(CACHE_DIR, f'run-{run:04d}.h5')
         if use_cache and cache_path.is_file():
@@ -54,7 +58,6 @@ class NWBPositionCalibrator:
                     return True
 
         # prepare path
-        self.run = run
         root_dir = local_manager.get_local_path('daniele_root_files_dir')
         filename = f'CalibratedData_{self.run:04d}.root'
         path = pathlib.Path(root_dir, filename).resolve()
@@ -126,7 +129,7 @@ class NWBPositionCalibrator:
         params = np.vstack(self.df_nw['bar'].map(self.rough_calib_params))
         self.df_nw['rough_pos'] = params[:, 0] + params[:, 1] * self.df_nw['time_diff']
 
-    def calibrate(self, verbose=False):
+    def calibrate(self, verbose=False, save_params=True):
         self._rough_calibrate()
 
         # cast the VW shadows, i.e. find the intersecting entries between NW and VW
@@ -215,3 +218,17 @@ class NWBPositionCalibrator:
         # apply final position calibration
         params = np.vstack(self.df_nw['bar'].map(self.calib_params))
         self.df_nw['pos'] = params[:, 0] + params[:, 1] * self.df_nw['time_diff']
+
+        # save parameters
+        if save_params:
+            self.save_parameters()
+
+    def save_parameters(self):
+        # turn calibration parameters into pandas dataframe
+        df = pd.DataFrame(self.calib_params).transpose()
+        df.columns = ['p0', 'p1']
+        df.index.name = f'nw{self.ab}-bar'
+
+        # write to file
+        path = pathlib.Path(CALIB_PARAMS_DIR, f'run-{self.run:04d}-nw{self.ab}.dat')
+        tables.to_fwf(df, path, drop_index=False)
