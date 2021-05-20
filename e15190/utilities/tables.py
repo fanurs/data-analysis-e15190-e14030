@@ -19,4 +19,4 @@ def to_fwf(df, path, drop_index=True):
 
     content = tabulate(df.values.tolist(), list(df.columns), tablefmt='plain')
     with open(path, 'w') as f:
-        f.write(content)
+        f.write(content + '\n')
