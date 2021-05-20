@@ -2,11 +2,10 @@ import concurrent.futures
 import inspect
 import pathlib
 import warnings
-import sys
 
 import numpy as np
 import pandas as pd
-from scipy import interpolate, optimize, stats
+from scipy import optimize, stats
 from sklearn import neighbors
 import uproot
 
