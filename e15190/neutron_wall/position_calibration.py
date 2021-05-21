@@ -3,17 +3,14 @@ import inspect
 import pathlib
 import warnings
 
-import matplotlib.pyplot as plt
-import numexpr
 import numpy as np
 import pandas as pd
 from scipy import optimize, stats
 from sklearn import neighbors
 import uproot
-import time
 
 from .. import PROJECT_DIR
-from ..utilities import local_manager, tables, timer
+from ..utilities import local_manager, tables
 
 DATABASE_DIR = pathlib.Path(PROJECT_DIR, 'database', 'neutron_wall', 'position_calibration')
 CALIB_PARAMS_DIR = pathlib.Path(DATABASE_DIR, 'calib_params')
