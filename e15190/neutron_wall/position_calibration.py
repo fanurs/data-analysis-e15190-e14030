@@ -3,14 +3,17 @@ import inspect
 import pathlib
 import warnings
 
+import matplotlib.pyplot as plt
+import numexpr
 import numpy as np
 import pandas as pd
 from scipy import optimize, stats
 from sklearn import neighbors
 import uproot
+import time
 
 from .. import PROJECT_DIR
-from ..utilities import local_manager, tables
+from ..utilities import local_manager, tables, timer
 
 DATABASE_DIR = pathlib.Path(PROJECT_DIR, 'database', 'neutron_wall', 'position_calibration')
 CALIB_PARAMS_DIR = pathlib.Path(DATABASE_DIR, 'calib_params')
@@ -44,6 +47,7 @@ class NWBPositionCalibrator:
         self.df_nw = None
         self.rough_calib_params = None
         self.calib_params = None
+        self.gaus_params = None
 
     def read_run(self, run, use_cache=False, save_cache=True, raise_not_found=True):
         self.run = run
@@ -109,8 +113,10 @@ class NWBPositionCalibrator:
 
         # estimate rough edges in time_diff (td) using quantiles and some simple linear fits
         self.rough_calib_params = dict()
+        df_cut = self.df_nw.query('light_GM > @self.threshold_light_GM')
+        bar_grp = df_cut.groupby('bar').groups
         for nw_bar in self.nw_bars:
-            df = self.df_nw.query('bar == @nw_bar & light_GM > @self.threshold_light_GM')
+            df = df_cut.loc[bar_grp[nw_bar]]
 
             quantiles = np.quantile(df['time_diff'], np.hstack([qvals_L, qvals_R]))
             quantiles_L = quantiles[:len(qvals_L)]
@@ -134,9 +140,9 @@ class NWBPositionCalibrator:
 
         # cast the VW shadows, i.e. find the intersecting entries between NW and VW
         vw_bar_entries = self.df_vw.groupby('bar').groups
-        nw_entries_set = set(self.df_nw.index.get_level_values(0))
+        nw_entries = self.df_nw.index.get_level_values(0)
         mask_entries = {
-            vw_bar: list(set(np.vstack(vw_entries)[:, 0]).intersection(nw_entries_set))
+            vw_bar: np.intersect1d(np.vstack(vw_entries)[:, 0], nw_entries)
             for vw_bar, vw_entries in vw_bar_entries.items()
         }
 
@@ -147,71 +153,85 @@ class NWBPositionCalibrator:
         ]
 
         # prepare instances that will help peak identification later
-        kde = neighbors.KernelDensity(bandwidth=1.0, rtol=1e-4, kernel='tophat')
+        kde = neighbors.KernelDensity(bandwidth=1.0, rtol=1e-4)
         kde_fmt = lambda x: np.array([x]).transpose()
         kde_func = lambda x, kde=kde: np.exp(kde.score_samples(kde_fmt(x)))
-        gaus = lambda x, amplt, x0, width: amplt * np.exp(-0.5 * ((x - x0) / width)**2)
+        self.gaus = lambda x, amplt, x0, width: amplt * np.exp(-0.5 * ((x - x0) / width)**2)
 
         # to collect calibration parameters for each NW bar
         self.calib_params = dict()
+        self.gaus_params = dict()
         for nw_i, nw_bar in enumerate(self.nw_bars):
             if verbose:
-                print(
-                    f'\rCalibrating NW{self.AB}-bar{nw_bar:02d} ({nw_i+1}/{len(self.nw_bars)})',
-                    end='', flush=True,
-                )
+                msg = f'\rCalibrating NW{self.AB}-bar{nw_bar:02d} ({nw_i+1}/{len(self.nw_bars)})'
+                print(msg, end='', flush=True)
 
             df_nw = df_cut.query('bar == @nw_bar')
 
             # start collecting all calibration points on this NW bar
             calib_x = dict()
             for vw_bar in self.vw_bars:
-                # case the VW shadow on this NW bar
+                # cast the VW shadow on this NW bar
                 df = df_nw.loc[mask_entries[vw_bar]]
 
                 # estimate the VW shadow peak position
-                est_peak_x = df['rough_pos'].median()
+                count, x = np.histogram(df['rough_pos'], range=[-150, 150], bins=100)
+                x = 0.5 * (x[1:] + x[:-1])
+                est_peak_x = x[np.argmax(count)]
 
-                # get the distribution (in KDE) around the estimated VW shadow
-                x_fit = np.linspace(est_peak_x - 15, est_peak_x + 15, 100)
-                kde.fit(kde_fmt(df['rough_pos']))
-
+                gaus_fit_ok = True
                 try:
-                    # fine tune the shadow peak position and save it for calibration
-                    p, _ = optimize.curve_fit(
-                        gaus, x_fit, kde_func(x_fit),
-                        p0=[kde_func([est_peak_x])[0], est_peak_x, 2.0],
-                    )
-                    calib_x[vw_bar] = p[1]
-                except:
-                    print()
-                    warnings.warn(
-                        inspect.cleandoc(f'''
-                        Fail to fit VW-bar{vw_bar:02d} shadow on NW{self.AB}-bar{nw_bar:02d}.
-                        Using simple median of the shadow as calibration point.
-                        '''),
-                        Warning, stacklevel=2,
-                    )
-                    calib_x[vw_bar] = est_peak_x
+                    fit_halfwidth = 20.0
 
-                if abs(calib_x[vw_bar] - est_peak_x) > 10:
-                    print()
-                    warnings.warn(
-                        inspect.cleandoc(f'''
-                        VW-bar{vw_bar:02d} shadow on NW{self.AB}-bar{nw_bar:02d} given by Gaussian fit lies far away (> 10 cm) from the initial estimate using simple median.
-                        Resorting to simple median as calibration point.
-                        '''),
-                        Warning, stacklevel=2,
+                    # first fit around the estimated shadow peak position
+                    kde.fit(kde_fmt(df.query('abs(rough_pos - @est_peak_x) < @fit_halfwidth')['rough_pos']))
+                    x_fit = np.linspace(est_peak_x - fit_halfwidth, est_peak_x + fit_halfwidth, 20)
+                    gaus_param, _ = optimize.curve_fit(
+                        self.gaus, x_fit, kde_func(x_fit),
+                        p0=[kde_func([est_peak_x])[0], est_peak_x, 10.0],
                     )
-                    calib_x[vw_bar] = est_peak_x
-            
+
+                    # second fit to further converge toward the shadow peak position
+                    kde.fit(kde_fmt(df.query('abs(rough_pos - @gaus_param[1]) < @fit_halfwidth')['rough_pos']))
+                    x_fit = np.linspace(gaus_param[1] - fit_halfwidth, gaus_param[1] + fit_halfwidth, 40)
+                    gaus_param, _ = optimize.curve_fit(self.gaus, x_fit, kde_func(x_fit), p0=gaus_param)
+                except:
+                    msg = '\n' + inspect.cleandoc(
+                        f'''
+                        Fail to fit VW-bar{vw_bar:02d} shadow on NW{self.AB}-bar{nw_bar:02d}.
+                        Using simple statistical mode of the shadow as calibration point.
+                        '''),
+                    print()
+                    warnings.warn(msg, Warning, stacklevel=2)
+                    gaus_fit_ok = False
+
+                max_allowed_offset = 10.0 # cm
+                if gaus_fit_ok and abs(gaus_param[1] - est_peak_x) > max_allowed_offset:
+                    msg = '\n' + inspect.cleandoc(
+                        f'''
+                        VW-bar{vw_bar:02d} shadow on NW{self.AB}-bar{nw_bar:02d}:
+                        Gaussian fit is far (> {max_allowed_offset:.0f} cm) from initial estimation.
+                        Resorting to using simple statistical mode as calibration point.
+                        ''')
+                    print()
+                    warnings.warn(msg, Warning, stacklevel=2)
+                    gaus_fit_ok = False
+
+                # save Gaussian fits
+                if gaus_fit_ok:
+                    self.gaus_params[(nw_bar, vw_bar)] = gaus_param
+                else:
+                    # create a very sharp Gaussian so that when plotted it is clear that estimated peak was used
+                    self.gaus_params[(nw_bar, vw_bar)] = [5.0 * kde_func([est_peak_x])[0], est_peak_x, 0.2]
+                calib_x[vw_bar] = self.gaus_params[(nw_bar, vw_bar)][1]
+
             # done collecting all calibration points for this NW bar, compute calibration parameters
             common_vw_bars = sorted(set(calib_x).intersection(set(self.vw_shadow)))
             x = np.array([calib_x[vw_bar] for vw_bar in common_vw_bars])
             y = np.array([self.vw_shadow[vw_bar] for vw_bar in common_vw_bars])
             res = stats.linregress(x, y)
             self.calib_params[nw_bar] = np.array([
-                self.rough_calib_params[nw_bar][0] + self.rough_calib_params[nw_bar][1] * res.intercept,
+                self.rough_calib_params[nw_bar][0] * res.slope + res.intercept,
                 self.rough_calib_params[nw_bar][1] * res.slope,
             ])
 
