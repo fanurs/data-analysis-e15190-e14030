@@ -1,8 +1,11 @@
 import concurrent.futures
+import copy
 import inspect
 import pathlib
 import warnings
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import optimize, stats
@@ -13,10 +16,12 @@ from .. import PROJECT_DIR
 from ..utilities import local_manager, tables
 
 DATABASE_DIR = pathlib.Path(PROJECT_DIR, 'database', 'neutron_wall', 'position_calibration')
-CALIB_PARAMS_DIR = pathlib.Path(DATABASE_DIR, 'calib_params')
-CALIB_PARAMS_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_DIR = pathlib.Path(DATABASE_DIR, 'cache')
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+CALIB_PARAMS_DIR = pathlib.Path(DATABASE_DIR, 'calib_params')
+CALIB_PARAMS_DIR.mkdir(parents=True, exist_ok=True)
+GALLERY_DIR = pathlib.Path(DATABASE_DIR, 'gallery')
+GALLERY_DIR.mkdir(parents=True, exist_ok=True)
 
 class NWBPositionCalibrator:
     def __init__(self, max_workers=12):
@@ -231,6 +236,7 @@ class NWBPositionCalibrator:
                 self.rough_calib_params[nw_bar][0] * res.slope + res.intercept,
                 self.rough_calib_params[nw_bar][1] * res.slope,
             ])
+        print()
 
         # apply final position calibration
         params = np.vstack(self.df_nw['bar'].map(self.calib_params))
@@ -249,3 +255,94 @@ class NWBPositionCalibrator:
         # write to file
         path = pathlib.Path(CALIB_PARAMS_DIR, f'run-{self.run:04d}-nw{self.ab}.dat')
         tables.to_fwf(df, path, drop_index=False)
+
+    def save_to_gallery(self):
+        self.cmap = copy.copy(plt.cm.viridis_r)
+        self.cmap.set_under('white')
+
+        mpl_custom = {
+            'font.family': 'serif',
+            'mathtext.fontset': 'cm',
+            'figure.dpi': 500,
+            'figure.facecolor': 'white',
+            'xtick.top': True,
+            'xtick.direction': 'in',
+            'xtick.minor.visible': True,
+            'ytick.right': True,
+            'ytick.direction': 'in',
+            'ytick.minor.visible': True,
+        }
+        for key, val in mpl_custom.items():
+            mpl.rcParams[key] = val
+
+        fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(16, 9), constrained_layout=True)
+
+        rc = (0, 0)
+        self._draw_hit_pattern2d(ax[rc], self.df_nw)
+
+        rc = (0, 1)
+        nw_entries = self.df_nw.index.get_level_values(0)
+        vw_entries = self.df_vw.query('bar % 2 == 0').index.get_level_values(0)
+        df = self.df_nw.loc[np.intersect1d(vw_entries, nw_entries)]
+        gaus_params = {
+            (nw_bar, vw_bar): gparam
+            for (nw_bar, vw_bar), gparam in self.gaus_params.items()
+            if vw_bar % 2 == 0
+        }
+        self._draw_hit_pattern2d(ax[rc], df, gaus_params)
+
+        rc = (0, 2)
+        vw_entries = self.df_vw.query('bar % 2 == 1').index.get_level_values(0)
+        df = self.df_nw.loc[np.intersect1d(vw_entries, nw_entries)]
+        gaus_params = {
+            (nw_bar, vw_bar): gparam
+            for (nw_bar, vw_bar), gparam in self.gaus_params.items()
+            if vw_bar % 2 == 1
+        }
+        self._draw_hit_pattern2d(ax[rc], df, gaus_params)
+
+        plt.draw()
+        fig.savefig(pathlib.Path(GALLERY_DIR, f'run-{self.run:04d}.png'), dpi=500, bbox_inches='tight')
+        plt.close()
+
+    def _draw_hit_pattern2d(self, ax, df, gaus_params=None):
+        ax.hist2d(
+            df['pos'], df['bar'],
+            range=[[-150, 150], [-0.5, 25.5]], bins=[150, 26],
+            cmap=self.cmap, vmin=1,
+        )
+        ax.set_xlim(-150, 150)
+        ax.set_ylim(-0.5, 25.5)
+        ax.grid(axis='y', color='darkgray')
+
+        if gaus_params is not None:
+            # mark the expected shadow positions (from Inventor or laser measurement)
+            color = 'dimgray'
+            vw_bars = sorted(set(np.vstack(list(gaus_params.keys()))[:, 1]))
+            axt = ax.twiny()
+            for vw_bar in vw_bars:
+                ax.axvline(self.vw_shadow[vw_bar], color=color, linewidth=0.8, linestyle='dashed')
+            axt.set_xlim(-150, 150)
+            axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in vw_bars])
+            axt.set_xticklabels(vw_bars)
+            axt.set_xticks([], minor=True)
+            axt.tick_params(axis='x', which='both', colors=color)
+            axt.spines['top'].set_color(color)
+
+            # mark the shadow peaks identified by Gaussian fits
+            data = []
+            for (nw_bar, vw_bar), gparam in gaus_params.items():
+                slope = self.calib_params[nw_bar][1] / self.rough_calib_params[nw_bar][1]
+                intercept = self.calib_params[nw_bar][0] - slope * self.rough_calib_params[nw_bar][0]
+                pos = intercept + slope * gparam[1]
+                sigma = slope * gparam[2]**0.5
+                data.append([nw_bar, pos, sigma])
+            data = pd.DataFrame(data, columns=['nw_bar', 'pos', 'sigma'])
+            ax.hlines(
+                data['nw_bar'], data['pos'] - data['sigma'], data['pos'] + data['sigma'],
+                color='orangered', linewidth=1.5, zorder=100,
+            )
+            ax.vlines(
+                data['pos'], data['nw_bar'] - 0.25, data['nw_bar'] + 0.25,
+                color='darkred', linewidth=0.5, zorder=101,
+            )
