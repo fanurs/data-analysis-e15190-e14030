@@ -49,6 +49,7 @@ class NWBPositionCalibrator:
         self.df_nw = None
         self.rough_calib_params = None
         self.calib_params = None
+        self._rough_to_pos_calib_params = None
         self.gaus_params = None
 
     def read_run(self, run, use_cache=False, save_cache=True, raise_not_found=True):
@@ -162,6 +163,7 @@ class NWBPositionCalibrator:
 
         # to collect calibration parameters for each NW bar
         self.calib_params = dict()
+        self._rough_to_pos_calib_params = dict()
         self.gaus_params = dict()
         for nw_i, nw_bar in enumerate(self.nw_bars):
             if verbose:
@@ -232,6 +234,7 @@ class NWBPositionCalibrator:
             x = np.array([calib_x[vw_bar] for vw_bar in common_vw_bars])
             y = np.array([self.vw_shadow[vw_bar] for vw_bar in common_vw_bars])
             res = stats.linregress(x, y)
+            self._rough_to_pos_calib_params[nw_bar] = [res.intercept, res.slope]
             self.calib_params[nw_bar] = np.array([
                 self.rough_calib_params[nw_bar][0] * res.slope + res.intercept,
                 self.rough_calib_params[nw_bar][1] * res.slope,
@@ -256,7 +259,7 @@ class NWBPositionCalibrator:
         path = pathlib.Path(CALIB_PARAMS_DIR, f'run-{self.run:04d}-nw{self.ab}.dat')
         tables.to_fwf(df, path, drop_index=False)
 
-    def save_to_gallery(self):
+    def save_to_gallery(self, show_plot=False):
         self.cmap = copy.copy(plt.cm.viridis_r)
         self.cmap.set_under('white')
 
@@ -303,7 +306,10 @@ class NWBPositionCalibrator:
 
         plt.draw()
         fig.savefig(pathlib.Path(GALLERY_DIR, f'run-{self.run:04d}.png'), dpi=500, bbox_inches='tight')
-        plt.close()
+        if show_plot:
+            plt.show()
+        else:
+            plt.close()
 
     def _draw_hit_pattern2d(self, ax, df, gaus_params=None):
         ax.hist2d(
@@ -332,8 +338,7 @@ class NWBPositionCalibrator:
             # mark the shadow peaks identified by Gaussian fits
             data = []
             for (nw_bar, vw_bar), gparam in gaus_params.items():
-                slope = self.calib_params[nw_bar][1] / self.rough_calib_params[nw_bar][1]
-                intercept = self.calib_params[nw_bar][0] - slope * self.rough_calib_params[nw_bar][0]
+                intercept, slope = self._rough_to_pos_calib_params[nw_bar]
                 pos = intercept + slope * gparam[1]
                 sigma = slope * gparam[2]
                 data.append([nw_bar, pos, sigma])
