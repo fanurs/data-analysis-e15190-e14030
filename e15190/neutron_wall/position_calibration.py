@@ -158,7 +158,7 @@ class NWBPositionCalibrator:
         kde = neighbors.KernelDensity(bandwidth=1.0, rtol=1e-4)
         kde_fmt = lambda x: np.array([x]).transpose()
         kde_func = lambda x, kde=kde: np.exp(kde.score_samples(kde_fmt(x)))
-        self.gaus = lambda x, amplt, x0, width: amplt * np.exp(-0.5 * ((x - x0) / width)**2)
+        self.gaus = lambda x, amplt, x0, sigma: amplt * np.exp(-0.5 * ((x - x0) / sigma)**2)
 
         # to collect calibration parameters for each NW bar
         self.calib_params = dict()
@@ -313,7 +313,7 @@ class NWBPositionCalibrator:
         )
         ax.set_xlim(-150, 150)
         ax.set_ylim(-0.5, 25.5)
-        ax.grid(axis='y', color='darkgray')
+        ax.grid(axis='y', color='darkgray', linestyle='dashed')
 
         if gaus_params is not None:
             # mark the expected shadow positions (from Inventor or laser measurement)
@@ -335,7 +335,7 @@ class NWBPositionCalibrator:
                 slope = self.calib_params[nw_bar][1] / self.rough_calib_params[nw_bar][1]
                 intercept = self.calib_params[nw_bar][0] - slope * self.rough_calib_params[nw_bar][0]
                 pos = intercept + slope * gparam[1]
-                sigma = slope * gparam[2]**0.5
+                sigma = slope * gparam[2]
                 data.append([nw_bar, pos, sigma])
             data = pd.DataFrame(data, columns=['nw_bar', 'pos', 'sigma'])
             ax.hlines(
