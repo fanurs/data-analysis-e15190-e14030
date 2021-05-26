@@ -4,6 +4,7 @@ import heapq
 import inspect
 import pathlib
 import warnings
+import sys
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -25,8 +26,9 @@ GALLERY_DIR = pathlib.Path(DATABASE_DIR, 'gallery')
 GALLERY_DIR.mkdir(parents=True, exist_ok=True)
 
 class NWBPositionCalibrator:
-    def __init__(self, max_workers=12, verbose=False):
+    def __init__(self, max_workers=12, verbose=False, stdout_path=None):
         self.verbose = verbose
+        self.stdout_path = stdout_path
         self.AB = 'B'
         self.ab = self.AB.lower()
         self.decompression_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
@@ -60,6 +62,9 @@ class NWBPositionCalibrator:
             verbose = self.verbose
 
         self.run = run
+        if self.stdout_path is not None:
+            sys.stdout = open(self.stdout_path, 'w')
+            sys.stderr = sys.stdout
         if verbose:
             print(f'Reading run-{run:04d}...', flush=True)
 
