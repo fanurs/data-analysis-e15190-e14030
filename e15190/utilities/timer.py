@@ -1,3 +1,4 @@
+import copy
 import time
 
 class VerboseTimer:
@@ -53,8 +54,10 @@ class VerboseTimer:
         elif self.auto_print:
             self.print(prefix=prefix, suffix=suffix)
 
+        elapse = copy.copy(self.time_diff)
         self.reset()
         self.status = 'stop'
+        return elapse
 
     def reset(self):
         self.status = 'stop'
@@ -72,16 +75,16 @@ class VerboseTimer:
 verbose_timer = VerboseTimer()
 def start(*args, **kwargs):
     global verbose_timer
-    verbose_timer.start()
+    return verbose_timer.start()
 
 def pause(*args, **kwargs):
     global verbose_timer
-    verbose_timer.pause()
+    return verbose_timer.pause()
 
 def stop(*args, **kwargs):
     global verbose_timer
-    verbose_timer.stop(*args, **kwargs)
+    return verbose_timer.stop(*args, **kwargs)
 
 def reset(*args, **kwargs):
     global verbose_timer
-    verbose_timer.reset(*args, **kwargs)
+    return verbose_timer.reset(*args, **kwargs)
