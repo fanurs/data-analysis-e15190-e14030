@@ -1,5 +1,6 @@
 import concurrent.futures
 import copy
+import heapq
 import inspect
 import pathlib
 import warnings
@@ -24,7 +25,8 @@ GALLERY_DIR = pathlib.Path(DATABASE_DIR, 'gallery')
 GALLERY_DIR.mkdir(parents=True, exist_ok=True)
 
 class NWBPositionCalibrator:
-    def __init__(self, max_workers=12):
+    def __init__(self, max_workers=12, verbose=False):
+        self.verbose = verbose
         self.AB = 'B'
         self.ab = self.AB.lower()
         self.decompression_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
@@ -51,23 +53,35 @@ class NWBPositionCalibrator:
         self.calib_params = None
         self._rough_to_pos_calib_params = None
         self.gaus_params = None
+        self.outlier_vw_bars = None
 
-    def read_run(self, run, use_cache=False, save_cache=True, raise_not_found=True):
+    def read_run(self, run, verbose=None, use_cache=False, save_cache=True, raise_not_found=True):
+        if verbose is None:
+            verbose = self.verbose
+
         self.run = run
+        if verbose:
+            print(f'Reading run-{run:04d}...', flush=True)
 
         # check for existing cache
         cache_path = pathlib.Path(CACHE_DIR, f'run-{run:04d}.h5')
         if use_cache and cache_path.is_file():
+            if verbose:
+                print(f'Reading from cache "{str(cache_path)}"...', flush=True)
             with pd.HDFStore(cache_path, 'r') as file:
                 if f'nw{self.ab}' in file and 'vw' in file:
                     self.df_nw = file[f'nw{self.ab}']
                     self.df_vw = file['vw']
+                    if verbose:
+                        print('Done reading.', flush=True)
                     return True
 
         # prepare path
         root_dir = local_manager.get_local_path('daniele_root_files_dir')
         filename = f'CalibratedData_{self.run:04d}.root'
         path = pathlib.Path(root_dir, filename).resolve()
+        if verbose:
+            print(f'Reading from "{str(path)}"...', flush=True)
 
         # specify branches of interest and their aliases
         vw_branches = {
@@ -99,16 +113,26 @@ class NWBPositionCalibrator:
         self.df_nw.rename(columns=nw_branches, inplace=True)
         self.df_nw['time_diff'] = self.df_nw.eval('time_L - time_R')
         self.df_nw = self.df_nw[['bar', 'time_diff', 'light_GM']]
+        if verbose:
+            print('Done reading.', flush=True)
 
         # save dataframes to HDF file
         if save_cache:
             with pd.HDFStore(cache_path, 'a') as file:
                 file.append(f'nw{self.ab}', self.df_nw, append=False)
                 file.append('vw', self.df_vw, append=False)
+            print(f'Saved data to cache file "{str(cache_path)}"...', flush=True)
 
         return True
 
     def _rough_calibrate(self):
+        """Perform a rough position calibration using simple quantiles on the hit distribution of each NW bar.
+
+        After this procedure, instead of raw time difference (time left - time right),
+        we should have a rough position calibrated good to a precision of ~15 cm.
+        The result is saved to `self.df_nw` as a new column named `rough_pos`.
+        This makes it easier to further calibrate the positions using VW shadows.
+        """
         # some HARD-CODED numbers to help estimating the edges (roughly)
         qvals_L = np.linspace(0.01, 0.05, 5)
         qvals_R = 1 - qvals_L
@@ -117,9 +141,16 @@ class NWBPositionCalibrator:
         # estimate rough edges in time_diff (td) using quantiles and some simple linear fits
         self.rough_calib_params = dict()
         df_cut = self.df_nw.query('light_GM > @self.threshold_light_GM')
-        bar_grp = df_cut.groupby('bar').groups
         for nw_bar in self.nw_bars:
-            df = df_cut.loc[bar_grp[nw_bar]]
+            df = df_cut.query('bar == @nw_bar')
+            if len(df) < 1e3:
+                msg = '\n' + inspect.cleandoc(
+                    f'''
+                    Do not have enough statistics to do position calibration.
+                    ''')
+                print()
+                warnings.warn(msg, Warning, stacklevel=2)
+                return False
 
             quantiles = np.quantile(df['time_diff'], np.hstack([qvals_L, qvals_R]))
             quantiles_L = quantiles[:len(qvals_L)]
@@ -137,9 +168,15 @@ class NWBPositionCalibrator:
         # apply calibration to finalize the rough positions
         params = np.vstack(self.df_nw['bar'].map(self.rough_calib_params))
         self.df_nw['rough_pos'] = params[:, 0] + params[:, 1] * self.df_nw['time_diff']
+        return True
 
-    def calibrate(self, verbose=False, save_params=True):
-        self._rough_calibrate()
+    def calibrate(self, verbose=None, save_params=True):
+        if verbose is None:
+            verbose = self.verbose
+
+        success = self._rough_calibrate()
+        if not success:
+            return False
 
         # cast the VW shadows, i.e. find the intersecting entries between NW and VW
         vw_bar_entries = self.df_vw.groupby('bar').groups
@@ -165,6 +202,7 @@ class NWBPositionCalibrator:
         self.calib_params = dict()
         self._rough_to_pos_calib_params = dict()
         self.gaus_params = dict()
+        self.outlier_vw_bars = dict()
         for nw_i, nw_bar in enumerate(self.nw_bars):
             if verbose:
                 msg = f'\rCalibrating NW{self.AB}-bar{nw_bar:02d} ({nw_i+1}/{len(self.nw_bars)})'
@@ -204,7 +242,7 @@ class NWBPositionCalibrator:
                         f'''
                         Fail to fit VW-bar{vw_bar:02d} shadow on NW{self.AB}-bar{nw_bar:02d}.
                         Using simple statistical mode of the shadow as calibration point.
-                        '''),
+                        ''')
                     print()
                     warnings.warn(msg, Warning, stacklevel=2)
                     gaus_fit_ok = False
@@ -229,17 +267,34 @@ class NWBPositionCalibrator:
                     self.gaus_params[(nw_bar, vw_bar)] = [5.0 * kde_func([est_peak_x])[0], est_peak_x, 0.2]
                 calib_x[vw_bar] = self.gaus_params[(nw_bar, vw_bar)][1]
 
-            # done collecting all calibration points for this NW bar, compute calibration parameters
+            # done collecting all calibration points for this NW bar
             common_vw_bars = sorted(set(calib_x).intersection(set(self.vw_shadow)))
-            x = np.array([calib_x[vw_bar] for vw_bar in common_vw_bars])
-            y = np.array([self.vw_shadow[vw_bar] for vw_bar in common_vw_bars])
-            res = stats.linregress(x, y)
-            self._rough_to_pos_calib_params[nw_bar] = [res.intercept, res.slope]
+            x = {vw_bar: calib_x[vw_bar] for vw_bar in common_vw_bars} # rough_pos from Gaussian fits
+            y = {vw_bar: self.vw_shadow[vw_bar] for vw_bar in common_vw_bars} # expected pos from simulation
+
+            # first simple filter to remove calibration points that have very different rough_pos (> 5.0 cm)
+            bad_vw_bars1 = [vw_bar for vw_bar in common_vw_bars if abs(x[vw_bar] - y[vw_bar]) > 5.0]
+            x = {vw_bar: x[vw_bar] for vw_bar in x if vw_bar not in bad_vw_bars1}
+            y = {vw_bar: y[vw_bar] for vw_bar in x if vw_bar not in bad_vw_bars1}
+            res1 = stats.linregress(list(x.values()), list(y.values()))
+
+            # second fit after removing the two biggest outliers
+            n_outliers = 2
+            abs_residuals = {vw_bar: abs(_x - _y) for (vw_bar, _x), _y in zip(x.items(), y.values())}
+            bad_vw_bars2 = heapq.nlargest(n_outliers, abs_residuals, key=abs_residuals.__getitem__)
+            x = {vw_bar: x[vw_bar] for vw_bar in x if vw_bar not in bad_vw_bars2}
+            y = {vw_bar: y[vw_bar] for vw_bar in x if vw_bar not in bad_vw_bars2}
+            res2 = stats.linregress(list(x.values()), list(y.values()))
+
+            # save all parameters to memory
+            self.outlier_vw_bars[nw_bar] = sorted(np.union1d(bad_vw_bars1, bad_vw_bars2))
+            self._rough_to_pos_calib_params[nw_bar] = [res2.intercept, res2.slope]
             self.calib_params[nw_bar] = np.array([
-                self.rough_calib_params[nw_bar][0] * res.slope + res.intercept,
-                self.rough_calib_params[nw_bar][1] * res.slope,
+                self.rough_calib_params[nw_bar][0] * res2.slope + res2.intercept,
+                self.rough_calib_params[nw_bar][1] * res2.slope,
             ])
-        print()
+        if verbose:
+            print()
 
         # apply final position calibration
         params = np.vstack(self.df_nw['bar'].map(self.calib_params))
@@ -249,7 +304,12 @@ class NWBPositionCalibrator:
         if save_params:
             self.save_parameters()
 
-    def save_parameters(self):
+        return True
+
+    def save_parameters(self, verbose=None):
+        if verbose is None:
+            verbose = self.verbose
+
         # turn calibration parameters into pandas dataframe
         df = pd.DataFrame(self.calib_params).transpose()
         df.columns = ['p0', 'p1']
@@ -258,11 +318,16 @@ class NWBPositionCalibrator:
         # write to file
         path = pathlib.Path(CALIB_PARAMS_DIR, f'run-{self.run:04d}-nw{self.ab}.dat')
         tables.to_fwf(df, path, drop_index=False)
+        if verbose:
+            print(f'Done saving calibration parameters to "{str(path)}"...', flush=True)
 
-    def save_to_gallery(self, show_plot=False):
+    def save_to_gallery(self, verbose=None, show_plot=False):
+        if verbose is None:
+            verbose = self.verbose
+
+        # customize plot style
         self.cmap = copy.copy(plt.cm.viridis_r)
         self.cmap.set_under('white')
-
         mpl_custom = {
             'font.family': 'serif',
             'mathtext.fontset': 'cm',
@@ -278,34 +343,75 @@ class NWBPositionCalibrator:
         for key, val in mpl_custom.items():
             mpl.rcParams[key] = val
 
+        # start plotting
         fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(16, 9), constrained_layout=True)
 
         rc = (0, 0)
+        if verbose:
+            print('Plotting 2D hit pattern (Full)...', flush=True)
         self._draw_hit_pattern2d(ax[rc], self.df_nw)
 
         rc = (0, 1)
+        if verbose:
+            print('Plotting 2D hit pattern (Even VW bars)...', flush=True)
         nw_entries = self.df_nw.index.get_level_values(0)
         vw_entries = self.df_vw.query('bar % 2 == 0').index.get_level_values(0)
         df = self.df_nw.loc[np.intersect1d(vw_entries, nw_entries)]
-        gaus_params = {
+        gaus_params_even = {
             (nw_bar, vw_bar): gparam
             for (nw_bar, vw_bar), gparam in self.gaus_params.items()
             if vw_bar % 2 == 0
         }
-        self._draw_hit_pattern2d(ax[rc], df, gaus_params)
+        self._draw_hit_pattern2d(ax[rc], df, gaus_params_even)
 
         rc = (0, 2)
+        if verbose:
+            print('Plotting 2D hit pattern (Odd VW bars)...', flush=True)
         vw_entries = self.df_vw.query('bar % 2 == 1').index.get_level_values(0)
         df = self.df_nw.loc[np.intersect1d(vw_entries, nw_entries)]
-        gaus_params = {
+        gaus_params_odd = {
             (nw_bar, vw_bar): gparam
             for (nw_bar, vw_bar), gparam in self.gaus_params.items()
             if vw_bar % 2 == 1
         }
-        self._draw_hit_pattern2d(ax[rc], df, gaus_params)
+        self._draw_hit_pattern2d(ax[rc], df, gaus_params_odd)
 
+        rc = (1, 0)
+        if verbose:
+            print('Plotting position (linear) fit residuals...', flush=True)
+        self._draw_residuals(ax[rc])
+
+        rc = (1, 1)
+        if verbose:
+            print('Plotting Gaussian fits (Even bars)...', flush=True)
+        self._draw_gaus_fits(ax[rc], gaus_params_even)
+
+        rc = (1, 2)
+        if verbose:
+            print('Plotting Gaussian fits (Odd bars)...', flush=True)
+        self._draw_gaus_fits(ax[rc], gaus_params_odd)
+
+        # set common attributes across subplots
+        for axe in ax.flatten():
+            axe.set_xlim(-150, 150)
+            axe.set_ylim(-0.5, 25.5)
+            axe.set_ylabel(f'NW{self.AB} bar')
+            axe.set_xlabel(f'run-{self.run:04d}: NW{self.AB} calibrated position (cm)')
+        ax[1, 0].set_xlabel(f'run-{self.run:04d}: Expected positions of VW shadows on NW{self.AB} (cm)')
+        fig.align_labels()
+
+        # update canvas
         plt.draw()
-        fig.savefig(pathlib.Path(GALLERY_DIR, f'run-{self.run:04d}.png'), dpi=500, bbox_inches='tight')
+        if verbose:
+            print('Done plotting.', flush=True)
+
+        # save figure as image file
+        path = pathlib.Path(GALLERY_DIR, f'run-{self.run:04d}.png')
+        fig.savefig(path, dpi=500, bbox_inches='tight')
+        if verbose:
+            print(f'Saved figure to "{str(path)}".', flush=True)
+
+        # show or close plot
         if show_plot:
             plt.show()
         else:
@@ -317,8 +423,6 @@ class NWBPositionCalibrator:
             range=[[-150, 150], [-0.5, 25.5]], bins=[150, 26],
             cmap=self.cmap, vmin=1,
         )
-        ax.set_xlim(-150, 150)
-        ax.set_ylim(-0.5, 25.5)
         ax.grid(axis='y', color='darkgray', linestyle='dashed')
 
         if gaus_params is not None:
@@ -351,3 +455,152 @@ class NWBPositionCalibrator:
                 data['pos'], data['nw_bar'] - 0.25, data['nw_bar'] + 0.25,
                 color='darkred', linewidth=0.5, zorder=101,
             )
+
+    def _draw_residuals(self, ax):
+        colors = {
+            'bright': {0: 'darkorange', 1: 'limegreen'},
+            'dark': {0: 'darkgoldenrod', 1: 'darkgreen'},
+        }
+        outlier_color = 'dimgray'
+        connect_lcolor = 'navy'
+        nw_grid_color = 'dimgray'
+        vw_grid_color = 'gray'
+        residual_scalar = 0.1
+
+        for nw_bar in self.nw_bars:
+            ctheme = 'bright' if nw_bar % 2 else 'dark'
+            outliers = self.outlier_vw_bars[nw_bar]
+
+            data = []
+            for vw_bar in self.vw_bars:
+                gparam = self.gaus_params[(nw_bar, vw_bar)] # in rough pos
+                intercept, slope = self._rough_to_pos_calib_params[nw_bar]
+                vw_pos = self.vw_shadow[vw_bar]
+                residual = vw_pos - (intercept + slope * gparam[1])
+                scaled_residual = residual_scalar * residual
+                data.append([vw_bar, vw_pos, scaled_residual])
+
+                # annotate the residual of each point
+                annotation = f'{residual:.1f}' if residual < 10.0 else f'{residual:.0f}'
+                ax.annotate(
+                    annotation, (vw_pos, scaled_residual + nw_bar - 0.4),
+                    fontsize=3, ha='center', va='center',
+                    color=outlier_color if vw_bar in outliers else colors[ctheme][vw_bar % 2],
+                    zorder=100,
+                )
+            data = pd.DataFrame(data, columns=['vw_bar', 'vw_pos', 'scaled_residual'])
+
+            # draw a simple line joining all the good and outliers points to guide eyes
+            ax.plot(
+                data['vw_pos'], data['scaled_residual'] + nw_bar,
+                linewidth=0.4, color=connect_lcolor,
+                zorder=50,
+            )
+
+            # draw the scatter points with alternating theme of colors
+            for r in range(2):
+                color = colors[ctheme][r]
+
+                # draw the good points (not outliers)
+                subdata = data.query('vw_bar % 2 == @r & vw_bar not in @outliers')
+                ax.scatter(
+                    subdata['vw_pos'], subdata['scaled_residual'] + nw_bar,
+                    s=4, marker='o', linewidth=0.0, color=color,
+                    zorder=100,
+                )
+
+                # draw the outlier points
+                subdata = data.query('vw_bar % 2 == @r & vw_bar in @outliers')
+                ax.scatter(
+                    subdata['vw_pos'], subdata['scaled_residual'] + nw_bar,
+                    s=3, marker='X', linewidth=0.1, edgecolor=color, color=outlier_color,
+                    zorder=100,
+                )
+        
+        # grid lines
+        for nw_bar in self.nw_bars:
+            ax.axhline(nw_bar, linewidth=0.3, linestyle='dashed', color=nw_grid_color)
+        for vw_bar in self.vw_bars:
+            ax.axvline(self.vw_shadow[vw_bar], linewidth=0.3, linestyle='dashed', color=vw_grid_color)
+        
+        # vw ticks on even bars
+        axt = ax.twiny()
+        axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in self.vw_bars if vw_bar % 5 == 0])
+        axt.set_xticklabels([vw_bar for vw_bar in self.vw_bars if vw_bar % 5 == 0])
+        axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in self.vw_bars], minor=True)
+        axt.tick_params(axis='x', which='both', colors=vw_grid_color)
+        axt.spines['top'].set_color(vw_grid_color)
+        axt.set_xlim(-150, 150)
+    
+    def _draw_gaus_fits(self, ax, gaus_params):
+        colors = {
+            'bright': {
+                'hist': {0: 'orangered', 1: 'skyblue'},
+                'gaus': {0: 'hotpink', 1: 'cyan'},
+            },
+            'dark': {
+                'hist': {0: 'darkred', 1: 'darkblue'},
+                'gaus': {0: 'lightcoral', 1: 'dodgerblue'},
+            },
+        }
+        outlier_color = 'dimgray'
+        nw_grid_color = 'dimgray'
+        vw_grid_color = 'gray'
+
+        nw_entries = sorted(set(self.df_nw.index.get_level_values(0)))
+        vw_bars = sorted(set(np.vstack(list(gaus_params.keys()))[:, 1]))
+        for nw_bar in sorted(self.nw_bars, reverse=True):
+            df_nw = self.df_nw.query('bar == @nw_bar')
+            ctheme = 'bright' if nw_bar % 2 else 'dark'
+            outliers = self.outlier_vw_bars[nw_bar]
+
+            for vw_i, vw_bar in enumerate(vw_bars):
+                # filter entries
+                vw_entries = self.df_vw.query('bar == @vw_bar').index.get_level_values(0)
+                entries = np.intersect1d(vw_entries, nw_entries)
+                df = df_nw.loc[entries][['rough_pos', 'pos']]
+
+                # retrieve Gaussian fit parameters
+                gparam = gaus_params[(nw_bar, vw_bar)]
+                intercept, slope = self._rough_to_pos_calib_params[nw_bar]
+                gparam[1] = intercept + slope * gparam[1]
+                gparam[2] = slope * gparam[2]
+                fit_range = [gparam[1] - 10, gparam[1] + 10]
+                df = df.query('pos > @fit_range[0] & pos < @fit_range[1]')
+
+                # plot the distribution around VW shadow as histogram
+                hrange = [int(np.floor(fit_range[0])), int(np.ceil(fit_range[1]))]
+                y, x = np.histogram(df['pos'], range=hrange, bins=hrange[1] - hrange[0])
+                y = np.repeat(y, 2)
+                x = np.hstack([x[0], np.repeat(x[1:-1], 2), x[-1]])
+                ax.plot(
+                    x, y / y.max() + nw_bar - 0.5,
+                    color=outlier_color if vw_bar in outliers else colors[ctheme]['hist'][vw_i % 2],
+                    linewidth=0.3 if vw_bar in outliers else 0.4,
+                    zorder=100,
+                )
+
+                # plot the Gaussian fit
+                x = np.linspace(*fit_range, 100)
+                ax.plot(
+                    x, self.gaus(x, *gparam) / gparam[0] + nw_bar - 0.5,
+                    color=colors[ctheme]['gaus'][vw_i % 2],
+                    linestyle='dashed' if vw_bar in outliers else 'solid',
+                    linewidth=0.3 if vw_bar in outliers else 0.4,
+                    zorder=100,
+                )
+
+        # grid lines
+        for nw_bar in self.nw_bars:
+            ax.axhline(nw_bar - 0.5, linewidth=0.3, linestyle='dashed', color=nw_grid_color)
+        for vw_bar in vw_bars:
+            ax.axvline(self.vw_shadow[vw_bar], linewidth=0.3, linestyle='dashed', color=vw_grid_color)
+        
+        # vw ticks
+        axt = ax.twiny()
+        axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in vw_bars])
+        axt.set_xticklabels(vw_bars)
+        axt.set_xticks([], minor=True)
+        axt.tick_params(axis='x', which='both', colors=vw_grid_color)
+        axt.spines['top'].set_color(vw_grid_color)
+        axt.set_xlim(-150, 150)
