@@ -1,0 +1,3 @@
+# to get this "logs/" directory get committed to git but remains (mostly) empty (except this .gitignore)
+*
+!.gitignore
