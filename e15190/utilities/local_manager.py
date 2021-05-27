@@ -19,11 +19,15 @@ from .. import PROJECT_DIR
 class LocalPathsManager:
     def __init__(self, check=True):
         self.LOCAL_PATHS_JSON_PATH = pathlib.Path(PROJECT_DIR, 'database', 'local_paths.json')
-        with open(self.LOCAL_PATHS_JSON_PATH, 'r') as file:
-            self.content = json.load(file)
         self.required_keys = {
             'daniele_root_files_dir': str,
         }
+
+        if not self.LOCAL_PATHS_JSON_PATH.is_file():
+            self.create_template()
+
+        with open(self.LOCAL_PATHS_JSON_PATH, 'r') as file:
+            self.content = json.load(file)
 
         if check:
             self.check()
@@ -38,6 +42,12 @@ class LocalPathsManager:
                 print(f'Value type for "{key}" is incorrect. It should be {str(typ)}.')
                 correct = False
         return correct
+
+    def create_template(self):
+        with open(self.LOCAL_PATHS_JSON_PATH, 'w') as file:
+            template = {key: None for key in self.required_keys.keys()}
+            print(template)
+            json.dump(template, file, indent=4)
 
 _local_paths_manager = LocalPathsManager()
 
