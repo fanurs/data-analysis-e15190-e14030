@@ -4,6 +4,7 @@ channels:
    - conda-forge
 dependencies:
    - python=3.8
+   - conda-build
 
    # common scientific tools
    - numpy>=1.19.0
