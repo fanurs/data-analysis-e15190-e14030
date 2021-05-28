@@ -1,10 +1,6 @@
 import concurrent.futures
 import pathlib
-import sys
 
-from pandas._libs import missing
-
-sys.path.append('../')
 from e15190.neutron_wall import position_calibration as pc
 from e15190.utilities import timer
 
