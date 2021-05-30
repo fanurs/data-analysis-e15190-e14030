@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+import argparse
+import glob
+import inspect
+import itertools as itr
+import os
+import pathlib
+import re
+import warnings
+
+import numpy as np
+from tabulate import tabulate
+
+PRINT_NUM_ONLY = True
+
+def main():
+    names = itr.chain(glob.iglob('*'), glob.glob('.*'))
+    names = attach_trailing_slashes(names)
+    tags = assign_enumerable_tags(names)
+
+    top_tag = list(tags.values())[0]
+    enumerated_names = extract_numbers(top_tag)
+
+    chunks = group_into_chunks(enumerated_names)
+    print_to_terminal(chunks)
+
+def attach_trailing_slashes(names, suppress_warning=False):
+    """Attach trailing slashes for directories. File names remain untouched."""
+    standardized_names = []
+    for name in names:
+        path = pathlib.Path(name)
+        if path.is_file():
+            standardized_names.append(name)
+        elif path.is_dir():
+            standardized_names.append(name + '/')
+        elif not suppress_warning:
+            msg = f'"{name}" will be ignored as it is neither a file nor a directory.'
+            warnings.warn(msg, Warning, stacklevel=2)
+    return standardized_names
+
+def assign_enumerable_tags(names, sort_most_common=True):
+    regex = re.compile(r'\d+')
+
+    tags = dict()
+    for name in names:
+        split = regex.split(name)
+        if len(split) == 2: # i.e. file names contain exactly one chunk of digits
+            tag = split[0] + '*' + split[1]
+        else:
+            tag = name
+        tags.setdefault(tag, []).append(name)
+
+    if sort_most_common:
+        tags = dict(sorted(tags.items(), key=lambda x: len(x[1]), reverse=True))
+
+    return tags
+
+def extract_numbers(names, sort=True):
+    regex = re.compile(r'\d+')
+    enumerated_names = dict()
+    for name in names:
+        number = int(regex.search(name).group())
+        if number not in enumerated_names:
+            enumerated_names[number] = name
+        else:
+            msg = inspect.cleandoc(
+                f'''
+                Duplicate numbers found for "{name}" and {enumerated_names[number]}.
+                Cannot proceed to enumerate.
+                '''
+            )
+            raise Exception(msg)
+    if sort:
+        num_dict = dict(sorted(enumerated_names.items(), key=lambda x: x[0]))
+    return num_dict
+
+def group_into_chunks(enumerated_names):
+    if PRINT_NUM_ONLY:
+        getter = lambda x: x
+    else:
+        getter = lambda x: enumerated_names[x]
+
+    chunks = []
+    for key, group in itr.groupby(enumerate(enumerated_names), lambda x: x[1] - x[0]):
+        chunk = [ele[1] for ele in group]
+        if len(chunk) > 1:
+            first_name = getter(chunk[0])
+            last_name = getter(chunk[-1])
+            chunks.append((first_name, last_name, len(chunk)))
+        else:
+            name = getter(chunk[0])
+            chunks.append((name, 1))
+    return chunks
+
+def print_to_terminal(chunks):
+    width = os.get_terminal_size().columns
+
+    strings = []
+    for chunk in chunks:
+        if len(chunk) == 3:
+            string = f'{chunk[0]} -- {chunk[1]} [{chunk[2]}]'
+        elif len(chunk) == 2:
+            string = f'{chunk[0]} [1]'
+        string = '|  ' + string
+        strings.append(string)
+    
+    n_strings = len(strings)
+    lengths = [len(string) for string in strings]
+    n_cols = max(1, width // (max(lengths)) - 1)
+    n_rows = n_strings // n_cols + (n_strings % n_cols > 0)
+
+    strings += ['' for _ in range(n_cols * n_rows - n_strings)]
+    strings = np.array(strings).reshape(n_cols, n_rows).transpose()
+    output = tabulate(strings, tablefmt='plain')
+
+    print(output)
+
+if __name__ == '__main__':
+    main()
