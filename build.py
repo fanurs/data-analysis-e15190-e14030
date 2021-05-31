@@ -13,7 +13,7 @@ def main():
     check_conda_activated()
 
     # create a conda environment locally
-    subprocess.run(f'conda env create --prefix ./{ENVIRONMENT_NAME} -f simple_env.yml', shell=True)
+    subprocess.run(f'conda env create --prefix ./{ENVIRONMENT_NAME} -f environment.yml', shell=True)
 
     # add packages in this project/repository to (editable) site-packages of this conda environment
     site_pkgs_path = glob.glob(f'./{ENVIRONMENT_NAME}/lib/python*/site-packages')[0]
