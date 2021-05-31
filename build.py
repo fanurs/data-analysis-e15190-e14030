@@ -3,6 +3,7 @@ if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 7):
     raise Exception('Requires at least Python 3.7 to use this repository.')
 
 import glob
+import os
 import pathlib
 import subprocess
 
@@ -14,10 +15,25 @@ def main():
     # create a conda environment locally
     subprocess.run(f'conda env create --prefix ./{ENVIRONMENT_NAME} -f simple_env.yml', shell=True)
 
-    # add packages in this repository to (editable) site-packages of this conda environment
+    # add packages in this project/repository to (editable) site-packages of this conda environment
     site_pkgs_path = glob.glob(f'./{ENVIRONMENT_NAME}/lib/python*/site-packages')[0]
     path = pathlib.Path(site_pkgs_path, 'conda.pth').resolve()
-    subprocess.run(f'echo `pwd` > {str(path)}', shell=True)
+    project_dir = pathlib.Path(__file__).parent.resolve()
+    with open(path, 'w') as file:
+        file.write(str(project_dir) + '\n')
+
+    # add custom terminal commands from scripts/ to $ENV/bin
+    script_paths = []
+    for path in glob.iglob('./scripts/*'):
+        path = pathlib.Path(path)
+        if path.is_file() and os.access(path, os.X_OK):
+            script_paths.append(path.resolve())
+    for script_path in script_paths:
+        symbol_path = pathlib.Path(ENVIRONMENT_NAME, 'bin', script_path.name)
+        try:
+            symbol_path.symlink_to(script_path)
+        except FileExistsError:
+            print(f'FileExistsError: "{script_path.name}" already exists under "{ENVIRONMENT_NAME}/bin/"')
 
     print('Done!')
 
