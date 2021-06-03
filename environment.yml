@@ -28,3 +28,4 @@ dependencies:
 
    # miscellaneous
    - cryptography=3.4.7
+   - autopep8
