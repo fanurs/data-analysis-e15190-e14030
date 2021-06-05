@@ -1,5 +1,5 @@
 # x: pt/A (MeV/c)
-# y: DR(CI-n/CI-p), using pseudo-n from Y(d)/Y(p^2)
+# y: DR(CI-n/CI-p), using pseudo-n from Y(d)/(Y(p))^2
 # Provided by Rensheng Wang on 20210602
 x    y      yerr    yferr
 150	1.243	0.027	2.1
