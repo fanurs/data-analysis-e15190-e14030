@@ -1,0 +1,9 @@
+#!/bin/bash
+filename=$1
+dependencies=${@:2}
+
+filenameNoExt=${filename%\.*}
+filenameExe=${filenameNoExt}.exe
+
+g++ -std=c++2a -fconcepts -fPIC -O3 -o $filenameExe $filename $dependencies `root-config --cflags --libs`
+

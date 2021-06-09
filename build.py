@@ -26,7 +26,7 @@ def main():
     script_paths = []
     for path in glob.iglob('./scripts/*'):
         path = pathlib.Path(path)
-        if path.is_file() and os.access(path, os.X_OK):
+        if path.is_file() and os.access(path, os.X_OK) and path.stem == path.name:
             script_paths.append(path.resolve())
     for script_path in script_paths:
         symbol_path = pathlib.Path(ENVIRONMENT_NAME, 'bin', script_path.name)
