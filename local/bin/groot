@@ -14,6 +14,16 @@ parser.add_argument(
     default='',
 )
 parser.add_argument(
+    '-c', '--no-linker',
+    help='do not run linker, i.e. output object file',
+    action='store_true',
+)
+parser.add_argument(
+    '-s', '--standalone',
+    help='do not include any local object files and compile only this one current script',
+    action='store_true',
+)
+parser.add_argument(
     '-v', '--verbose',
     help='show g++ compilation command',
     action='store_true',
@@ -64,7 +74,12 @@ options = ' '.join(options)
 o_files = str(pathlib.Path(src_dir, '*.o'))
 
 # compile
-cmd = f'g++ {options} -o {str(exec_path)} {str(main_path)} {o_files}'
+if args.no_linker:
+    cmd = f'g++ {options} -c {str(main_path)}'
+elif args.standalone:
+    cmd = f'g++ {options} -o {str(exec_path)} {str(main_path)}'
+else:
+    cmd = f'g++ {options} -o {str(exec_path)} {str(main_path)} {o_files}'
 compilation = subprocess.run(cmd)
 if args.verbose:
     print(compilation.args)
