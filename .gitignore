@@ -10,6 +10,9 @@ wmu_mysql_database.h5
 *.pkl
 *.h5
 
+# object files, binaries, etc.
+*.o
+
 # local files
 env_e15190/
 dev*.py
