@@ -24,16 +24,15 @@ def main():
 
     # add custom terminal commands from scripts/ to $ENV/bin
     script_paths = []
-    for path in glob.iglob('./scripts/*'):
+    for path in glob.iglob('./local/bin/*'):
         path = pathlib.Path(path)
         if path.is_file() and os.access(path, os.X_OK) and path.stem == path.name:
             script_paths.append(path.resolve())
     for script_path in script_paths:
         symbol_path = pathlib.Path(ENVIRONMENT_NAME, 'bin', script_path.name)
-        try:
-            symbol_path.symlink_to(script_path)
-        except FileExistsError:
-            print(f'FileExistsError: "{script_path.name}" already exists under "{ENVIRONMENT_NAME}/bin/"')
+        if symbol_path.is_symlink():
+            symbol_path.unlink()
+        symbol_path.symlink_to(script_path)
 
     print('Done!')
 
