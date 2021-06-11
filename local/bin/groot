@@ -5,85 +5,135 @@ import pathlib
 import subprocess
 import sys
 
-# arguments parsing
-parser = argparse.ArgumentParser()
-parser.add_argument('main_script')
-parser.add_argument(
-    '-o', '--output',
-    help='specify the path to output executable',
-    default='',
-)
-parser.add_argument(
-    '-c', '--no-linker',
-    help='do not run linker, i.e. output object file',
-    action='store_true',
-)
-parser.add_argument(
-    '-s', '--standalone',
-    help='do not include any local object files and compile only this one current script',
-    action='store_true',
-)
-parser.add_argument(
-    '-v', '--verbose',
-    help='show g++ compilation command',
-    action='store_true',
-)
-args = parser.parse_args()
+def main():
+    args = parse_arguments()
 
-# identify paths and filenames
-main_path = pathlib.Path(args.main_script)
-if args.output == '':
-    exec_path = pathlib.Path(pathlib.Path.cwd(), main_path.stem + '.exe') # output at current directory
-else:
-    exec_path = pathlib.Path(args.output).resolve()
-repo_path = pathlib.Path(sys.prefix).parent.resolve()
-header_dir = pathlib.Path(repo_path, 'local', 'include').resolve()
-src_dir = pathlib.Path(repo_path, 'local', 'src').resolve()
+    # identify directories
+    repo_dir = pathlib.Path(sys.prefix).parent.resolve()
+    header_dir = pathlib.Path(repo_dir, 'local', 'include').resolve()
+    src_dir = pathlib.Path(repo_dir, 'local', 'src').resolve()
 
-# prepare compiler's options
-subprocess.run = functools.partial(subprocess.run, shell=True, capture_output=True, text=True)
-options = []
+    # prepare compiler's options
+    subprocess.run = functools.partial(subprocess.run, shell=True, capture_output=True, text=True)
+    options = get_options(header_dir)
 
-# CERN ROOT's includes and libraries
-root_cflags = subprocess.run('root-config --cflags')
-if root_cflags.stderr:
-    sys.stderr.write(root_cflags.stderr)
-    exit()
+    # prepare local object files
+    o_files = str(pathlib.Path(src_dir, '*.o'))
 
-root_libs = subprocess.run('root-config --libs')
-if root_libs.stderr:
-    sys.stderr.write(root_libs.stderr)
-    exit()
+    # prepare source files and executable file
+    multiple_src_files = (len(args.main_script) > 1)
+    if multiple_src_files:
+        src_files = ' '.join(args.main_script)
+        src_paths = [pathlib.Path(ele) for ele in args.main_script]
+        exec_path = pathlib.Path(pathlib.Path.cwd(), src_paths[0].stem + '.exe')
+    else:
+        src_file = args.main_script[0]
+        src_path = pathlib.Path(src_file)
+        exec_path = pathlib.Path(pathlib.Path.cwd(), src_path.stem + '.exe')
+    if args.output == '':
+        exec_file = str(exec_path)
+    else:
+        exec_file = str(args.output)
 
-options += root_cflags.stdout.split()
-options = [ele for ele in options if not ele.startswith('-std=c++')] # we specify -std=c++ version later
-options += root_libs.stdout.split()
+    # compile
+    run = lambda cmd, verbose=args.verbose, debug=args.debug: run_command(cmd, verbose, debug)
+    if args.no_linker:
+        cmd_fmt = 'g++ {opt} -c {src}'
+        if not multiple_src_files:
+            run(cmd_fmt.format(opt=options, src=src_file))
+        else:
+            [run(cmd_fmt.format(opt=options, src=src_file)) for src_file in args.main_script]
+    elif args.standalone:
+        cmd_fmt = 'g++ {opt} -o {exec} {src}'
+        if not multiple_src_files:
+            run(cmd_fmt.format(opt=options, exec=exec_file, src=src_file))
+        else:
+            run(cmd_fmt.format(opt=options, exec=exec_file, src=src_files))
+    else:
+        cmd_fmt = 'g++ {opt} -o {exec} {src} {obj}'
+        if not multiple_src_files:
+            run(cmd_fmt.format(opt=options, exec=exec_file, src=src_file, obj=o_files))
+        else:
+            run(cmd_fmt.format(opt=options, exec=exec_file, src=src_files, obj=o_files))
 
-# directory of local includes
-options += ['-I' + str(header_dir)]
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'main_script',
+        nargs='+',
+    )
+    parser.add_argument(
+        '-o', '--output',
+        help='''
+        specify the path of output executable,
+        otherwise default to use the first source file's name,
+        with extension replaced by ".exe"''',
+        default='',
+    )
+    parser.add_argument(
+        '-c', '--no-linker',
+        help='do not run linker, i.e. compile and output object file(s) only',
+        action='store_true',
+    )
+    parser.add_argument(
+        '-s', '--standalone',
+        help='do not include any local object files',
+        action='store_true',
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        help='show g++ compilation command',
+        action='store_true',
+    )
+    parser.add_argument(
+        '-d', '--debug',
+        help='print commands to terminal only, do not actually invoke g++',
+        action='store_true',
+    )
+    return parser.parse_args()
 
-# custom options
-options += [
-    '-std=c++2a', # to use C++20 under GCC 9
-    '-fPIC', # position independent code
-    '-O2', # optimization level
-]
-options = ' '.join(options)
+def get_options(header_dir):
+    options = []
 
-# include local object files
-o_files = str(pathlib.Path(src_dir, '*.o'))
+    # CERN ROOT's includes and libraries
+    root_cflags = subprocess.run('root-config --cflags')
+    if root_cflags.stderr:
+        sys.stderr.write(root_cflags.stderr)
+        exit()
 
-# compile
-if args.no_linker:
-    cmd = f'g++ {options} -c {str(main_path)}'
-elif args.standalone:
-    cmd = f'g++ {options} -o {str(exec_path)} {str(main_path)}'
-else:
-    cmd = f'g++ {options} -o {str(exec_path)} {str(main_path)} {o_files}'
-compilation = subprocess.run(cmd)
-if args.verbose:
-    print(compilation.args)
-if compilation.stderr:
-    sys.stderr.write(compilation.stderr)
-if compilation.stdout:
-    sys.stdout.write(compilation.stdout)
+    root_libs = subprocess.run('root-config --libs')
+    if root_libs.stderr:
+        sys.stderr.write(root_libs.stderr)
+        exit()
+
+    options += root_cflags.stdout.split()
+    options = [ele for ele in options if not ele.startswith('-std=c++')] # we specify -std=c++ version later
+    options += root_libs.stdout.split()
+
+    # directory of local includes
+    options += ['-I' + str(header_dir)]
+
+    # custom options
+    options += [
+        '-std=c++2a', # to use C++20 under GCC 9
+        '-fconcepts', # allow features like auto in function arguments, etc.
+        '-fPIC', # position independent code
+        '-O2', # optimization level
+    ]
+    return ' '.join(options)
+
+def run_command(command, verbose, debug):
+    if debug:
+        print(command)
+        return
+
+    compilation = subprocess.run(command)
+    if verbose:
+        print(compilation.args)
+    if compilation.stderr:
+        sys.stderr.write(compilation.stderr)
+    if compilation.stdout:
+        sys.stdout.write(compilation.stdout)
+
+if __name__ == '__main__':
+    main()
