@@ -17,6 +17,13 @@ struct Branch {
 };
 
 class RootReader {
+protected:
+    static const int MAX_MULTI = 1024;
+    std::vector<int> addr_int;
+    std::vector<double> addr_double;
+    std::vector< std::array<int, MAX_MULTI> > addr_aint;
+    std::vector< std::array<double, MAX_MULTI> > addr_adouble;
+
 public:
     std::filesystem::path path;
     TChain* tree;

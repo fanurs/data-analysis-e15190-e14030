@@ -9,12 +9,6 @@
 
 #include "../include/RootIO.h"
 
-const int MAX_MULTI = 1024;
-std::vector<int> addr_int;
-std::vector<double> addr_double;
-std::vector< std::array<int, MAX_MULTI> > addr_aint;
-std::vector< std::array<double, MAX_MULTI> > addr_adouble;
-
 RootReader::RootReader() { }
 
 RootReader::RootReader(const std::string& tr_name, const std::string& path) {
@@ -36,27 +30,27 @@ void RootReader::set_branches(std::map<std::string, Branch>& branches) {
     auto resize = [branches](auto&&... args) {
         (args.resize(branches.size()), ...);
     };
-    resize(addr_int, addr_double, addr_aint, addr_adouble);
+    resize(this->addr_int, this->addr_double, this->addr_aint, this->addr_adouble);
 
     int index = 0;
     for (auto& [name, branch]: branches) {
         branch.index = index;
 
         if (branch.type == "int") {
-            this->tree->SetBranchAddress(branch.fullname.c_str(), &addr_int[branch.index]);
-            branch.value = &addr_int[branch.index];
+            this->tree->SetBranchAddress(branch.fullname.c_str(), &this->addr_int[branch.index]);
+            branch.value = &this->addr_int[branch.index];
         }
         else if (branch.type == "double") {
-            this->tree->SetBranchAddress(branch.fullname.c_str(), &addr_double[branch.index]);
-            branch.value = &addr_double[branch.index];
+            this->tree->SetBranchAddress(branch.fullname.c_str(), &this->addr_double[branch.index]);
+            branch.value = &this->addr_double[branch.index];
         }
         else if (branch.type == "aint") {
-            this->tree->SetBranchAddress(branch.fullname.c_str(), &addr_aint[branch.index][0]);
-            branch.value = &addr_aint[branch.index][0];
+            this->tree->SetBranchAddress(branch.fullname.c_str(), &this->addr_aint[branch.index][0]);
+            branch.value = &this->addr_aint[branch.index][0];
         }
         else if (branch.type == "adouble") {
-            this->tree->SetBranchAddress(branch.fullname.c_str(), &addr_adouble[branch.index][0]);
-            branch.value = &addr_adouble[branch.index][0];
+            this->tree->SetBranchAddress(branch.fullname.c_str(), &this->addr_adouble[branch.index][0]);
+            branch.value = &this->addr_adouble[branch.index][0];
         }
 
         ++index;
