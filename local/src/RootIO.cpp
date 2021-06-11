@@ -38,9 +38,6 @@ void RootReader::set_branches(std::map<std::string, Branch>& branches) {
     };
     resize(addr_int, addr_double, addr_aint, addr_adouble);
 
-    // to allow access of primitive data without the original class definition
-    this->tree->SetMakeClass(1);
-
     int index = 0;
     for (auto& [name, branch]: branches) {
         branch.index = index;
