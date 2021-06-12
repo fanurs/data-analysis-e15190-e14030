@@ -26,14 +26,14 @@ void RootReader::read_in(const std::string& tr_name, const std::string& path) {
 }
 
 void RootReader::set_branches(std::map<std::string, Branch>& branches) {
-    this->branches = &branches;
-    auto resize = [branches](auto&&... args) {
-        (args.resize(branches.size()), ...);
+    this->branches = branches;
+    auto resize = [this](auto&&... args) {
+        (args.resize(this->branches.size()), ...);
     };
     resize(this->addr_int, this->addr_double, this->addr_aint, this->addr_adouble);
 
     int index = 0;
-    for (auto& [name, branch]: branches) {
+    for (auto& [name, branch]: this->branches) {
         branch.index = index;
 
         if (branch.type == "int") {
@@ -63,18 +63,18 @@ std::map<std::string, std::any> RootReader::get_entry(int i_entry) {
     this->tree->GetEntry(i_entry);
 
     std::map<std::string, std::any> buffer;
-    for (auto& [name, branch]: *this->branches) {
+    for (auto& [name, branch]: this->branches) {
         if (branch.type == "int") {
-            buffer[name] = *static_cast<int*>((*this->branches)[name].value);
+            buffer[name] = *static_cast<int*>(this->branches[name].value);
         }
         else if (branch.type == "double") {
-            buffer[name] = *static_cast<double*>((*this->branches)[name].value);
+            buffer[name] = *static_cast<double*>(this->branches[name].value);
         }
         else if (branch.type == "aint") {
-            buffer[name] = static_cast<int*>((*this->branches)[name].value);
+            buffer[name] = static_cast<int*>(this->branches[name].value);
         }
         else if (branch.type == "adouble") {
-            buffer[name] = static_cast<double*>((*this->branches)[name].value);
+            buffer[name] = static_cast<double*>(this->branches[name].value);
         }
     }
     return buffer;

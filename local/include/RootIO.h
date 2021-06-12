@@ -27,7 +27,7 @@ protected:
 public:
     std::filesystem::path path;
     TChain* tree;
-    std::map<std::string, Branch>* branches;
+    std::map<std::string, Branch> branches;
 
     RootReader();
     RootReader(const std::string& tr_name, const std::string& path);
