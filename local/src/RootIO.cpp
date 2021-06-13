@@ -39,11 +39,14 @@ void RootReader::set_branches(std::vector<Branch>& branches) {
     };
     resize(this->addr_int, this->addr_double, this->addr_aint, this->addr_adouble);
 
+    this->tree->SetBranchStatus("*", false);
+
     int index = 0;
     for (auto& br_name: this->branch_names) {
         Branch* branch = &this->branches[br_name];
         branch->index = index;
         const char* fullname = branch->fullname.c_str();
+        this->tree->SetBranchStatus(fullname, true);
 
         if (branch->type == "int") {
             this->tree->SetBranchAddress(fullname, &this->addr_int[branch->index]);

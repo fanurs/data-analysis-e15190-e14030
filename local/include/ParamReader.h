@@ -1,7 +1,7 @@
 #pragma once
 
 #include <any>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include "TTree.h"
@@ -12,7 +12,7 @@ class ParamReader {
 public:
     TTree* tree;
     TTreeReader reader;
-    std::map<index_t, int> index_map;
+    std::unordered_map<index_t, int> index_map;
 
     ParamReader(const std::string& tr_name="", const std::string& tr_title="");
     ~ParamReader() { }
