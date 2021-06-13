@@ -34,6 +34,14 @@ public:
     TChain* tree;
     std::vector<std::string> branch_names;
     std::unordered_map<std::string, Branch> branches;
+    std::vector<std::string> scalar_types = {
+        "int",
+        "double",
+    };
+    std::vector<std::string> array_types = {
+        "int[]",
+        "double[]",
+    };
 
     RootReader();
     RootReader(const std::string& path, const std::string& tr_name);
@@ -58,6 +66,14 @@ public:
     TTree* tree;
     std::vector<std::string> branch_names;
     std::unordered_map<std::string, Branch> branches;
+    std::vector<std::string> scalar_types = {
+        "int",
+        "double",
+    };
+    std::vector<std::string> array_types = {
+        "int[]",
+        "double[]",
+    };
 
     RootWriter();
     RootWriter(const std::string& path, const std::string& tr_name, const std::string& file_option="RECREATE");
@@ -70,5 +86,7 @@ public:
     void set(const std::string& br_name, double source);
     void set(const std::string& br_name, std::vector<int>& source);
     void set(const std::string& br_name, std::vector<double>& source);
+    void set(const std::string& br_name, int size, int* source);
+    void set(const std::string& br_name, int size, double* source);
     int fill();
 };
