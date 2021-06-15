@@ -28,4 +28,5 @@ dependencies:
 
    # miscellaneous
    - cryptography=3.4.7
+   - lxml>=4.6.3
    - autopep8
