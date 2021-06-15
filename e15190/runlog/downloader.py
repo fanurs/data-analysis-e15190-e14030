@@ -56,12 +56,13 @@ class MySqlDownloader:
         self.connection = pymysql.connect(**credential, db='hiramodules')
         del credential
         self.cursor = self.connection.cursor()
+        print('Connection to MySQL database at WMU has been established.', flush=True)
         
         self.cursor.fetchall = MySqlDownloader.decorate(self.cursor.fetchall)
         self.cursor.fetchmany = MySqlDownloader.decorate(self.cursor.fetchmany)
         self.cursor.fetchone = MySqlDownloader.decorate(self.cursor.fetchone)
     
-    def download(self, auto_disconnect=True):
+    def download(self, auto_disconnect=True, verbose=True):
         """Convert tables into pandas dataframes and save into an HDF file
         """
         print('Attempting to download run log from WMU MySQL database...')
@@ -77,18 +78,21 @@ class MySqlDownloader:
                 (y/n)
                 > '''
                 ))
-
-            if resp.lower().strip() == 'y':
-                MYSQL_DOWNLOAD_PATH.unlink()
-                with pd.HDFStore(MYSQL_DOWNLOAD_PATH, 'w') as file:
-                    for table_name in table_names:
-                        print(f'> Converting and saving {table_name}... ', end='', flush=True)
-                        df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
-                        file.append(table_name, df)
-                        print('Done!')
-                print(f'All tables have been saved to\n"{str(MYSQL_DOWNLOAD_PATH)}"')
-            else:
+            if not resp.lower().strip == 'y':
                 print('No re-download will be performed.')
+        else:
+            resp = 'y'
+
+        if resp.lower().strip() == 'y':
+            MYSQL_DOWNLOAD_PATH.unlink(missing_ok=True)
+            with pd.HDFStore(MYSQL_DOWNLOAD_PATH, 'w') as file:
+                for table_name in table_names:
+                    if verbose:
+                        print(f'> Converting and saving {table_name}... ', end='', flush=True)
+                    df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
+                    file.append(table_name, df)
+                    print('Done!')
+            print(f'All tables have been saved to\n"{str(MYSQL_DOWNLOAD_PATH)}"')
 
         if auto_disconnect:
             self.disconnect()
@@ -103,6 +107,7 @@ class ElogDownloader:
     def download(self):
         print(f'Attempting to download web content from\n"{ELOG_URL}"... ', end='', flush=True)
         web_content = urllib.request.urlopen(ELOG_URL).read()
+        ELOG_DOWNLOAD_PATH.parent.mkdir(parents=True, exist_ok=True)
         with open(ELOG_DOWNLOAD_PATH, 'wb') as file:
             file.write(web_content)
         print('Done!')

@@ -13,67 +13,66 @@ TXT files allow quick inspection without HDF viewer.
 HDF files are suitable for data analysis as they preserve data types like datetimes, floats, etc.
 """
 
-MYSQL_CLEANSED_TXT_DIR = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'mysql_cleansed_txt')
-MYSQL_CLEANSED_TXT_DIR.mkdir(parents=True, exist_ok=True)
-MYSQL_CLEANSED_PATH = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'mysql_cleansed.h5')
-
-ELOG_CLEANSED_CSV_DIR = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_cleansed_csv')
-ELOG_CLEANSED_CSV_DIR.mkdir(parents=True, exist_ok=True)
-ELOG_CLEANSED_PATH = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_cleansed.h5')
-
-ELOG_VALID_CSV_DIR = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_valid_csv')
-ELOG_VALID_CSV_DIR.mkdir(parents=True, exist_ok=True)
-ELOG_VALID_PATH = pathlib.Path(PROJECT_DIR, 'database', 'runlog', 'elog_valid.h5')
+CLEANSED_DIR = pathlib.Path(PROJECT_DIR, 'database/runlog/cleansed')
+CLEANSED_DIR.mkdir(parents=True, exist_ok=True)
 
 class ElogCleanser:
     """This is a class of methods to perform data cleansing on the table downloaded from ELOG webpage at WMU.
     """
     def __init__(self):
-        self.elog = None
+        self.runs = None
         self.events = None
-        self.valid_elog = None
+        self.runs_final = None
+        self.events_final = None
 
-    def cleanse(self):
+    def cleanse(self, verbose=True):
         with open(ELOG_DOWNLOAD_PATH, 'r') as file:
-            self.elog = pd.read_html(file)[4]
+            self.runs = pd.read_html(file)[4]
 
         # re-labeling
-        self.elog.columns = self.elog.iloc[0] # use first row as column
-        self.elog.drop(0, inplace=True)
-        self.elog = self.elog.astype(str) # turn all entries into string; convert numbers and datetimes later
-        self.elog.reset_index(drop=True, inplace=True)
+        self.runs.columns = self.runs.iloc[0] # use first row as column
+        self.runs.drop(0, inplace=True)
+        self.runs = self.runs.astype(str) # turn all entries into string; convert numbers and datetimes later
+        self.runs.reset_index(drop=True, inplace=True)
 
         # split into runs and events
-        is_run_mask = self.elog['RUN'].str.isdigit()
-        self.events = self.elog[~is_run_mask]
-        self.elog = self.elog[is_run_mask]
+        is_run_mask = self.runs['RUN'].str.isdigit()
+        self.events = self.runs[~is_run_mask]
+        self.runs = self.runs[is_run_mask]
 
         # data cleansing
-        self._cleanse_elog()
+        self._cleanse_runs()
         self._cleanse_events()
 
         # save to files
-        with pd.HDFStore(ELOG_CLEANSED_PATH, 'w') as file:
-            file.append('elog', self.elog)
+        path = pathlib.Path(CLEANSED_DIR, 'elog_runlog.h5')
+        with pd.HDFStore(path, 'w') as file:
+            file.append('runs', self.runs)
             file.append('events', self.events)
+        if verbose:
+            print(f'Cleansed runs and events saved to "{path}"')
 
-        path = pathlib.Path(ELOG_CLEANSED_CSV_DIR, 'elog.csv')
-        self.elog.to_csv(path, index=False)
+        path = pathlib.Path(CLEANSED_DIR, 'elog_runs.csv')
+        self.runs.to_csv(path, index=False)
+        if verbose:
+            print(f'Cleansed runs also saved to "{path}"')
 
-        path = pathlib.Path(ELOG_CLEANSED_CSV_DIR, 'events.csv')
+        path = pathlib.Path(CLEANSED_DIR, 'elog_events.csv')
         self.events.to_csv(path, index=False)
+        if verbose:
+            print(f'Cleansed events also saved to "{path}"')
 
-    def _cleanse_elog(self):
+    def _cleanse_runs(self):
         # drop entries with type value 'junk'
-        self.elog = self.elog[~self.elog['Type'].str.contains('junk', case=False)]
+        self.runs = self.runs[~self.runs['Type'].str.contains('junk', case=False)]
 
         # convert run into integers
-        self.elog = self.elog.astype({'RUN': int})
+        self.runs = self.runs.astype({'RUN': int})
 
         # convert into datetime and timedelta objects
-        self.elog['Begin time'] = pd.to_datetime(self.elog['Begin time'])
-        self.elog['End time'] = pd.to_datetime(self.elog['End time'])
-        self.elog['Elapse'] = pd.to_timedelta(self.elog['Elapse'])
+        self.runs['Begin time'] = pd.to_datetime(self.runs['Begin time'])
+        self.runs['End time'] = pd.to_datetime(self.runs['End time'])
+        self.runs['Elapse'] = pd.to_timedelta(self.runs['Elapse'])
 
         # standardize targets
         targets = [
@@ -84,28 +83,28 @@ class ElogCleanser:
             ('CH', '2'),
         ]
         for symb, mass in targets:
-            self.elog.replace(
+            self.runs.replace(
                 {'Target': f'^.*(?i)({symb}{mass}|{mass}{symb}).*$'}, f'{symb}{mass}',
                 regex=True, inplace=True,
             )
 
         # take care of 'nan', i.e. convert all 'nan' in string-type columns into empty strings
-        self.elog.replace(
+        self.runs.replace(
             {col: '(?i)nan' for col in ['Type', 'Target', 'Beam', 'Shadow bars']}, '',
             regex=True, inplace=True,
         )
 
         # convert trigger rates into float
-        self.elog.replace({'Trigger rate': '(?i)nan'}, 0.0, regex=True, inplace=True)
-        self.elog = self.elog.astype({'Trigger rate': float})
+        self.runs.replace({'Trigger rate': '(?i)nan'}, 0.0, regex=True, inplace=True)
+        self.runs = self.runs.astype({'Trigger rate': float})
 
         # remove trailing 'Scalers: ...' in the comments
-        self.elog.replace({'Comments': 'Scalers.*$'}, '', regex=True, inplace=True)
-        self.elog['Comments'] = self.elog['Comments'].str.strip()
-        self.elog.rename(columns={'Comments': 'Comment'})
+        self.runs.replace({'Comments': 'Scalers.*$'}, '', regex=True, inplace=True)
+        self.runs['Comments'] = self.runs['Comments'].str.strip()
+        self.runs.rename(columns={'Comments': 'Comment'})
 
         # use only lowercase for column names and replace spaces with underscores
-        self.elog.columns = [col.lower().replace(' ', '_') for col in self.elog.columns]
+        self.runs.columns = [col.lower().replace(' ', '_') for col in self.runs.columns]
 
     def _cleanse_events(self):
         self.events['Entry'] = self.events['End time']
@@ -113,13 +112,14 @@ class ElogCleanser:
         self.events = self.events[['RUN', 'Begin time', 'Entry', 'Comments']]
         self.events.columns = ['run', 'time', 'entry', 'comment']
 
-    def generate_valid_runs(self):
+    def finalize(self, verbose=True):
         # get a copy of elog to filter for valid runs
-        if self.elog is None:
-            with pd.HDFStore(ELOG_CLEANSED_PATH, 'r') as file:
-                self.valid_elog = file['elog'].copy()
+        path = pathlib.Path(CLEANSED_DIR, 'elog_runlog.h5')
+        if self.runs is None:
+            with pd.HDFStore(path, 'r') as file:
+                self.runs_final = file['runs'].copy()
         else:
-            self.valid_elog = self.elog.copy()
+            self.runs_final = self.runs.copy()
 
         # select valid runs only
         conditions = [
@@ -131,17 +131,22 @@ class ElogCleanser:
             'beam in ["Ca40 56 MeV/u", "Ca40 140 MeV/u", "Ca48 56 MeV/u", "Ca48 140 MeV/u"]',
             'trigger_rate > 1000.0',
         ]
-        self.valid_elog = self.valid_elog.query('(' + ') & ('.join(conditions) + ')', engine='python')
+        self.runs_final = self.runs_final.query('(' + ') & ('.join(conditions) + ')', engine='python')
 
         # drop redundant columns
-        self.valid_elog.drop(columns=['daq', 'type'], inplace=True)
+        self.runs_final.drop(columns=['daq', 'type'], inplace=True)
 
         # save to files
-        with pd.HDFStore(ELOG_VALID_PATH, 'w') as file:
-            file.append('valid_elog', self.valid_elog)
+        path = pathlib.Path(PROJECT_DIR, 'database/runlog', 'elog_final.h5')
+        with pd.HDFStore(path, 'w') as file:
+            file.append('runs_final', self.runs_final)
+        if verbose:
+            print(f'Final elog runs saved to "{path}"')
         
-        path = pathlib.Path(ELOG_VALID_CSV_DIR, 'valid_elog.csv')
-        self.valid_elog.to_csv(path, index=False)
+        path = pathlib.Path(PROJECT_DIR, 'database/runlog', 'elog_runs.csv')
+        self.runs_final.to_csv(path, index=False)
+        if verbose:
+            print(f'Final elog runs also saved to "{path}"')
 
 class MySqlCleanser:
     """This is a class of methods to perform data cleansing on the tables freshly downloaded from MySQL at WMU.
@@ -158,7 +163,7 @@ class MySqlCleanser:
             'runtarget',
         ]
 
-    def cleanse(self):
+    def cleanse(self, verbose=True):
         df = {
             'runbeam': self._cleanse_runbeam(),
             'runtarget': self._cleanse_runtarget(),
@@ -166,13 +171,18 @@ class MySqlCleanser:
             'runscalernames': self._cleanse_runscalernames(),
         }
 
-        with pd.HDFStore(MYSQL_CLEANSED_PATH, 'w') as file:
+        path = pathlib.Path(CLEANSED_DIR, 'mysql_cleansed.h5')
+        with pd.HDFStore(path, 'w') as file:
             for name, _df in df.items():
                 file.append(name, _df)
+        if verbose:
+            print(f'Cleansed MySQL database saved to "{path}"')
         
         for name, _df in df.items():
-            path = pathlib.Path(MYSQL_CLEANSED_TXT_DIR, f'{name}.txt')
+            path = pathlib.Path(CLEANSED_DIR, f'mysql_{name}.txt')
             tables.to_fwf(_df, path)
+            if verbose:
+                print(f'Cleansed {name} saved to "{path}"')
 
     def _cleanse_runbeam(self):
         print('Data cleansing runbeam... ', end='', flush=True)
