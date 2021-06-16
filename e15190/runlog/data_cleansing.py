@@ -93,6 +93,7 @@ class ElogCleanser:
             {col: '(?i)nan' for col in ['Type', 'Target', 'Beam', 'Shadow bars']}, '',
             regex=True, inplace=True,
         )
+        self.runs.rename(columns={'Shadow bars': 'Shadow bar'}, inplace=True)
 
         # convert trigger rates into float
         self.runs.replace({'Trigger rate': '(?i)nan'}, 0.0, regex=True, inplace=True)
@@ -101,7 +102,7 @@ class ElogCleanser:
         # remove trailing 'Scalers: ...' in the comments
         self.runs.replace({'Comments': 'Scalers.*$'}, '', regex=True, inplace=True)
         self.runs['Comments'] = self.runs['Comments'].str.strip()
-        self.runs.rename(columns={'Comments': 'Comment'})
+        self.runs.rename(columns={'Comments': 'Comment'}, inplace=True)
 
         # use only lowercase for column names and replace spaces with underscores
         self.runs.columns = [col.lower().replace(' ', '_') for col in self.runs.columns]
