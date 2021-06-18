@@ -3,6 +3,7 @@ if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 7):
     raise Exception('Requires at least Python 3.7 to use this repository.')
 
 import glob
+import inspect
 import os
 import pathlib
 import subprocess
@@ -34,6 +35,43 @@ def main():
             symbol_path.unlink()
         symbol_path.symlink_to(script_path)
 
+    # add activation and deactivation scripts
+    env_vars_content = {
+        'activate': inspect.cleandoc(f'''
+            #!/bin/bash
+            if [ ! -z "$PROJECT_DIR" ]; then
+                export OLD_PROJECT_DIR=$PROJECT_DIR
+            fi
+            export PROJECT_DIR="{str(pathlib.Path('.').resolve())}"
+        '''),
+        'deactivate': inspect.cleandoc(f'''
+            #!/bin/bash
+            if [ ! -z "$OLD_PROJECT_DIR" ]; then
+                PROJECT_DIR=$OLD_PROJECT_DIR
+                unset OLD_PROJECT_DIR
+            else
+                unset PROJECT_DIR
+            fi
+        '''),
+    }
+    src_parent_dir = pathlib.Path('./local/etc/conda')
+    des_parent_dir = pathlib.Path(ENVIRONMENT_NAME, 'etc/conda')
+    base_fname = 'env_vars.sh'
+    for name in ['activate', 'deactivate']:
+        src_subdir = pathlib.Path(src_parent_dir, f'{name}.d')
+        src_subdir.mkdir(parents=True, exist_ok=True)
+        src_path = pathlib.Path(src_subdir, f'{name}-{base_fname}')
+        src_path.touch(exist_ok=True)
+        with open(src_path, 'w') as file:
+            file.write(env_vars_content[name] + '\n')
+
+        des_subdir = pathlib.Path(des_parent_dir, f'{name}.d')
+        des_subdir.mkdir(parents=True, exist_ok=True)
+        des_path = pathlib.Path(des_subdir, f'{name}-{base_fname}')
+        if des_path.is_symlink():
+            des_path.unlink()
+        des_path.resolve().symlink_to(src_path.resolve())
+    
     print('Done!')
 
 def check_conda_activated():
