@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import argparse
 import glob
 import inspect
 import itertools as itr
@@ -43,7 +42,8 @@ def assign_enumerable_tags(names, sort_most_common=True):
 
     tags = dict()
     for name in names:
-        split = regex.split(name)
+        stem = str(pathlib.Path(name).stem)
+        split = regex.split(stem)
         if len(split) == 2: # i.e. file names contain exactly one chunk of digits
             tag = split[0] + '*' + split[1]
         else:
