@@ -19,6 +19,7 @@ dependencies:
    - pymysql>=1.0.1
    - uproot>=4.0.7
    - root=6.22.6
+   - mako>=1.1.4
 
    # statistical tools and machine learning
    - scikit-learn>=0.24.0
