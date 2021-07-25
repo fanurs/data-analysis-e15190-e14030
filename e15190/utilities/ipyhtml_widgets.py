@@ -46,7 +46,8 @@ class ImageDisplayer:
         method,
         first,
         image_style,
-        slider_style='',
+        slider_style,
+        init_animation_interval,
     ):
         # parse the figures
         if isinstance(figures, dict):
@@ -83,6 +84,7 @@ class ImageDisplayer:
             first=first,
             image_style=image_style,
             slider_style=slider_style,
+            init_animation_interval=init_animation_interval,
         )
         return ImageDisplayer.render(template, subs)
 
@@ -93,6 +95,7 @@ class ImageDisplayer:
         first=0,
         image_style='height: 300px;',
         slider_style='',
+        init_animation_interval=1000,
         debug=False,
     ):
         fkwargs = copy.copy(locals())
@@ -109,6 +112,7 @@ class ImageDisplayer:
         first=0,
         image_style='height: 300px;',
         slider_style='',
+        init_animation_interval=1000,
     ):
         fkwargs = copy.copy(locals())
         for key in ['self', 'outpath']:
@@ -125,6 +129,7 @@ def display(
     first=0,
     image_style='height: 300px;',
     slider_style='',
+    init_animation_interval=1000,
     debug=False,
 ):
     global _imager_displayer
@@ -137,6 +142,7 @@ def write_to_file(
     first=0,
     image_style='height: 300px;',
     slider_style='',
+    init_animation_interval=1000,
 ):
     global _imager_displayer
     return _imager_displayer.write_to_file(**locals())

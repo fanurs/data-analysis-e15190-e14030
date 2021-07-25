@@ -197,8 +197,8 @@
   var unicode_pause = "&#x23F8";
   var ${uniqtag}_animation_innerHTML = null;
   var ${uniqtag}_animation_action = null;
-  const ${uniqtag}_animation_interval_base = 1000; // millisecond
-  var ${uniqtag}_animation_interval = 1000; // millisecond
+  const ${uniqtag}_animation_interval_base = ${init_animation_interval}; // millisecond
+  var ${uniqtag}_animation_interval = ${init_animation_interval}; // millisecond
   function ${uniqtag}_play_pause_click() {
     var id = "${uniqtag}-button-play-pause";
     var button = document.getElementById(id);
