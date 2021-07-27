@@ -92,34 +92,43 @@ std::map<std::string, std::any> RootReader::get_entry(int i_entry) {
     return buffer;
 }
 
-RootWriter::RootWriter() { }
-
 RootWriter::RootWriter(const std::string& path, const std::string& tr_name, const std::string& file_option) {
-    this->initialize(path, tr_name, file_option);
+    this->path = std::filesystem::path(path);
+    this->file = new TFile(this->path.string().c_str(), file_option.c_str());
+    this->trees[tr_name].ttree = new TTree(tr_name.c_str(), "");
+}
+
+RootWriter::RootWriter(const std::string& path, const std::initializer_list<std::string>& tr_names, const std::string& file_option) {
+    this->path = std::filesystem::path(path);
+    this->file = new TFile(this->path.string().c_str(), file_option.c_str());
+    for (auto& tr_name: tr_names) {
+        this->trees[tr_name].ttree = new TTree(tr_name.c_str(), "");
+    }
 }
 
 RootWriter::~RootWriter() {
     this->file->Close();
 }
 
-void RootWriter::initialize(const std::string& path, const std::string& tr_name, const std::string& file_option) {
-    this->path = std::filesystem::path(path);
-    this->file = new TFile(this->path.string().c_str(), file_option.c_str());
-    this->tree = new TTree(tr_name.c_str(), "");
-    return;
+std::string RootWriter::get_tr_name() {
+    if (this->trees.size() != 1) {
+        throw std::invalid_argument("There are more than one TTree objects.");
+    }
+    return this->trees.begin()->first;
 }
 
-void RootWriter::set_branches(std::vector<Branch>& branches) {
+void RootWriter::set_branches(const std::string& tr_name, std::vector<Branch>& branches) {
+    Tree* tree = &this->trees[tr_name];
     for (auto& branch: branches) {
-        this->branch_names.push_back(branch.name);
-        this->branches[branch.name] = branch;
+        tree->branch_names.push_back(branch.name);
+        tree->branches[branch.name] = branch;
     }
 
     // some auto-fills
     auto is_contain = [](auto& arr, const auto& ele) -> bool {
         return std::find(arr.begin(), arr.end(), ele) != arr.end();
     };
-    for (auto& [name, branch]: this->branches) {
+    for (auto& [name, branch]: tree->branches) {
         if (branch.fullname == "") {
             branch.fullname = branch.name;
         }
@@ -149,33 +158,33 @@ void RootWriter::set_branches(std::vector<Branch>& branches) {
         }
     }
 
-    auto resize = [this](auto&&... args) {
-        (args.resize(this->branches.size()), ...);
+    auto resize = [tree](auto&&... args) {
+        (args.resize(tree->branches.size()), ...);
     };
     resize(this->addr_int, this->addr_double, this->addr_aint, this->addr_adouble);
 
     // define branches and their addresses
     int index = 0;
-    for (auto& br_name: this->branch_names) {
-        Branch* branch = &this->branches[br_name];
+    for (auto& br_name: tree->branch_names) {
+        Branch* branch = &tree->branches[br_name];
         branch->index = index;
         const char* fullname = branch->fullname.c_str();
         const char* leaflist = branch->leaflist.c_str();
 
         if (branch->type == "int") {
-            this->tree->Branch(fullname, &this->addr_int[branch->index], leaflist);
+            tree->ttree->Branch(fullname, &this->addr_int[branch->index], leaflist);
             branch->value = &this->addr_int[branch->index];
         }
         else if (branch->type == "double") {
-            this->tree->Branch(fullname, &this->addr_double[branch->index], leaflist);
+            tree->ttree->Branch(fullname, &this->addr_double[branch->index], leaflist);
             branch->value = &this->addr_double[branch->index];
         }
         else if (branch->type == "int[]") {
-            this->tree->Branch(fullname, &this->addr_aint[branch->index][0], leaflist);
+            tree->ttree->Branch(fullname, &this->addr_aint[branch->index][0], leaflist);
             branch->value = &this->addr_aint[branch->index][0];
         }
         else if (branch->type == "double[]") {
-            this->tree->Branch(fullname, &this->addr_adouble[branch->index][0], leaflist);
+            tree->ttree->Branch(fullname, &this->addr_adouble[branch->index][0], leaflist);
             branch->value = &this->addr_adouble[branch->index][0];
         }
 
@@ -185,34 +194,79 @@ void RootWriter::set_branches(std::vector<Branch>& branches) {
     return;
 }
 
-void RootWriter::set(const std::string& br_name, const void* source, std::size_t nbytes) {
-    std::memcpy(this->branches[br_name].value, source, nbytes);
+void RootWriter::set_branches(std::vector<Branch>& branches) {
+    this->set_branches(this->get_tr_name(), branches);
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, const void* source, std::size_t nbytes) {
+    std::memcpy(this->trees[tr_name].branches[br_name].value, source, nbytes);
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, int source) {
+    this->set(tr_name, br_name, &source, sizeof(source));
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, double source) {
+    this->set(tr_name, br_name, &source, sizeof(source));
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, std::vector<int>& source) {
+    this->set(tr_name, br_name, &source[0], sizeof(source[0]) * source.size());
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, std::vector<double>& source) {
+    this->set(tr_name, br_name, &source[0], sizeof(source[0]) * source.size());
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, int size, int* source) {
+    this->set(tr_name, br_name, source, sizeof(source[0]) * size);
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, int size, double* source) {
+    this->set(tr_name, br_name, source, sizeof(source[0]) * size);
 }
 
 void RootWriter::set(const std::string& br_name, int source) {
-    this->set(br_name, &source, sizeof(source));
+    this->set(this->get_tr_name(), br_name, source);
 }
 
 void RootWriter::set(const std::string& br_name, double source) {
-    this->set(br_name, &source, sizeof(source));
+    this->set(this->get_tr_name(), br_name, source);
 }
 
 void RootWriter::set(const std::string& br_name, std::vector<int>& source) {
-    this->set(br_name, &source[0], sizeof(source[0]) * source.size());
+    this->set(this->get_tr_name(), br_name, source);
 }
 
 void RootWriter::set(const std::string& br_name, std::vector<double>& source) {
-    this->set(br_name, &source[0], sizeof(source[0]) * source.size());
+    this->set(this->get_tr_name(), br_name, source);
 }
 
 void RootWriter::set(const std::string& br_name, int size, int* source) {
-    this->set(br_name, source, sizeof(source[0]) * size);
+    this->set(this->get_tr_name(), br_name, size, source);
 }
 
 void RootWriter::set(const std::string& br_name, int size, double* source) {
-    this->set(br_name, source, sizeof(source[0]) * size);
+    this->set(this->get_tr_name(), br_name, size, source);
 }
 
-int RootWriter::fill() {
-    return this->tree->Fill();
+void RootWriter::fill() {
+    for (auto& [tr_name, tree]: this->trees) {
+        this->fill(tr_name);
+    }
+}
+
+int RootWriter::fill(const std::string& tr_name) {
+    return this->trees[tr_name].ttree->Fill();
+}
+
+void RootWriter::write() {
+    for (auto& [tr_name, tree]: this->trees) {
+        this->write(tr_name);
+    }
+}
+
+int RootWriter::write(const std::string& tr_name) {
+    this->file->cd();
+    return this->trees[tr_name].ttree->Write();
 }

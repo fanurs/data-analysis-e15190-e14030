@@ -21,6 +21,12 @@ struct Branch {
     void* value;
 };
 
+struct Tree {
+    TTree* ttree;
+    std::vector<std::string> branch_names; // to keep track of the original order
+    std::unordered_map<std::string, Branch> branches;
+};
+
 class RootReader {
 protected:
     static const int MAX_MULTI = 1024;
@@ -60,12 +66,12 @@ protected:
     std::vector< std::array<int, MAX_MULTI> > addr_aint;
     std::vector< std::array<double, MAX_MULTI> > addr_adouble;
 
+    std::string get_tr_name();
+
 public:
     std::filesystem::path path;
     TFile* file;
-    TTree* tree;
-    std::vector<std::string> branch_names;
-    std::unordered_map<std::string, Branch> branches;
+    std::unordered_map<std::string, Tree> trees;
     std::vector<std::string> scalar_types = {
         "int",
         "double",
@@ -75,18 +81,32 @@ public:
         "double[]",
     };
 
-    RootWriter();
+    RootWriter(const std::string& path, const std::initializer_list<std::string>& tr_names, const std::string& file_option="RECREATE");
     RootWriter(const std::string& path, const std::string& tr_name, const std::string& file_option="RECREATE");
+
     ~RootWriter();
 
-    void initialize(const std::string& path, const std::string& tr_name, const std::string& file_option="RECREATE");
     void set_branches(std::vector<Branch>& branches);
-    void set(const std::string& br_name, const void* source, std::size_t nbytes);
+    void set_branches(const std::string& tr_name, std::vector<Branch>& branches);
+
+    void set(const std::string& tr_name, const std::string& br_name, const void* source, std::size_t nbytes);
+    void set(const std::string& tr_name, const std::string& br_name, int source);
+    void set(const std::string& tr_name, const std::string& br_name, double source);
+    void set(const std::string& tr_name, const std::string& br_name, std::vector<int>& source);
+    void set(const std::string& tr_name, const std::string& br_name, std::vector<double>& source);
+    void set(const std::string& tr_name, const std::string& br_name, int size, int* source);
+    void set(const std::string& tr_name, const std::string& br_name, int size, double* source);
+
     void set(const std::string& br_name, int source);
     void set(const std::string& br_name, double source);
     void set(const std::string& br_name, std::vector<int>& source);
     void set(const std::string& br_name, std::vector<double>& source);
     void set(const std::string& br_name, int size, int* source);
     void set(const std::string& br_name, int size, double* source);
-    int fill();
+
+    void fill();
+    int fill(const std::string& tr_name);
+
+    void write();
+    int write(const std::string& tr_name);
 };
