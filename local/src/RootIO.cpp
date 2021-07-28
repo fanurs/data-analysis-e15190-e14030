@@ -82,7 +82,10 @@ void RootReader::set_branches(std::vector<Branch>& branches) {
     auto resize = [this](auto&&... args) {
         (args.resize(this->branches.size()), ...);
     };
-    resize(this->addr_int, this->addr_double, this->addr_aint, this->addr_adouble);
+    resize(
+        this->addr_short,   this->addr_int,   this->addr_float,   this->addr_double,
+        this->addr_ashort,  this->addr_aint,  this->addr_afloat,  this->addr_adouble
+    );
 
     this->tree->SetBranchStatus("*", false);
 
@@ -93,17 +96,35 @@ void RootReader::set_branches(std::vector<Branch>& branches) {
         const char* fullname = branch->fullname.c_str();
         this->tree->SetBranchStatus(fullname, true);
 
-        if (branch->type == "int") {
+        // scalar types
+        if (branch->type == "short") {
+            this->tree->SetBranchAddress(fullname, &this->addr_short[branch->index]);
+            branch->value = &this->addr_short[branch->index];
+        }
+        else if (branch->type == "int") {
             this->tree->SetBranchAddress(fullname, &this->addr_int[branch->index]);
             branch->value = &this->addr_int[branch->index];
+        }
+        else if (branch->type == "float") {
+            this->tree->SetBranchAddress(fullname, &this->addr_float[branch->index]);
+            branch->value = &this->addr_float[branch->index];
         }
         else if (branch->type == "double") {
             this->tree->SetBranchAddress(fullname, &this->addr_double[branch->index]);
             branch->value = &this->addr_double[branch->index];
         }
+        // onward, array types
+        else if (branch->type == "short[]") {
+            this->tree->SetBranchAddress(fullname, &this->addr_ashort[branch->index][0]);
+            branch->value = &this->addr_ashort[branch->index][0];
+        }
         else if (branch->type == "int[]") {
             this->tree->SetBranchAddress(fullname, &this->addr_aint[branch->index][0]);
             branch->value = &this->addr_aint[branch->index][0];
+        }
+        else if (branch->type == "float[]") {
+            this->tree->SetBranchAddress(fullname, &this->addr_afloat[branch->index][0]);
+            branch->value = &this->addr_afloat[branch->index][0];
         }
         else if (branch->type == "double[]") {
             this->tree->SetBranchAddress(fullname, &this->addr_adouble[branch->index][0]);
@@ -121,14 +142,28 @@ std::map<std::string, std::any> RootReader::get_entry(int i_entry) {
 
     std::map<std::string, std::any> buffer;
     for (auto& [name, branch]: this->branches) {
-        if (branch.type == "int") {
+        // scalar types
+        if (branch.type == "short") {
+            buffer[name] = *static_cast<short*>(this->branches[name].value);
+        }
+        else if (branch.type == "int") {
             buffer[name] = *static_cast<int*>(this->branches[name].value);
+        }
+        else if (branch.type == "float") {
+            buffer[name] = *static_cast<float*>(this->branches[name].value);
         }
         else if (branch.type == "double") {
             buffer[name] = *static_cast<double*>(this->branches[name].value);
         }
+        // onward, array types
+        else if (branch.type == "short[]") {
+            buffer[name] = static_cast<short*>(this->branches[name].value);
+        }
         else if (branch.type == "int[]") {
             buffer[name] = static_cast<int*>(this->branches[name].value);
+        }
+        else if (branch.type == "float[]") {
+            buffer[name] = static_cast<float*>(this->branches[name].value);
         }
         else if (branch.type == "double[]") {
             buffer[name] = static_cast<double*>(this->branches[name].value);
@@ -180,7 +215,10 @@ void RootWriter::set_branches(const std::string& tr_name, std::vector<Branch>& b
     auto resize = [tree](auto&&... args) {
         (args.resize(tree->branches.size()), ...);
     };
-    resize(this->addr_int, this->addr_double, this->addr_aint, this->addr_adouble);
+    resize(
+        this->addr_short,   this->addr_int,   this->addr_float,   this->addr_double,
+        this->addr_ashort,  this->addr_aint,  this->addr_afloat,  this->addr_adouble
+    );
 
     // define branches and their addresses
     int index = 0;
@@ -190,17 +228,35 @@ void RootWriter::set_branches(const std::string& tr_name, std::vector<Branch>& b
         const char* fullname = branch->fullname.c_str();
         const char* leaflist = branch->leaflist.c_str();
 
-        if (branch->type == "int") {
+        // scalar types
+        if (branch->type == "short") {
+            tree->ttree->Branch(fullname, &this->addr_short[branch->index], leaflist);
+            branch->value = &this->addr_short[branch->index];
+        }
+        else if (branch->type == "int") {
             tree->ttree->Branch(fullname, &this->addr_int[branch->index], leaflist);
             branch->value = &this->addr_int[branch->index];
+        }
+        else if (branch->type == "float") {
+            tree->ttree->Branch(fullname, &this->addr_float[branch->index], leaflist);
+            branch->value = &this->addr_float[branch->index];
         }
         else if (branch->type == "double") {
             tree->ttree->Branch(fullname, &this->addr_double[branch->index], leaflist);
             branch->value = &this->addr_double[branch->index];
         }
+        // onward, array types
+        else if (branch->type == "short[]") {
+            tree->ttree->Branch(fullname, &this->addr_ashort[branch->index][0], leaflist);
+            branch->value = &this->addr_ashort[branch->index][0];
+        }
         else if (branch->type == "int[]") {
             tree->ttree->Branch(fullname, &this->addr_aint[branch->index][0], leaflist);
             branch->value = &this->addr_aint[branch->index][0];
+        }
+        else if (branch->type == "float[]") {
+            tree->ttree->Branch(fullname, &this->addr_afloat[branch->index][0], leaflist);
+            branch->value = &this->addr_afloat[branch->index][0];
         }
         else if (branch->type == "double[]") {
             tree->ttree->Branch(fullname, &this->addr_adouble[branch->index][0], leaflist);
@@ -221,7 +277,15 @@ void RootWriter::set(const std::string& tr_name, const std::string& br_name, con
     std::memcpy(this->trees[tr_name].branches[br_name].value, source, nbytes);
 }
 
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, short source) {
+    this->set(tr_name, br_name, &source, sizeof(source));
+}
+
 void RootWriter::set(const std::string& tr_name, const std::string& br_name, int source) {
+    this->set(tr_name, br_name, &source, sizeof(source));
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, float source) {
     this->set(tr_name, br_name, &source, sizeof(source));
 }
 
@@ -229,7 +293,15 @@ void RootWriter::set(const std::string& tr_name, const std::string& br_name, dou
     this->set(tr_name, br_name, &source, sizeof(source));
 }
 
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, std::vector<short>& source) {
+    this->set(tr_name, br_name, &source[0], sizeof(source[0]) * source.size());
+}
+
 void RootWriter::set(const std::string& tr_name, const std::string& br_name, std::vector<int>& source) {
+    this->set(tr_name, br_name, &source[0], sizeof(source[0]) * source.size());
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, std::vector<float>& source) {
     this->set(tr_name, br_name, &source[0], sizeof(source[0]) * source.size());
 }
 
@@ -237,7 +309,15 @@ void RootWriter::set(const std::string& tr_name, const std::string& br_name, std
     this->set(tr_name, br_name, &source[0], sizeof(source[0]) * source.size());
 }
 
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, int size, short* source) {
+    this->set(tr_name, br_name, source, sizeof(source[0]) * size);
+}
+
 void RootWriter::set(const std::string& tr_name, const std::string& br_name, int size, int* source) {
+    this->set(tr_name, br_name, source, sizeof(source[0]) * size);
+}
+
+void RootWriter::set(const std::string& tr_name, const std::string& br_name, int size, float* source) {
     this->set(tr_name, br_name, source, sizeof(source[0]) * size);
 }
 
@@ -245,7 +325,15 @@ void RootWriter::set(const std::string& tr_name, const std::string& br_name, int
     this->set(tr_name, br_name, source, sizeof(source[0]) * size);
 }
 
+void RootWriter::set(const std::string& br_name, short source) {
+    this->set(this->get_tr_name(), br_name, source);
+}
+
 void RootWriter::set(const std::string& br_name, int source) {
+    this->set(this->get_tr_name(), br_name, source);
+}
+
+void RootWriter::set(const std::string& br_name, float source) {
     this->set(this->get_tr_name(), br_name, source);
 }
 
@@ -253,7 +341,15 @@ void RootWriter::set(const std::string& br_name, double source) {
     this->set(this->get_tr_name(), br_name, source);
 }
 
+void RootWriter::set(const std::string& br_name, std::vector<short>& source) {
+    this->set(this->get_tr_name(), br_name, source);
+}
+
 void RootWriter::set(const std::string& br_name, std::vector<int>& source) {
+    this->set(this->get_tr_name(), br_name, source);
+}
+
+void RootWriter::set(const std::string& br_name, std::vector<float>& source) {
     this->set(this->get_tr_name(), br_name, source);
 }
 
@@ -261,7 +357,15 @@ void RootWriter::set(const std::string& br_name, std::vector<double>& source) {
     this->set(this->get_tr_name(), br_name, source);
 }
 
+void RootWriter::set(const std::string& br_name, int size, short* source) {
+    this->set(this->get_tr_name(), br_name, size, source);
+}
+
 void RootWriter::set(const std::string& br_name, int size, int* source) {
+    this->set(this->get_tr_name(), br_name, size, source);
+}
+
+void RootWriter::set(const std::string& br_name, int size, float* source) {
     this->set(this->get_tr_name(), br_name, size, source);
 }
 

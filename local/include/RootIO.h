@@ -32,9 +32,13 @@ struct Tree {
 class RootReader {
 protected:
     static const int MAX_MULTI = 1024;
+    std::vector<short> addr_short;
     std::vector<int> addr_int;
+    std::vector<float> addr_float;
     std::vector<double> addr_double;
+    std::vector< std::array<short, MAX_MULTI> > addr_ashort;
     std::vector< std::array<int, MAX_MULTI> > addr_aint;
+    std::vector< std::array<float, MAX_MULTI> > addr_afloat;
     std::vector< std::array<double, MAX_MULTI> > addr_adouble;
 
 public:
@@ -43,11 +47,15 @@ public:
     std::vector<std::string> branch_names;
     std::unordered_map<std::string, Branch> branches;
     std::vector<std::string> scalar_types = {
+        "short",
         "int",
+        "float",
         "double",
     };
     std::vector<std::string> array_types = {
+        "short[]",
         "int[]",
+        "float[]",
         "double[]",
     };
 
@@ -63,9 +71,13 @@ public:
 class RootWriter {
 protected:
     static const int MAX_MULTI = 1024;
+    std::vector<short> addr_short;
     std::vector<int> addr_int;
+    std::vector<float> addr_float;
     std::vector<double> addr_double;
+    std::vector< std::array<short, MAX_MULTI> > addr_ashort;
     std::vector< std::array<int, MAX_MULTI> > addr_aint;
+    std::vector< std::array<float, MAX_MULTI> > addr_afloat;
     std::vector< std::array<double, MAX_MULTI> > addr_adouble;
 
     std::string get_tr_name();
@@ -75,11 +87,15 @@ public:
     TFile* file;
     std::unordered_map<std::string, Tree> trees;
     std::vector<std::string> scalar_types = {
+        "short",
         "int",
+        "float",
         "double",
     };
     std::vector<std::string> array_types = {
+        "short[]",
         "int[]",
+        "float[]",
         "double[]",
     };
 
@@ -92,18 +108,30 @@ public:
     void set_branches(const std::string& tr_name, std::vector<Branch>& branches);
 
     void set(const std::string& tr_name, const std::string& br_name, const void* source, std::size_t nbytes);
+    void set(const std::string& tr_name, const std::string& br_name, short source);
     void set(const std::string& tr_name, const std::string& br_name, int source);
+    void set(const std::string& tr_name, const std::string& br_name, float source);
     void set(const std::string& tr_name, const std::string& br_name, double source);
+    void set(const std::string& tr_name, const std::string& br_name, std::vector<short>& source);
     void set(const std::string& tr_name, const std::string& br_name, std::vector<int>& source);
+    void set(const std::string& tr_name, const std::string& br_name, std::vector<float>& source);
     void set(const std::string& tr_name, const std::string& br_name, std::vector<double>& source);
+    void set(const std::string& tr_name, const std::string& br_name, int size, short* source);
     void set(const std::string& tr_name, const std::string& br_name, int size, int* source);
+    void set(const std::string& tr_name, const std::string& br_name, int size, float* source);
     void set(const std::string& tr_name, const std::string& br_name, int size, double* source);
 
+    void set(const std::string& br_name, short source);
     void set(const std::string& br_name, int source);
+    void set(const std::string& br_name, float source);
     void set(const std::string& br_name, double source);
+    void set(const std::string& br_name, std::vector<short>& source);
     void set(const std::string& br_name, std::vector<int>& source);
+    void set(const std::string& br_name, std::vector<float>& source);
     void set(const std::string& br_name, std::vector<double>& source);
+    void set(const std::string& br_name, int size, short* source);
     void set(const std::string& br_name, int size, int* source);
+    void set(const std::string& br_name, int size, float* source);
     void set(const std::string& br_name, int size, double* source);
 
     void fill();
