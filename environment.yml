@@ -31,3 +31,6 @@ dependencies:
    - cryptography=3.4.7
    - lxml>=4.6.3
    - autopep8
+
+   # C++ libraries
+   - jsoncpp=1.9.4

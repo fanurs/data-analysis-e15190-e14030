@@ -119,6 +119,7 @@ def get_options(header_dir):
         '-fconcepts', # allow features like auto in function arguments, etc.
         '-fPIC', # position independent code
         '-O2', # optimization level
+        '-ljsoncpp', # compile with json library
     ]
     return ' '.join(options)
 
