@@ -13,6 +13,46 @@
 
 #include "../include/RootIO.h"
 
+void Branch::autofill(const std::vector<std::string>& scalar_types, const std::vector<std::string>& array_types) {
+    auto is_contain = [](auto& arr, const auto& ele) -> bool {
+        return std::find(arr.begin(), arr.end(), ele) != arr.end();
+    };
+
+    // autofill fullname
+    if (this->fullname == "") {
+        this->fullname = this->name;
+    }
+
+    // autofill leaflists
+
+    // leaflist has been specified by user explicitly
+    if (is_contain(this->leaflist, '/')) {
+        // nothing to do
+    }
+    // empty leaflist with scalar type
+    else if (this->leaflist == "" && is_contain(scalar_types, this->type)) {
+        char type_char = toupper(this->type[0]);
+        this->leaflist = Form("%s/%c", this->fullname.c_str(), type_char);
+    }
+    // leaflist specifying only the array size, with array type
+    else if (this->leaflist.front() == '[' && this->leaflist.back() == ']' && is_contain(array_types, this->type)) {
+        char type_char = toupper(this->type[0]);
+        std::string size_str = this->leaflist.substr(1, this->leaflist.length() - 2);
+        this->leaflist = Form("%s[%s]/%c", this->fullname.c_str(), size_str.c_str(), type_char);
+    }
+    // empty leaflist, with type that is NOT "br_name[]", i.e. could be "br_name[multi]"
+    else if (this->leaflist == "" && this->type[this->type.length() - 2] != '[') {
+        char type_char = toupper(this->type[0]);
+        int pos = this->type.find('[');
+        std::string size_str(this->type.begin() + pos + 1, this->type.end() - 1);
+        this->leaflist = Form("%s[%s]/%c", this->fullname.c_str(), size_str.c_str(), type_char);
+        this->type = this->type.substr(0, pos) + "[]";
+    }
+    else if (is_contain(array_types, this->type)) {
+        throw std::invalid_argument("unrecognized leaflist for array-like branch.");
+    }
+}
+
 RootReader::RootReader() { }
 
 RootReader::RootReader(const std::string& path, const std::string& tr_name) {
@@ -32,6 +72,11 @@ void RootReader::set_branches(std::vector<Branch>& branches) {
     for (auto& branch: branches) {
         this->branch_names.push_back(branch.name);
         this->branches[branch.name] = branch;
+    }
+
+    // some autofills
+    for (auto& [name, branch]: this->branches) {
+        branch.autofill(this->scalar_types, this->array_types);
     }
 
     auto resize = [this](auto&&... args) {
@@ -124,38 +169,12 @@ void RootWriter::set_branches(const std::string& tr_name, std::vector<Branch>& b
         tree->branches[branch.name] = branch;
     }
 
-    // some auto-fills
+    // some autofills
     auto is_contain = [](auto& arr, const auto& ele) -> bool {
         return std::find(arr.begin(), arr.end(), ele) != arr.end();
     };
     for (auto& [name, branch]: tree->branches) {
-        if (branch.fullname == "") {
-            branch.fullname = branch.name;
-        }
-
-        // define leaflists
-        if (is_contain(branch.leaflist, '/')) {
-            // nothing to do; just use the leaflist specified by user
-        }
-        else if (branch.leaflist == "" && is_contain(this->scalar_types, branch.type)) {
-            char type_char = toupper(branch.type[0]);
-            branch.leaflist = Form("%s/%c", branch.fullname.c_str(), type_char);
-        }
-        else if (branch.leaflist.front() == '[' && branch.leaflist.back() == ']' && is_contain(this->array_types, branch.type)) {
-            char type_char = toupper(branch.type[0]);
-            std::string size_str = branch.leaflist.substr(1, branch.leaflist.length() - 2);
-            branch.leaflist = Form("%s[%s]/%c", branch.fullname.c_str(), size_str.c_str(), type_char);
-        }
-        else if (branch.leaflist == "" && branch.type[branch.type.length() - 2] != '[') {
-            char type_char = toupper(branch.type[0]);
-            int pos = branch.type.find('[');
-            std::string size_str(branch.type.begin() + pos + 1, branch.type.end() - 1);
-            branch.leaflist = Form("%s[%s]/%c", branch.fullname.c_str(), size_str.c_str(), type_char);
-            branch.type = branch.type.substr(0, pos) + "[]";
-        }
-        else if (is_contain(this->array_types, branch.type)) {
-            throw std::invalid_argument("Unrecognized leaflist for array-like branch.");
-        }
+        branch.autofill(this->scalar_types, this->array_types);
     }
 
     auto resize = [tree](auto&&... args) {

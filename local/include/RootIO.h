@@ -19,6 +19,8 @@ struct Branch {
     bool status = true;
     int index = -1;
     void* value;
+
+    void autofill(const std::vector<std::string>& scalar_types, const std::vector<std::string>& array_types);
 };
 
 struct Tree {
