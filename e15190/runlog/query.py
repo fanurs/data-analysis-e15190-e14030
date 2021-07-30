@@ -7,17 +7,19 @@ from plotly.subplots import make_subplots
 import plotly.io as pio
 pio.templates.default = 'simple_white'
 
-import e15190
+from e15190 import PROJECT_DIR
 
 class ElogQuery:
-    def __init__(self):
-        self.path = pathlib.Path(e15190.PROJECT_DIR, 'database/runlog/elog_final.h5')
+    def __init__(self, set_breakpoints=True):
+        self.path = pathlib.Path(PROJECT_DIR, 'database/runlog/elog_final.h5')
         with pd.HDFStore(self.path, 'r') as file:
             self.df = file['runs_final']
             self.df.sort_values('run', inplace=True, ignore_index=True)
 
         self.unified_properties = ['target', 'beam', 'shadow_bar']
         self.max_run_gap = np.timedelta64(2, 'h')
+
+        self.set_breakpoints()
     
     def set_breakpoints(self, unified_properties=None, max_run_gap=None):
         # breakpoints by reaction systems and shadow bars (in/out)
@@ -40,7 +42,7 @@ class ElogQuery:
         indices = pd.MultiIndex.from_arrays(indices, names=['ibatch', 'irun'])
         self.df.set_index(indices, inplace=True)
     
-    def draw_reaction_overview(self, append_trigger_rate=True, dim=480):
+    def get_figure_reaction_overview(self, append_trigger_rate=True, dim=480):
         showlegend_first_only = {56: True, 140: True}
         def routine(fig, df, rc):
             target_map = {'Ni58': 58, 'Ni64': 64, 'Sn112': 112, 'Sn124': 124}
