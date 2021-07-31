@@ -162,3 +162,123 @@ class ElogQuery:
             title='<b>Trigger rate</b> (Hz)',
         )
         return fig
+
+    @staticmethod
+    def append_nwb_pos_calib_params(fig, df):
+        def get_calib_params(run):
+            path = pathlib.Path(
+                PROJECT_DIR,
+                'database/neutron_wall/position_calibration/calib_params',
+                f'run-{run:04d}-nwb.dat',
+            )
+            if path.is_file():
+                df_par = pd.read_csv(path, delim_whitespace=True, comment='#')
+                df_par.set_index('nwb-bar', drop=True, inplace=True)
+                return df_par
+            else:
+                return None
+
+        y_range = [1e9, -1e9]
+        showlegend_first_only = {bar: True for bar in range(25)}
+        original_len = len(fig.data)
+        itrace = original_len
+        itraces = dict()
+        def routine(fig, df, rc):
+            nonlocal itrace
+            colors = {'p0': 'green', 'p1': 'purple'}
+            ibatches = sorted(df.index.get_level_values('ibatch').unique())
+            for ibatch in ibatches:
+                subdf = df.loc[ibatch]
+
+                # collect parameters
+                runs = []
+                df_par = {'p0': None, 'p1': None}
+                for run in subdf['run']:
+                    _df = get_calib_params(run)
+                    if _df is None:
+                        continue
+                    for par in df_par:
+                        if df_par[par] is None:
+                            df_par[par] = _df[par].to_frame()
+                        else:
+                            df_par[par] = pd.concat([df_par[par], _df[par]], axis='columns')
+                    runs.append(run)
+
+                # construct and collect plotly traces
+                for par in df_par:
+                    if df_par[par] is None:
+                        break
+                    df_par[par] = df_par[par].transpose()
+
+                    # update y_range
+                    y_range[0] = min(y_range[0], df_par[par].min().min())
+                    y_range[1] = max(y_range[1], df_par[par].max().max())
+
+                    # add all bars in this batch
+                    for bar in df_par[par].columns:
+                        scat = go.Scatter(
+                            x=runs, y=df_par[par][bar],
+                            mode='lines',
+                            line_color=colors[par],
+                            showlegend=False,
+                            name=par,
+                            visible=False,
+                        )
+                        showlegend_first_only[bar] = False
+                        fig.add_trace(scat, **rc, secondary_y=True)
+                        itraces[(ibatch, bar, par)] = itrace
+                        itrace +=1
+
+        # apply routine
+        rc = dict(row=1, col=1)
+        subdf = df.query('run < 3000')
+        routine(fig, subdf, rc)
+
+        rc = dict(row=2, col=1)
+        subdf = df.query('run > 4000')
+        routine(fig, subdf, rc)
+
+        # create slider step
+        steps = []
+        bars = sorted(set([_bar for (_, _bar, _) in itraces.keys()]))
+        for bar in bars:
+            visibilities = [_data.visible for _data in fig.data]
+            for (_, _bar, _), itrace in itraces.items():
+                visibilities[itrace] = (_bar == bar)
+            step = dict(
+                method='update',
+                args=[
+                    dict(visible=visibilities),
+                    dict(title=f'<i><b>NWB-{bar:02d} position calibration</b></i>'),
+                ],
+                label=f'{bar:02d}',
+            )
+            steps.append(step)
+
+        # create slider
+        init_active_index = 0
+        for (_, _bar, _), itrace in itraces.items():
+            fig.data[itrace].visible = (_bar == bars[init_active_index])
+        sliders = [dict(
+            active=init_active_index,
+            steps=steps,
+            currentvalue=dict(prefix='NWB-'),
+            y=-0.03,
+            ticklen=3,
+            tickwidth=3,
+        )]
+
+        # finalizing layout
+        y_width = y_range[1] - y_range[0]
+        y_range = [y_range[0] - 0.05 * y_width, y_range[1] + 0.05 * y_width]
+        fig.update_yaxes(
+            secondary_y=True,
+            range=y_range,
+        )
+        fig.update_layout(
+            sliders=sliders,
+            title=f'<i><b>NWB-{bars[init_active_index]:02d} position calibration</b></i>',
+            title_x=0.5,
+            title_xanchor='center',
+        )
+        return fig
