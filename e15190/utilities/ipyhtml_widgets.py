@@ -2,16 +2,14 @@ import base64
 import copy
 import io
 import pathlib
+import time
 
 import IPython
 from mako.template import Template
 import numpy as np
 import PIL
 
-from e15190 import PROJECT_DIR
-
-if 'IPYTHON_HTML_WIDGET_TAG' not in globals():
-    IPYTHON_HTML_WIDGET_TAG = 0
+from nutranspy import PROJECT_DIR
 
 class ImageDisplayer:
     def __init__(self):
@@ -36,8 +34,6 @@ class ImageDisplayer:
     
     @staticmethod
     def render(template, subs):
-        global IPYTHON_HTML_WIDGET_TAG
-        IPYTHON_HTML_WIDGET_TAG += 1
         return template.render(**subs)
 
     def _get_html(
@@ -79,7 +75,7 @@ class ImageDisplayer:
         template_path = pathlib.Path(self.template_directory, template_filename)
         template = Template(filename=str(template_path))
         subs = dict(
-            uniqtag=f'ipywg{IPYTHON_HTML_WIDGET_TAG}',
+            uniqtag=f'ipywg{int(1e3 * time.time()):x}', # use Epoch time in millisecond
             figures=figures,
             first=first,
             image_style=image_style,
