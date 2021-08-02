@@ -37,20 +37,21 @@ def main():
 
     # compile
     run = lambda cmd, verbose=args.verbose, debug=args.debug: run_command(cmd, verbose, debug)
+    gpp = str(pathlib.Path(sys.prefix, 'bin/g++'))
     if args.no_linker:
-        cmd_fmt = 'g++ {opt} -c {src}'
+        cmd_fmt = gpp + ' {opt} -c {src}'
         if not multiple_src_files:
             run(cmd_fmt.format(opt=options, src=src_file))
         else:
             [run(cmd_fmt.format(opt=options, src=src_file)) for src_file in args.main_script]
     elif args.standalone:
-        cmd_fmt = 'g++ {opt} -o {exec} {src}'
+        cmd_fmt = gpp + ' {opt} -o {exec} {src}'
         if not multiple_src_files:
             run(cmd_fmt.format(opt=options, exec=exec_file, src=src_file))
         else:
             run(cmd_fmt.format(opt=options, exec=exec_file, src=src_files))
     else:
-        cmd_fmt = 'g++ {opt} -o {exec} {src} {obj}'
+        cmd_fmt = gpp + ' {opt} -o {exec} {src} {obj}'
         if not multiple_src_files:
             run(cmd_fmt.format(opt=options, exec=exec_file, src=src_file, obj=o_files))
         else:
