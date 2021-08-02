@@ -125,8 +125,7 @@ class ElogQuery:
         )
         return self.append_trigger_rate(fig, self.df) if append_trigger_rate else fig
 
-    @staticmethod
-    def append_trigger_rate(fig, df):
+    def append_trigger_rate(self, fig):
         def routine(fig, df, rc):
             shadow_map = {'in': 'black', 'out': 'gold'}
             ibatches = sorted(df.index.get_level_values('ibatch').unique())
@@ -149,11 +148,11 @@ class ElogQuery:
                 fig.add_trace(scat, **rc, secondary_y=True)
         
         rc = dict(row=1, col=1)
-        subdf = df.query('run < 3000')
+        subdf = self.df.query('run < 3000')
         routine(fig, subdf, rc)
 
         rc = dict(row=2, col=1)
-        subdf = df.query('run > 4000')
+        subdf = self.df.query('run > 4000')
         routine(fig, subdf, rc)
 
         fig.update_yaxes(
@@ -163,8 +162,7 @@ class ElogQuery:
         )
         return fig
 
-    @staticmethod
-    def append_nwb_pos_calib_params(fig, df):
+    def append_nwb_pos_calib_params(self, fig):
         def get_calib_params(run):
             path = pathlib.Path(
                 PROJECT_DIR,
@@ -178,14 +176,14 @@ class ElogQuery:
             else:
                 return None
 
+        colors = {'p0': 'green', 'p1': 'purple'}
         y_range = [1e9, -1e9]
         showlegend_first_only = {bar: True for bar in range(25)}
         original_len = len(fig.data)
         itrace = original_len
         itraces = dict()
         def routine(fig, df, rc):
-            nonlocal itrace
-            colors = {'p0': 'green', 'p1': 'purple'}
+            nonlocal itrace, colors
             ibatches = sorted(df.index.get_level_values('ibatch').unique())
             for ibatch in ibatches:
                 subdf = df.loc[ibatch]
@@ -231,11 +229,11 @@ class ElogQuery:
 
         # apply routine
         rc = dict(row=1, col=1)
-        subdf = df.query('run < 3000')
+        subdf = self.df.query('run < 3000')
         routine(fig, subdf, rc)
 
         rc = dict(row=2, col=1)
-        subdf = df.query('run > 4000')
+        subdf = self.df.query('run > 4000')
         routine(fig, subdf, rc)
 
         # create slider step
@@ -271,14 +269,16 @@ class ElogQuery:
         # finalizing layout
         y_width = y_range[1] - y_range[0]
         y_range = [y_range[0] - 0.05 * y_width, y_range[1] + 0.05 * y_width]
+        y2_title = f'<span style="color: {colors["p0"]};"><b>p<sub>0</sub></b></span>'
+        y2_title += ', '
+        y2_title += f'<span style="color: {colors["p1"]};"><b>p<sub>1</sub></b></span>'
         fig.update_yaxes(
             secondary_y=True,
             range=y_range,
+            title=y2_title,
         )
         fig.update_layout(
             sliders=sliders,
             title=f'<i><b>NWB-{bars[init_active_index]:02d} position calibration</b></i>',
-            title_x=0.5,
-            title_xanchor='center',
         )
         return fig
