@@ -162,7 +162,7 @@ class ElogQuery:
         )
         return fig
 
-    def append_nwb_pos_calib_params(self, fig):
+    def append_nwb_pos_calib_params(self, fig, ignore_batches=True):
         def get_calib_params(run):
             path = pathlib.Path(
                 PROJECT_DIR,
@@ -186,7 +186,10 @@ class ElogQuery:
             nonlocal itrace, colors
             ibatches = sorted(df.index.get_level_values('ibatch').unique())
             for ibatch in ibatches:
-                subdf = df.loc[ibatch]
+                if ignore_batches:
+                    subdf = df.copy()
+                else:
+                    subdf = df.loc[ibatch]
 
                 # collect parameters
                 runs = []
@@ -216,7 +219,8 @@ class ElogQuery:
                     for bar in df_par[par].columns:
                         scat = go.Scatter(
                             x=runs, y=df_par[par][bar],
-                            mode='lines',
+                            mode='markers' if ignore_batches else 'lines',
+                            marker_size=3,
                             line_color=colors[par],
                             showlegend=False,
                             name=par,
@@ -226,6 +230,9 @@ class ElogQuery:
                         fig.add_trace(scat, **rc, secondary_y=True)
                         itraces[(ibatch, bar, par)] = itrace
                         itrace +=1
+                
+                if ignore_batches:
+                    break
 
         # apply routine
         rc = dict(row=1, col=1)
