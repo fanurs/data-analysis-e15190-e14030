@@ -23,6 +23,7 @@ dependencies:
 
    # statistical tools and machine learning
    - scikit-learn>=0.24.0
+   - ruptures>=1.1.4
 
    # plotting
    - matplotlib>=3.3.0
