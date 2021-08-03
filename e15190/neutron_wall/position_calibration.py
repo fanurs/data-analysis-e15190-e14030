@@ -2,6 +2,7 @@ import concurrent.futures
 import copy
 import heapq
 import inspect
+import json
 import pathlib
 import warnings
 import sys
@@ -11,12 +12,14 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import ruptures as rpt
 from scipy import optimize, stats
 from sklearn import neighbors
 import uproot
 
-from .. import PROJECT_DIR
-from ..utilities import local_manager, tables
+from e15190 import PROJECT_DIR
+from e15190.runlog import query
+from e15190.utilities import local_manager, tables
 
 DATABASE_DIR = pathlib.Path(PROJECT_DIR, 'database', 'neutron_wall', 'position_calibration')
 CACHE_DIR = pathlib.Path(DATABASE_DIR, 'cache')
@@ -610,3 +613,182 @@ class NWBPositionCalibrator:
         axt.tick_params(axis='x', which='both', colors=vw_grid_color)
         axt.spines['top'].set_color(vw_grid_color)
         axt.set_xlim(-150, 150)
+
+class NWBCalibrationReader:
+    def __init__(self, force_find_breakpoints=False):
+        self.AB = 'B'
+        self.ab = self.AB.lower()
+
+        self.json_path = pathlib.Path(CALIB_PARAMS_DIR, 'calib_params.json')
+        self.dat_path = pathlib.Path(CALIB_PARAMS_DIR, 'calib_params.dat')
+
+        if not self.json_path.is_file() or force_find_breakpoints:
+            self.find_calibration_breakpoints(save_to_database=True)
+        self._update_json_content()
+    
+    def _update_json_content(self):
+        with open(self.json_path, 'r') as file:
+            self.json_content = json.load(file)
+        self.json_content = {int(key): value for key, value in self.json_content.items()}
+
+    def find_calibration_breakpoints(self, save_to_database=True):
+        """Use Change Point Detection "CPD" algorithm from `ruptures` to
+        identify where calibration parameters have shifted.
+
+        Parameters:
+            save_to_database : bool, default True
+                If `True`, save all the results into JSON and DAT files; if
+                `False`, nothing will be saved to files. Default is `True`.
+        
+        Returns:
+            A dictionary of breakpoints with keys being bar numbers. The values
+            are lists of dictionaries, each of which has two keys, namely,
+            `run_range` and `parameters`.
+        """
+        # read in all calibration parameters
+        runs = []
+        df_par = {'p0': None, 'p1': None}
+        elog = query.ElogQuery()
+        for run in elog.df['run']:
+            _df = self._get_calib_params(run)
+            if _df is None:
+                continue
+            for par in df_par:
+                if df_par[par] is None:
+                    df_par[par] = _df[par].to_frame()
+                else:
+                    df_par[par] = pd.concat([df_par[par], _df[par]], axis='columns')
+            runs.append(run)
+        for par, _df in df_par.items():
+            _df.columns = runs
+            _df = _df.transpose()
+            _df.index.rename('run', inplace=True)
+            df_par[par] = _df # rows: run; cols: bar
+
+        # apply change point detection (CPD) on the calibration parameters
+        breakpoints = {bar: [] for bar in df_par['p0'].columns}
+        for cut in ['run < 3500', 'run > 3500']:
+            df = {par: _df.query(cut) for par, _df in df_par.items()}
+            for bar in breakpoints:
+                params = {par: df[par][bar] for par in df}
+                data = np.vstack(list(params.values())).transpose()
+                cpd = rpt.KernelCPD('rbf', min_size=1).fit(data)
+                bp_indices = cpd.predict(pen=5.0)
+                runs = params['p0'].index
+                bp_runs = runs[bp_indices[:-1]]
+                breakpoints[bar].extend([runs[0]] + list(bp_runs) + [runs[-1] + 1])
+        
+        # calculate the mid-50 averages
+        for bar, bp_runs in breakpoints.items():
+            bp_runs = np.array(bp_runs)
+            run_ranges = np.vstack([bp_runs[:-1], bp_runs[1:] - 1]).transpose()
+            new_value = []
+            for run_range in run_ranges:
+                cut = f'run >= {run_range[0]} & run <= {run_range[1]}'
+                if eval(cut.replace('run', '3500').replace('&', 'and')):
+                    continue
+                p_means = dict()
+                for par in df_par:
+                    pars = df_par[par].query(cut)[bar]
+                    pars = pars[(pars > pars.quantile(0.25)) & (pars < pars.quantile(0.75))]
+                    p_means[par] = pars.mean()
+                
+                new_value.append({
+                    'run_range': [int(run) for run in run_range],
+                    'parameters': [round(p_mean, 6) for p_mean in p_means.values()],
+                })
+            breakpoints[bar] = new_value
+        
+        if save_to_database:
+            # as .json
+            with open(self.json_path, 'w') as file:
+                json.dump(breakpoints, file, indent=4)
+
+            # as .dat
+            df = []
+            for bar, infos in breakpoints.items():
+                for info in infos:
+                    df.append([bar, *info['run_range'], *info['parameters']])
+            df = pd.DataFrame(df, columns=['bar', 'run_start', 'run_stop', 'p0', 'p1'])
+            tables.to_fwf(df, self.dat_path, floatfmt=['02.0f', '04.0f', '04.0f', '.6f', '.6f'])
+
+        return breakpoints
+    
+    def _get_calib_params(self, run):
+        """Reader in the run-by-run calibration parameters from *.dat files.
+
+        Parameters:
+            run : int
+                Experimental run number.
+        
+        Returns:
+            If run is found in database, returns a `pandas.DataFrame`.
+            Otherwise, returns `None`
+        """
+        path = pathlib.Path(
+            PROJECT_DIR,
+            'database/neutron_wall/position_calibration/calib_params',
+            f'run-{run:04d}-nw{self.ab}.dat',
+        )
+        if path.is_file():
+            df_par = pd.read_csv(path, delim_whitespace=True, comment='#')
+            df_par.set_index(f'nw{self.ab}-bar', drop=True, inplace=True)
+            return df_par
+        else:
+            return None
+
+    def __call__(self, run, extrapolate=False, refresh=False):
+        """Returns position calibration parameters for all bars as `pandas.DataFrame`.
+
+        Parameters:
+            run : int
+                Experimental run number.
+            extrapolate : bool, default False
+                If `True`, uses the parameters from the closest run for run out
+                of bound; if `False`, raises a `ValueError` whenever the run is
+                out of bound. Default is `False`.
+            refresh : bool, default False
+                If `True`, always read in the parameters from JSON file; if
+                `False`, simply uses `self.json_content` that had been loaded to
+                memory upon initialization.
+        
+        Returns:
+            A `pandas.DataFrame` with rows of bars and columns of p0 and p1.
+        """
+        if refresh:
+            self._update_json_content()
+
+        # start collecting the parameters
+        df = []
+        for bar, infos in self.json_content.items():
+            # extract all parameters for the run of interest
+            run_found = False
+            for info in infos:
+                if run >= info['run_range'][0] and run <= info['run_range'][1]:
+                    df.append([bar, *info['parameters']])
+                    run_found = True
+                    break
+            if run_found:
+                continue
+
+            # in the case when run was not found
+            if not extrapolate:
+                raise ValueError(f'Found no position calibration parmeters for run-{run:04d}')
+
+            # run not found, constant extrapolation from the closest run_range
+            closest_index = None
+            closest_diff = 1e8
+            for i_info, info in enumerate(infos):
+                for run_edge in info['run_range']:
+                    diff = abs(run - run_edge)
+                    if diff < closest_diff:
+                        closest_index = i_info
+                        closest_diff = diff
+            info = infos[closest_index]
+            df.append([bar, *info['parameters']])
+
+        # save parameters into pandas.DataFrame
+        par_cols = [f'p{i}' for i in range(len(info['parameters']))]
+        df = pd.DataFrame(df, columns=[f'nw{self.ab}-bar', *par_cols])
+        df.set_index(f'nw{self.ab}-bar', inplace=True, drop=True)
+        return df
