@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 7):
     raise Exception('Requires at least Python 3.7 to use this repository.')
