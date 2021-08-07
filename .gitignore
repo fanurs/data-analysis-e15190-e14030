@@ -12,6 +12,7 @@ wmu_mysql_database.h5
 
 # object files, binaries, etc.
 *.o
+*.so
 *.exe
 
 # local files
