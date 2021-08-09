@@ -19,6 +19,9 @@ wmu_mysql_database.h5
 .vscode/
 env_e15190/
 dev*.py
+
+# local database
 database/local_paths.json
+database/root_files
 database/neutron_wall/position_calibration/cache
 database/neutron_wall/position_calibration/gallery
