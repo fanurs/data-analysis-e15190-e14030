@@ -65,6 +65,10 @@ void RootReader::read_in(const std::string& path, const std::string& tr_name) {
     this->path = std::filesystem::path(path);
     this->tree = new TChain(tr_name.c_str());
     this->tree->Add(this->path.string().c_str());
+    if (this->tree->GetEntries() <= 0) {
+        std::cerr << "ERROR: Fail to open " << this->path.string() << std::endl;
+        exit(1);
+    }
     return;
 }
 
