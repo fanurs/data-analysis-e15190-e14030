@@ -39,12 +39,8 @@ int main(int argc, char* argv[]) {
     ArgumentParser argparser(argc, argv);
 
     // read in position calibration parameters
-    std::filesystem::path pos_calib_path = project_dir;
-    pos_calib_path /= "database/neutron_wall/position_calibration/calib_params";
-    pos_calib_path /= Form("run-%04d-nwb.dat", argparser.run_num);
     NWBPositionCalibParamReader nwb_pcalib;
-    nwb_pcalib.load(pos_calib_path.string());
-    nwb_pcalib.set_index("bar");
+    nwb_pcalib.load(argparser.run_num);
 
     // read in Daniele's ROOT files
     std::ifstream local_paths_json(project_dir / "database/local_paths.json");
@@ -115,9 +111,8 @@ int main(int argc, char* argv[]) {
         std::vector<double> nwb_psd;
         for (int m = 0; m < nwb_multi; ++m) {
             // apply position calibration
-            int p0 = nwb_pcalib.get<double>(nwb_bar[m], "p0");
-            int p1 = nwb_pcalib.get<double>(nwb_bar[m], "p1");
-
+            int p0 = nwb_pcalib.get(nwb_bar[m], "p0");
+            int p1 = nwb_pcalib.get(nwb_bar[m], "p1");
             double pos = p0 + p1 * (nwb_time_L[m] - nwb_time_R[m]);
             nwb_positions.push_back(pos);
 
