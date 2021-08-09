@@ -19,3 +19,5 @@ wmu_mysql_database.h5
 env_e15190/
 dev*.py
 database/local_paths.json
+database/neutron_wall/position_calibration/cache
+database/neutron_wall/position_calibration/gallery
