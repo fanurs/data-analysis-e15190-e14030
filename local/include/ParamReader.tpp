@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <sstream>
 
@@ -12,6 +13,9 @@ template <typename index_t>
 ParamReader<index_t>::ParamReader(const std::string& tr_name, const std::string& tr_title) {
     this->initialize_tree(tr_name, tr_title);
 }
+
+template <typename index_t>
+ParamReader<index_t>::~ParamReader() { }
 
 template <typename index_t>
 void ParamReader<index_t>::initialize_tree(const std::string& tr_name, const std::string& tr_title) {
@@ -30,6 +34,10 @@ void ParamReader<index_t>::initialize_tree(const std::string& tr_name, const std
 template <typename index_t>
 long ParamReader<index_t>::load_from_txt(const std::string& filename, const std::string& branch_descriptor, int n_skip_rows, char delimiter) {
     std::ifstream infile(filename);
+    if (!infile.is_open()) {
+        std::cerr << "ERROR: Fail to find/open " << filename << std::endl;
+        exit(1);
+    }
     std::string content = "";
     std::string buffer;
     int i_row = 0;
@@ -47,7 +55,7 @@ long ParamReader<index_t>::load_from_txt(const std::string& filename, const std:
 
 template <typename index_t>
 template <typename val_t>
-val_t ParamReader<index_t>::get(index_t index, const std::string& col_name) {
+val_t ParamReader<index_t>::get_value(index_t index, const std::string& col_name) {
     this->reader.Restart();
     TTreeReaderValue<val_t> value(this->reader, col_name.c_str());
     this->reader.SetEntry(this->index_map[index]);
