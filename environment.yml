@@ -34,4 +34,4 @@ dependencies:
    - autopep8
 
    # C++ libraries
-   - jsoncpp=1.9.4
+   - nlohmann_json=3.9.1
