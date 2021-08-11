@@ -7,10 +7,12 @@
 #include <unordered_map>
 #include <string>
 
-#include <json/json.h>
+#include <nlohmann/json.hpp>
 
 #include "TTree.h"
 #include "TTreeReader.h"
+
+using Json = nlohmann::json;
 
 template <typename index_t>
 class ParamReader {
@@ -38,9 +40,8 @@ public:
     std::string json_filename = "calib_params.json";
     std::filesystem::path pcalib_dir;
     std::filesystem::path json_path;
-    Json::Value database;
+    Json database;
     std::map<std::pair<int, std::string>, double> run_param;
-    std::string _json_error;
 
     NWBPositionCalibParamReader();
     ~NWBPositionCalibParamReader();

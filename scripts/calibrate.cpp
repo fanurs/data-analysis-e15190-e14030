@@ -10,7 +10,7 @@
 #include <vector>
 
 // third-party libraries
-#include <json/json.h>
+#include <nlohmann/json.hpp>
 
 // CERN ROOT libraries
 #include "TError.h"
@@ -18,6 +18,8 @@
 // local libraries
 #include "ParamReader.h"
 #include "RootIO.h"
+
+using Json = nlohmann::json;
 
 struct ArgumentParser {
     int run_num = 0;
@@ -44,15 +46,16 @@ int main(int argc, char* argv[]) {
 
     // read in Daniele's ROOT files
     std::ifstream local_paths_json(project_dir / "database/local_paths.json");
-    Json::CharReaderBuilder json_builder;
-    Json::Value json_value;
-    auto parse_success = parseFromStream(json_builder, local_paths_json, &json_value, NULL);
-    local_paths_json.close();
-    if (!parse_success) {
+    Json json_value;
+    try {
+        local_paths_json >> json_value;
+        local_paths_json.close();
+    }
+    catch (...) {
         std::cerr << "Failed to read in $PROJECT_DIR/database/local_paths.json" << std::endl;
         return 1;
     }
-    std::filesystem::path inroot_path = json_value["daniele_root_files_dir"].asString();
+    std::filesystem::path inroot_path = json_value["daniele_root_files_dir"];
     inroot_path /= Form("CalibratedData_%04d.root", argparser.run_num);
     RootReader reader(inroot_path.string(), "E15190");
     std::vector<Branch> in_branches {
