@@ -1,6 +1,7 @@
 // standard libraries
 #include <any>
 #include <array>
+#include <clocale>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -90,11 +91,12 @@ int main(int argc, char* argv[]) {
     writer.set_branches(out_branches);
 
     // main loop
+    std::setlocale(LC_NUMERIC, "");
     int n_entries = reader.tree->GetEntries();
     for (int ievt = 0; ievt < n_entries; ++ievt) {
         if (ievt % 4321 == 0) {
             std::cout << Form("\r> %6.2f", 1e2 * ievt / n_entries) << "%" << std::flush;
-            std::cout << Form("%24s", Form("(%d/%d)", ievt, n_entries)) << std::flush;
+            std::cout << Form("%28s", Form("(%'d/%'d)", ievt, n_entries)) << std::flush;
         }
 
         auto buffer = reader.get_entry(ievt);
@@ -138,7 +140,7 @@ int main(int argc, char* argv[]) {
 
         writer.fill();
     }
-    std::cout << "\r> 100.00%" << Form("%24s", Form("(%d/%d)", n_entries, n_entries)) << std::endl;
+    std::cout << "\r> 100.00%" << Form("%28s", Form("(%'d/%'d)", n_entries, n_entries)) << std::endl;
 
     writer.write();
 
