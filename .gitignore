@@ -18,6 +18,7 @@ wmu_mysql_database.h5
 # local files
 .vscode/
 env_e15190/
+local/etc
 dev*.py
 
 # local database
