@@ -46,17 +46,17 @@ int main(int argc, char* argv[]) {
     nwb_pcalib.load(argparser.run_num);
 
     // read in Daniele's ROOT files
-    std::ifstream local_paths_json(project_dir / "database/local_paths.json");
-    Json json_value;
+    std::ifstream local_paths_json_file(project_dir / "database/local_paths.json");
+    Json local_paths_json;
     try {
-        local_paths_json >> json_value;
-        local_paths_json.close();
+        local_paths_json_file >> local_paths_json;
+        local_paths_json_file.close();
     }
     catch (...) {
         std::cerr << "Failed to read in $PROJECT_DIR/database/local_paths.json" << std::endl;
         return 1;
     }
-    std::filesystem::path inroot_path = json_value["daniele_root_files_dir"];
+    std::filesystem::path inroot_path = local_paths_json["daniele_root_files_dir"].get<std::string>();
     inroot_path /= Form("CalibratedData_%04d.root", argparser.run_num);
     RootReader reader(inroot_path.string(), "E15190");
     std::vector<Branch> in_branches {

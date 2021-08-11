@@ -76,18 +76,18 @@ bool NWBPositionCalibParamReader::load(int run, bool extrapolate) {
         for (int ibatch = 0; ibatch < this->database[bar_str].size(); ++ibatch) {
             auto& batch = this->database[bar_str][ibatch];
             auto& run_range = batch["run_range"];
-            if ((run >= run_range[0]) && run <= run_range[1]) {
+            if ((run >= run_range[0].get<int>()) && run <= run_range[1].get<int>()) {
                 auto& param = batch["parameters"];
-                this->run_param[std::make_pair(bar, "p0")] = param[0];
-                this->run_param[std::make_pair(bar, "p1")] = param[1];
+                this->run_param[std::make_pair(bar, "p0")] = param[0].get<double>();
+                this->run_param[std::make_pair(bar, "p1")] = param[1].get<double>();
                 found = true;
                 break;
             }
             else {
                 // if not in run_range, record down the run difference for later
                 // use of finding the closest batch
-                int diff0 = abs(run - (int)run_range[0]);
-                int diff1 = abs(run - (int)run_range[1]);
+                int diff0 = abs(run - run_range[0].get<int>());
+                int diff1 = abs(run - run_range[1].get<int>());
                 int diff = std::min(diff0, diff1);
                 if (diff < closest_diff) {
                     closest_diff = diff;
@@ -103,8 +103,8 @@ bool NWBPositionCalibParamReader::load(int run, bool extrapolate) {
         // fail to find run in all run ranges, may extrapolate from the closest batch
         if (extrapolate) {
             auto& closest_params = this->database[bar_str][closest_ibatch]["parameters"];
-            this->run_param[std::make_pair(bar, "p0")] = closest_params[0];
-            this->run_param[std::make_pair(bar, "p1")] = closest_params[1];
+            this->run_param[std::make_pair(bar, "p0")] = closest_params[0].get<double>();
+            this->run_param[std::make_pair(bar, "p1")] = closest_params[1].get<double>();
         }
         else {
             std::cerr << "ERROR: run " << run << " is out of range in " << this->json_path.string() << std::endl;
