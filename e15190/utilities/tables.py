@@ -1,6 +1,13 @@
 from tabulate import tabulate
 
-def to_fwf(df, path, drop_header=False, drop_index=True, **tabulate_kwargs):
+def to_fwf(
+    df,
+    path,
+    drop_header=False,
+    drop_index=True,
+    comment=None,
+    **tabulate_kwargs,
+):
     """Write Pandas Dataframe into fixed-width file (FWF).
 
     Parameters
@@ -15,6 +22,9 @@ def to_fwf(df, path, drop_header=False, drop_index=True, **tabulate_kwargs):
     drop_index : bool, default True
         If `True`, the index will not be included; if `False`, the index will be
         written to file as one of the columns.
+    comment : str or None
+        If None, no comment will be written to file. Otherwise, the comment will
+        be written to the beginning of the file, in lines before the table.
     tabulate_kwargs
         Keyword arguments for the tabulate function. See more at
         https://pypi.org/project/tabulate/
@@ -28,4 +38,9 @@ def to_fwf(df, path, drop_header=False, drop_index=True, **tabulate_kwargs):
     kw.update(tabulate_kwargs)
     content = tabulate(df.values.tolist(), header, **kw)
     with open(path, 'w') as f:
+        if comment is None:
+            pass
+        else:
+            f.write(comment.strip() + '\n')
+
         f.write(content + '\n')
