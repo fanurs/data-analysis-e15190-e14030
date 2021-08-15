@@ -1,3 +1,4 @@
+#%%
 import itertools as itr
 
 import numpy as np
@@ -136,4 +137,13 @@ class Wall:
         df = pd.DataFrame(df, columns=columns)
 
         # save to database
-        tables.to_fwf(df, self.path_database, comment='# measurement unit: cm')
+        tables.to_fwf(
+            df,
+            self.path_database,
+            comment='# measurement unit: cm',
+            floatfmt=[
+                '.0f',
+                '.0f', '.0f', '.0f',
+                '.4f', '.4f', '.4f',
+            ],
+        )
