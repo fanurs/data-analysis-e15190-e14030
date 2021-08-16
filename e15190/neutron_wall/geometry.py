@@ -56,7 +56,7 @@ class Wall:
         self.AB = AB.upper()
         self.ab = self.AB.lower()
         self.path_inventor_readings = _database_dir / f'inventor_readings_NW{self.AB}.dat'
-        self.path_database = _database_dir / f'NW{self.AB}.dat'
+        self.path_database = _database_dir / f'NW{self.AB}_raw.dat'
 
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
