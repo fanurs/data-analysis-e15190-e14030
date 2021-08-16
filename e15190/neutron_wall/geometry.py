@@ -1,9 +1,10 @@
-#%%
 import itertools as itr
 
 import numpy as np
 import pandas as pd
+from scipy.spatial.transform import Rotation
 from sklearn.decomposition import PCA
+import sympy as sp
 
 from e15190 import PROJECT_DIR
 from e15190.utilities import tables
@@ -11,7 +12,9 @@ from e15190.utilities import tables
 _database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
 
 class Bar:
-    def __init__(self, vertices):
+    def __init__(self, vertices, contain_pyrex=True):
+        self.contain_pyrex = contain_pyrex
+        self.pyrex_thickness = 2.54 / 8 # cm
         self.vertices = np.array(vertices)
         self.pca = PCA(n_components=3, svd_solver='full')
         self.pca.fit(self.vertices)
@@ -49,37 +52,98 @@ class Bar:
             rel_dir: vertex for rel_dir, vertex in zip(rel_directions, self.loc_vertices)
         }
         self.loc_vertices = dict(sorted(self.loc_vertices.items(), reverse=True))
+    
+    @property
+    def length(self):
+        result = []
+        for sign in itr.product([+1, 1], repeat=2):
+            diff = self.loc_vertices[(1, *sign)][0] - self.loc_vertices[(-1, *sign)][0]
+            result.append(abs(diff))
+        return np.mean(result)
+    
+    @property
+    def height(self):
+        result = []
+        for sign in itr.product([+1, 1], repeat=2):
+            diff = self.loc_vertices[(sign[0], 1, sign[1])][1] - self.loc_vertices[(sign[0], -1, sign[1])][1]
+            result.append(abs(diff))
+        return np.mean(result)
+
+    @property
+    def thickness(self):
+        result = []
+        for sign in itr.product([+1, 1], repeat=2):
+            diff = self.loc_vertices[(*sign, 1)][2] - self.loc_vertices[(*sign, -1)][2]
+            result.append(abs(diff))
+        return np.mean(result)
+    
+    def remove_pyrex(self, inplace=False):
+        if not self.contain_pyrex:
+            raise Exception('Pyrex has already been removed')
+
+        new_loc_vertices = [v - self.pyrex_thickness * np.array(iv) for iv, v in self.loc_vertices.items()]
+        inv_pca_matrix = np.linalg.inv(self.pca.components_)
+        new_vertices = [np.matmul(inv_pca_matrix, v) + self.pca.mean_ for v in new_loc_vertices]
+
+        if inplace:
+            self.__init__(new_vertices, contain_pyrex=False)
+        else:
+            return Bar(new_vertices, contain_pyrex=False)
+    
+    def add_pyrex(self, inplace=False):
+        if self.contain_pyrex:
+            raise Exception('Pyrex has already been added')
+        
+        new_loc_vertices = [v + self.pyrex_thickness * np.array(iv) for iv, v in self.loc_vertices.items()]
+        inv_pca_matrix = np.linalg.inv(self.pca.components_)
+        new_vertices = [np.matmul(inv_pca_matrix, v) + self.pca.mean_ for v in new_loc_vertices]
+
+        if inplace:
+            self.__init__(new_vertices, contain_pyrex=True)
+        else:
+            return Bar(new_vertices, contain_pyrex=True)
+    
+    def flatten(self, inplace=True):
+        origin = np.array([0.0] * 3)
+        current_y = self.pca.components_[1]
+        target_y = np.array([0.0, 1.0, 0.0])
+        rot_angle = float(sp.Line(origin, current_y).angle_between(sp.Line(origin, target_y)))
+        rot_vec = np.cross(current_y, target_y)
+        rot_vec /= np.linalg.norm(rot_vec)
+        self.rot_matrix = Rotation.from_rotvec(rot_angle * rot_vec).as_matrix()
+
+        rotated_vertices = dict()
+        for key, vertex in self.vertices.items():
+            rotated_vertices[key] = np.matmul(self.rot_matrix, vertex)
+        if inplace:
+            self.__init__(list(rotated_vertices.values()))
+        else:
+            return Bar(list(rotated_vertices.values()))
 
 class Wall:
-    def __init__(self, AB, refresh_from_inventor_readings=False):
+    def __init__(self, AB, refresh_from_inventor_readings=False, flatten=True):
         # initialize class parameters
         self.AB = AB.upper()
         self.ab = self.AB.lower()
         self.path_inventor_readings = _database_dir / f'inventor_readings_NW{self.AB}.dat'
-        self.path_database = _database_dir / f'NW{self.AB}_raw.dat'
+        self.path_raw = _database_dir / f'NW{self.AB}_raw.dat'
+        self.path_flattened = _database_dir / f'NW{self.AB}_flattened.dat'
 
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
         if self._refresh_from_inventor_readings:
             bars_vertices = self.read_from_inventor_readings()
             self.process_and_save_to_database(bars_vertices)
-        
+
         # read in from database
-        self.database = pd.read_csv(self.path_database, comment='#', delim_whitespace=True)
+        path = self.path_flattened if flatten else self.path_raw
+        self.database = pd.read_csv(path, comment='#', delim_whitespace=True)
         index_names = [f'nw{self.ab}-bar', 'dir_x', 'dir_y', 'dir_z']
         self.database.set_index(index_names, drop=True, inplace=True)
 
         # construct a dictionary of bar objects
         bar_nums = self.database.index.get_level_values(f'nw{self.ab}-bar')
         self.bars = {b: Bar(self.database.loc[b][['x', 'y', 'z']]) for b in bar_nums}
-        self._simple_check = True
-        for index, coordinate in self.database.iterrows():
-            bar = index[0]
-            if tuple(self.bars[bar].vertices[index[1:]]) == tuple(coordinate):
-                pass
-            else:
-                self._simple_check = False
-                break
     
     def read_from_inventor_readings(self):
         with open(self.path_inventor_readings, 'r') as file:
@@ -124,22 +188,26 @@ class Wall:
 
         # collect all vertices from all bars and save into a dataframe
         signs = list(itr.product([+1, -1], repeat=3))
-        df = []
+        df, df_flattened = [], []
         for bar_num, bar_obj in enumerate(bar_objects, start=1):
+            rotated_bar_obj = bar_obj.flatten(inplace=False)
             for sign in signs:
                 vertex = bar_obj.vertices[tuple(sign)]
                 df.append([bar_num, *sign, *vertex])
+
+                vertex = rotated_bar_obj.vertices[tuple(sign)]
+                df_flattened.append([bar_num, *sign, *vertex])
+                
         columns = [
             f'nw{self.ab}-bar',
             'dir_x', 'dir_y', 'dir_z',
             'x', 'y', 'z',
         ]
         df = pd.DataFrame(df, columns=columns)
+        df_flattened = pd.DataFrame(df_flattened, columns=columns)
 
         # save to database
-        tables.to_fwf(
-            df,
-            self.path_database,
+        kwargs = dict(
             comment='# measurement unit: cm',
             floatfmt=[
                 '.0f',
@@ -147,3 +215,5 @@ class Wall:
                 '.4f', '.4f', '.4f',
             ],
         )
+        tables.to_fwf(df, self.path_raw, **kwargs)
+        tables.to_fwf(df_flattened, self.path_flattened, **kwargs)
