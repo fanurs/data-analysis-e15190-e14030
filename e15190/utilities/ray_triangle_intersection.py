@@ -2,7 +2,8 @@ import numpy as np
 
 def moller_trumbore(ray_origin, ray_vectors, triangles, tol=1e-9):
     """Implementation of Moller-Trumbore ray-triangle intersection algorithm
-    Read more at https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection
+    To read more about the mathematical derivation, visit https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.
+    In this implementation, we have made some light optimization. When looping over the triangles, we use pure Python for-loop. Inside the loop, we use only NumPy functions to manage all the ray_vectors, which are much faster than looping over with pure Python loops. This optimization, of course, works the best when dealing with a large number of ray vectors (> 1,000,000) rather than numerous triangles.
 
     Parameters:
         ray_origin : numpy.ndarray of shape (3, )
