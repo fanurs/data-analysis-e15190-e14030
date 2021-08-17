@@ -47,11 +47,11 @@ class Bar:
         self.vertices = {
             rel_dir: vertex for rel_dir, vertex in zip(rel_directions, self.vertices)
         }
-        self.vertices = dict(sorted(self.vertices.items(), reverse=True))
+        self.vertices = dict(sorted(self.vertices.items()))
         self.loc_vertices = {
             rel_dir: vertex for rel_dir, vertex in zip(rel_directions, self.loc_vertices)
         }
-        self.loc_vertices = dict(sorted(self.loc_vertices.items(), reverse=True))
+        self.loc_vertices = dict(sorted(self.loc_vertices.items()))
     
     @property
     def length(self):
@@ -104,6 +104,29 @@ class Bar:
             return Bar(new_vertices, contain_pyrex=True)
     
     def flatten(self, inplace=True):
+        """To make the bar horizontally flat.
+
+        For some unknown reasons, the raw readings from the Inventor file do not
+        describe bar with exact flatness. It turns out that by rotating the bar
+        by a small degree (< 1.0 degree) such that it aligns back the local
+        y-axis to the lab y-axis (pointing upward), we can recover the flatness.
+        Of course, there are some inevitable round-up errors due to
+        floating-point arithmetic. So the final results are rounded up to force
+        coordinates that should have the same numerical values to be exactly
+        identical, e.g. there should only be two distinct sets of y-coordinates,
+        one corresponds to the top surface, another corresponds to the bottom
+        surface.
+
+        Parameters:
+            inplace : bool, default True
+                If `True`, flattening will be applied to the current `Bar`
+                object.  If `False`, a flattened `Bar` object will be returned.
+        
+        Returns:
+            When arugment inplace is set to `False`, a flattened `Bar` object
+            will be returned.
+        """
+        # construct rotation
         origin = np.array([0.0] * 3)
         current_y = self.pca.components_[1]
         target_y = np.array([0.0, 1.0, 0.0])
@@ -112,13 +135,28 @@ class Bar:
         rot_vec /= np.linalg.norm(rot_vec)
         self.rot_matrix = Rotation.from_rotvec(rot_angle * rot_vec).as_matrix()
 
+        # apply rotation
         rotated_vertices = dict()
         for key, vertex in self.vertices.items():
-            rotated_vertices[key] = np.matmul(self.rot_matrix, vertex)
+            rotated_vertices[key] = np.matmul(self.rot_matrix, vertex - self.pca.mean_)
+            rotated_vertices[key] += self.pca.mean_
+
+        # force numerical values to be exactly equal by taking average of close-enough groups
+        key_func = lambda num: round(num, 2)
+        rounded_vertices = np.array(list(rotated_vertices.values()))
+        for ic in range(3):
+            groups = {
+                key: np.mean(list(val))
+                for key, val in itr.groupby(rounded_vertices[:, ic], key=key_func)
+            }
+            rounded_vertices[:, ic] = [groups[key_func(ele)] for ele in rounded_vertices[:, ic]]
+
+        # finalize result
+        flattened_vertices = rounded_vertices
         if inplace:
-            self.__init__(list(rotated_vertices.values()))
+            self.__init__(flattened_vertices)
         else:
-            return Bar(list(rotated_vertices.values()))
+            return Bar(flattened_vertices)
 
 class Wall:
     def __init__(self, AB, refresh_from_inventor_readings=False, flatten=True):
@@ -187,16 +225,14 @@ class Wall:
         bar_objects = sorted(bar_objects, key=lambda bar: bar.pca.mean_[1]) # sort from bottom to top
 
         # collect all vertices from all bars and save into a dataframe
-        signs = list(itr.product([+1, -1], repeat=3))
         df, df_flattened = [], []
         for bar_num, bar_obj in enumerate(bar_objects, start=1):
-            rotated_bar_obj = bar_obj.flatten(inplace=False)
-            for sign in signs:
-                vertex = bar_obj.vertices[tuple(sign)]
+            flattened_bar_obj = bar_obj.flatten(inplace=False)
+            for sign, vertex in bar_obj.vertices.items():
                 df.append([bar_num, *sign, *vertex])
 
-                vertex = rotated_bar_obj.vertices[tuple(sign)]
-                df_flattened.append([bar_num, *sign, *vertex])
+                flattened_vertex = flattened_bar_obj.vertices[tuple(sign)]
+                df_flattened.append([bar_num, *sign, *flattened_vertex])
                 
         columns = [
             f'nw{self.ab}-bar',
