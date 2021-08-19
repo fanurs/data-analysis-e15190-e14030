@@ -1,17 +1,24 @@
 import numpy as np
+import plotly.graph_objects as go
 
 def moller_trumbore(ray_origin, ray_vectors, triangles, tol=1e-9):
     """Implementation of Moller-Trumbore ray-triangle intersection algorithm
-    To read more about the mathematical derivation, visit https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.
-    In this implementation, we have made some light optimization. When looping over the triangles, we use pure Python for-loop. Inside the loop, we use only NumPy functions to manage all the ray_vectors, which are much faster than looping over with pure Python loops. This optimization, of course, works the best when dealing with a large number of ray vectors (> 1,000,000) rather than numerous triangles.
+    To read more about the mathematical derivation, visit
+    https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.
+    In this implementation, we have made some light optimization. When looping
+    over the triangles, we use pure Python for-loop. Inside the loop, we use
+    only NumPy functions to manage all the ray_vectors, which are much faster
+    than looping over with pure Python loops. This optimization, of course,
+    works the best when dealing with a large number of ray vectors (> 1,000,000)
+    rather than numerous triangles.
 
     Parameters:
-        ray_origin : numpy.ndarray of shape (3, )
+        ray_origin : array of shape (3, )
             This implementation assumes all rays have one common origin.
-        ray_vectors : numpy.ndarray of shape (n_rays, 3)   
+        ray_vectors : array of shape (n_rays, 3)   
             The ray vectors are only used to tell the directions. No
             normalization is needed.
-        triangles : numpy.ndarray of shape (n_triangles, 3, 3)
+        triangles : array of shape (n_triangles, 3, 3)
             An array of 3 x 3 arrays. Each 3 x 3 array consists of three
             vertices that specify the triangle. For example, the y-coordinate of
             the first vertex in the fifth triangle would be
@@ -25,6 +32,8 @@ def moller_trumbore(ray_origin, ray_vectors, triangles, tol=1e-9):
     Returns:
         A numpy.ndarray of intersections with shape (n_triangles, n_rays, 3).
     """
+    ray_origin, ray_vectors, triangles = map(lambda x: np.array(x), [ray_origin, ray_vectors, triangles])
+
     dot = lambda x, y: np.sum(np.multiply(x, y), axis=1) # allowing broadcasting
 
     intersections = []
@@ -48,3 +57,17 @@ def moller_trumbore(ray_origin, ray_vectors, triangles, tol=1e-9):
         intersections.append(ray_origin + t * ray_vectors * (t > tol))
 
     return np.array(intersections)
+
+class TriangleMesh:
+    def __init__(self, vertices, tri_indices):
+        self.vertices = np.array(vertices, dtype=float)
+        self.tri_indices = np.array(tri_indices, dtype=int)
+
+    def get_triangles(self):
+        return self.vertices[self.tri_indices]
+    
+    def plotly_trace(self, **kwargs):
+        kwargs.update({c: self.vertices[:, i] for i, c in enumerate('xyz')})
+        kwargs.update({c: self.tri_indices[:, i] for i, c in enumerate('ijk')})
+        kwargs.setdefault('flatshading', True)
+        return go.Mesh3d(**kwargs)
