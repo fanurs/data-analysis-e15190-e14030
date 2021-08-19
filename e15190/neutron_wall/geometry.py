@@ -8,8 +8,74 @@ import sympy as sp
 
 from e15190 import PROJECT_DIR
 from e15190.utilities import tables
+from e15190.utilities import ray_triangle_intersection as rti
 
 _database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
+
+def spherical_to_cartesian(radius, polar, azimuth):
+    """Convert coordinates from spherical system to Cartesian system.
+
+    All angles are presented with the unit of radian.
+
+    Parameters:
+        radius : scalar or array-like
+            Distance from the origin.
+        polar : scalar or array-like
+            Angle measured from the +z-axis.
+        azimuth : sclar or array-like
+            Counterclockwise angle measured from the +x-axis on the xy-plane.
+
+    Returns:
+        If all arguments are scalars, returns `(x, y, z)`. If all arguments are
+        arrays, returns `np.vstack([x, y, z])`.
+    """
+    is_array = any(map(lambda x: hasattr(x, '__len__'), (radius, polar, azimuth)))
+    radius, polar, azimuth = map(lambda _x: np.array(_x), (radius, polar, azimuth))
+
+    sin_polar = np.sin(polar)
+    result = np.vstack([
+        radius * sin_polar * np.cos(azimuth),
+        radius * sin_polar * np.sin(azimuth),
+        radius * np.cos(polar),
+    ])
+    return result if is_array else tuple(result.ravel())
+
+def cartesian_to_spherical(x, y, z):
+    """Convert coordinates from Cartesian system to spherical system.
+
+    This function follow the convention in most physics literature that place
+    polar angle before azimuthal angle, i.e. it returns tuples (radius, polar,
+    azimuth). The polar angle is given within the range of $[0, 2\pi]$. The
+    azimuthal angle, following the convetion of `atan2()`, is given within the
+    range of $(-\pi, \pi]$.
+
+    Parameters:
+        x : scalar or array-like
+        y : scalar or array-like
+        z : sclar or array-like
+
+    Returns:
+        If all arguments are scalars, returns `(radius, polar, azimuth)`. If all
+        arguments are arrays, returns `np.vstack([radius, polar azimuth])`.
+    """
+    is_array = any(map(lambda _x: hasattr(_x, '__len__'), (x, y, z)))
+    x, y, z = map(lambda _x: np.array(_x), (x, y, z))
+
+    rho2 = x**2 + y**2
+    result = np.vstack([
+        np.sqrt(rho2 + z**2),
+        np.arctan2(np.sqrt(rho2), z),
+        np.arctan2(y, x),
+    ])
+    return result if is_array else tuple(result.ravel())
+
+def angle_between_vectors(u, v, directional=False):
+    u, v = map(lambda x: np.array(x), (u, v))
+    dot_prod = np.dot(v, u) if u.ndim < v.ndim else np.dot(u, v)
+    angle = dot_prod / np.sqrt(np.square(u).sum(axis=-1) * np.square(v).sum(axis=-1))
+    angle = np.arccos(angle.clip(-1, 1)) # clip to account for floating-point error
+    angle *= np.sign(np.cross(u, v)) if directional else 1.0
+    return angle
 
 class Bar:
     def __init__(self, vertices, contain_pyrex=True):
@@ -127,10 +193,9 @@ class Bar:
             will be returned.
         """
         # construct rotation
-        origin = np.array([0.0] * 3)
         current_y = self.pca.components_[1]
         target_y = np.array([0.0, 1.0, 0.0])
-        rot_angle = float(sp.Line(origin, current_y).angle_between(sp.Line(origin, target_y)))
+        rot_angle = angle_between_vectors(current_y, target_y)
         rot_vec = np.cross(current_y, target_y)
         rot_vec /= np.linalg.norm(rot_vec)
         self.rot_matrix = Rotation.from_rotvec(rot_angle * rot_vec).as_matrix()
@@ -157,6 +222,110 @@ class Bar:
             self.__init__(flattened_vertices)
         else:
             return Bar(flattened_vertices)
+
+    def construct_plotly_mesh3d(self):
+        key_index = {key: index for index, key in enumerate(self.vertices)}
+        tri_indices = []
+        for xyz, sign in itr.product(range(3), [-1, +1]):
+            triangle_1 = np.array([[-1, -1], [-1, +1], [+1, -1]])
+            triangle_2 = np.array([[+1, +1], [-1, +1], [+1, -1]])
+
+            triangle_1 = np.insert(triangle_1, xyz, [sign] * 3, axis=1)
+            triangle_2 = np.insert(triangle_2, xyz, [sign] * 3, axis=1)
+
+            tri_index_1 = [key_index[tuple(vertex)] for vertex in triangle_1]
+            tri_index_2 = [key_index[tuple(vertex)] for vertex in triangle_2]
+
+            tri_indices.extend([tri_index_1, tri_index_2])
+        
+        vertices = np.array(list(self.vertices.values()))
+        self.triangle_mesh = rti.TriangleMesh(vertices, tri_indices)
+    
+    def simple_simulation(self, n_rays=10, random_seed=None):
+        if 'triangle_mesh' not in self.__dict__:
+            self.construct_plotly_mesh3d()
+        rng = np.random.default_rng(random_seed)
+        origin = np.array([0.0] * 3)
+
+        # identify the minimal region in space to emit rays
+        # The region is orthogonal in the (polar, azimuth) space, i.e. some
+        # rectangle, so users can later easily recover the cross section from
+        # the isotropy of simulation rays.
+        vertices = np.array(list(self.vertices.values()))
+        xy_vecs = vertices[:, [0, 1]]
+        zrho_vecs = np.vstack([vertices[:, 2], np.linalg.norm(xy_vecs, axis=1)]).T
+        def identify_angle_range(vecs):
+            mean_vec = np.mean(vecs, axis=0)
+            angles = angle_between_vectors(mean_vec, vecs, directional=True)
+            angles += np.arctan2(mean_vec[1], mean_vec[0])
+            return np.array([angles.min(), angles.max()])
+        azimuth_range, polar_range = map(identify_angle_range, (xy_vecs, zrho_vecs))
+        def slight_widening(range_, fraction=0.01):
+            delta_width = fraction * (range_[1] - range_[0])
+            range_[0] -= delta_width
+            range_[1] += delta_width
+            return range_
+        azimuth_range, polar_range = map(slight_widening, (azimuth_range, polar_range))
+
+        # simulate
+        polars = np.arccos(rng.uniform(*np.cos(polar_range), size=n_rays).clip(-1, 1))
+        azimuths = rng.uniform(*azimuth_range, size=n_rays)
+        rays = spherical_to_cartesian(1.0, polars, azimuths).T
+        triangles = self.triangle_mesh.get_triangles()
+        intersections = rti.moller_trumbore(origin, rays, triangles)
+
+        # save results
+        self.simulation_result = dict()
+        var_names = ['origin', 'azimuth_range', 'polar_range', 'intersections']
+        for var in var_names:
+            self.simulation_result[var] = locals()[var]
+        return self.simulation_result
+    
+    def analyze_hit_positions(
+        self,
+        out_coordinates='local',
+        hit_t='uniform',
+        random_seed=None,
+        tol=1e-9,
+    ):
+        sim_res = self.simulation_result # shorthand
+
+        # shift to make origin at zero
+        hits = sim_res['intersections'] - sim_res['origin']
+
+        # for each ray, collect a pair of incoming and outgoing vertices
+        # i.e. shape of (n_rays, 2, 3)
+        norm2 = np.square(hits).sum(axis=-1)
+        norm2[norm2 < tol] = 0.0 # account for floating-point errors
+        ii = np.argsort(norm2, axis=0)
+        ii = np.tile(ii[:, :, None], reps=(1, 1, 3))
+        hits = np.take_along_axis(hits, ii, axis=0)[-2:]
+        hits = np.swapaxes(hits, 0, 1)
+
+        # determine the points of interaction
+        # i.e. some points on the line segments bounded by the in-and-out vertices.
+        n_hits = len(hits)
+        if hit_t == 'uniform':
+            rng = np.random.default_rng(random_seed)
+            t = rng.uniform(size=n_hits)
+        elif callable(hit_t):
+            t = hit_t(n_hits)
+        else: # assume scalar
+            t = hit_t * np.ones(shape=n_hits)
+        hits[:, 0] *= (1 - t)[:, None]
+        hits[:, 1] *= t[:, None]
+        hits = np.sum(hits, axis=1)
+
+        # throw away non-interacting hits
+        hits = hits[np.sum(norm2, axis=0) > 0]
+
+        # convert coordinates
+        if out_coordinates == 'global':
+            pass
+        elif out_coordinates == 'local':
+            hits = np.matmul(self.pca.components_, (hits - self.pca.mean_).T).T
+
+        return hits
 
 class Wall:
     def __init__(self, AB, refresh_from_inventor_readings=False, flatten=True):
