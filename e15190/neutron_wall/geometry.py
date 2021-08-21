@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.transform import Rotation
 from sklearn.decomposition import PCA
-import sympy as sp
 
 from e15190 import PROJECT_DIR
 from e15190.utilities import tables
@@ -395,7 +394,7 @@ class Wall:
 
         # collect all vertices from all bars and save into a dataframe
         df, df_flattened = [], []
-        for bar_num, bar_obj in enumerate(bar_objects, start=1):
+        for bar_num, bar_obj in enumerate(bar_objects):
             flattened_bar_obj = bar_obj.flatten(inplace=False)
             for sign, vertex in bar_obj.vertices.items():
                 df.append([bar_num, *sign, *vertex])
