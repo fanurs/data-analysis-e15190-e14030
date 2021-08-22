@@ -327,7 +327,7 @@ class Bar:
         return hits
 
 class Wall:
-    def __init__(self, AB, refresh_from_inventor_readings=False, flatten=True):
+    def __init__(self, AB, refresh_from_inventor_readings=False, flatten=False):
         # initialize class parameters
         self.AB = AB.upper()
         self.ab = self.AB.lower()
