@@ -77,7 +77,31 @@ def angle_between_vectors(u, v, directional=False):
     return angle
 
 class Bar:
-    def __init__(self, vertices, contain_pyrex=True):
+    def __init__(self, vertices, contain_pyrex=True, check_pca_orthogonal=True):
+        """Construct a Neutron Wall bar, either from Wall A or Wall B.
+
+        Parameters:
+            vertices : ndarray of shape (8, 3)
+                Exactly eight (x, y, z) lab coordinates measured in centimeter
+                (cm). As long as all eight vertices are distincit, i.e. can
+                properly define a cuboid, the order of vertices does not matter
+                because PCA will be applied to automatically identify the 1st,
+                2nd and 3rd principal axes of the bar.
+            contain_pyrex : bool, default True            
+                The raw readings from the Inventor files or database include the
+                Pyrex container thickness. If `True`, the Pyrex will not be
+                removed; if `False`, the Pyrex will be removed, leaving only the
+                scintillation material.
+            check_pca_orthogonal : boo, default True
+                If `True`, an Exception is raised whenever the PCA matrix is not
+                orthogonal; if `False`, no check would be done.
+
+                PCA is used to extract the principal axes of the bar.
+                Mathematically, we would expect the PCA matrix to be orthogonal,
+                but in actual implementation, the matrix is often not exactly
+                orthogonal due to floating-point errors. Hence, we may want to
+                check if the PCA matric we compute is "nearly orthogonal".
+        """
         self.contain_pyrex = contain_pyrex
         self.pyrex_thickness = 2.54 / 8 # cm
         self.vertices = np.array(vertices)
@@ -96,11 +120,14 @@ class Bar:
         x_cross_y = np.cross(self.pca.components_[0], self.pca.components_[1])
         if np.dot(self.pca.components_[2], x_cross_y) < 0:
             self.pca.components_[2] *= -1
+        
+        # check if the resultant pca is an orthogonal matrix
+        pca_mat = self.pca.components_ # shorthand
+        if check_pca_orthogonal and not np.allclose(np.identity(3), np.matmul(pca_mat.T, pca_mat)):
+            raise(f'The PCA matrix is not orthogonal:\n{pca_mat}')
 
-        self.loc_vertices = np.array([
-            [np.dot(vertex - self.pca.mean_, component) for component in self.pca.components_]
-            for vertex in self.vertices
-        ])
+        # save the vertices in local coordinates
+        self.loc_vertices = self.to_local_coordinates(vertices)
 
         # identify relative directions (egocentric)
         rel_directions = [
@@ -117,56 +144,70 @@ class Bar:
             rel_dir: vertex for rel_dir, vertex in zip(rel_directions, self.loc_vertices)
         }
         self.loc_vertices = dict(sorted(self.loc_vertices.items()))
+
+        # remove Pyrex if requested
+        if not self.contain_pyrex:
+            self.remove_pyrex()
+        else:
+            # database always have included Pyrex, so no action is required
+            pass
+    
+    def dimension(self, index=None):
+        if index is None:
+            return tuple(self.dimension(index=i) for i in range(3))
+
+        if isinstance(index, str):
+            index = 'xyz'.find(index.lower())
+
+        result = []
+        for sign in itr.product([+1, 1], repeat=2):
+            pos, neg = list(sign), list(sign)
+            pos.insert(index, +1)
+            neg.insert(index, -1)
+            diff = self.loc_vertices[tuple(pos)][index] - self.loc_vertices[tuple(neg)][index]
+            result.append(abs(diff))
+        return np.mean(result)
     
     @property
     def length(self):
-        result = []
-        for sign in itr.product([+1, 1], repeat=2):
-            diff = self.loc_vertices[(1, *sign)][0] - self.loc_vertices[(-1, *sign)][0]
-            result.append(abs(diff))
-        return np.mean(result)
+        return self.dimension(index=0)
     
     @property
     def height(self):
-        result = []
-        for sign in itr.product([+1, 1], repeat=2):
-            diff = self.loc_vertices[(sign[0], 1, sign[1])][1] - self.loc_vertices[(sign[0], -1, sign[1])][1]
-            result.append(abs(diff))
-        return np.mean(result)
+        return self.dimension(index=1)
 
     @property
     def thickness(self):
-        result = []
-        for sign in itr.product([+1, 1], repeat=2):
-            diff = self.loc_vertices[(*sign, 1)][2] - self.loc_vertices[(*sign, -1)][2]
-            result.append(abs(diff))
-        return np.mean(result)
+        return self.dimension(index=2)
     
-    def remove_pyrex(self, inplace=False):
+    def modify_pyrex(self, mode):
+        if mode == 'remove':
+            scalar = -1
+        elif mode == 'add':
+            scalar = +1
+        
+        # apply transformation
+        self.loc_vertices = {
+            iv: v + scalar * self.pyrex_thickness * np.array(iv)
+            for iv, v in self.loc_vertices.items()
+        }
+        self.vertices = {
+            iv: np.squeeze(self.to_lab_coordinates(v))
+            for iv, v in self.loc_vertices.items()
+        }
+
+        # update status
+        self.contain_pyrex = (not self.contain_pyrex)
+
+    def remove_pyrex(self):
         if not self.contain_pyrex:
             raise Exception('Pyrex has already been removed')
-
-        new_loc_vertices = [v - self.pyrex_thickness * np.array(iv) for iv, v in self.loc_vertices.items()]
-        inv_pca_matrix = np.linalg.inv(self.pca.components_)
-        new_vertices = [np.matmul(inv_pca_matrix, v) + self.pca.mean_ for v in new_loc_vertices]
-
-        if inplace:
-            self.__init__(new_vertices, contain_pyrex=False)
-        else:
-            return Bar(new_vertices, contain_pyrex=False)
+        self.modify_pyrex('remove')
     
-    def add_pyrex(self, inplace=False):
+    def add_pyrex(self):
         if self.contain_pyrex:
             raise Exception('Pyrex has already been added')
-        
-        new_loc_vertices = [v + self.pyrex_thickness * np.array(iv) for iv, v in self.loc_vertices.items()]
-        inv_pca_matrix = np.linalg.inv(self.pca.components_)
-        new_vertices = [np.matmul(inv_pca_matrix, v) + self.pca.mean_ for v in new_loc_vertices]
-
-        if inplace:
-            self.__init__(new_vertices, contain_pyrex=True)
-        else:
-            return Bar(new_vertices, contain_pyrex=True)
+        self.modify_pyrex('add')
     
     def flatten(self, inplace=True):
         """To make the bar horizontally flat.
@@ -221,6 +262,56 @@ class Bar:
             self.__init__(flattened_vertices)
         else:
             return Bar(flattened_vertices)
+
+    def is_inside(self, coordinates, frame='local'):
+        coordinates = np.array(coordinates, dtype=float)
+        if coordinates.ndim == 1:
+            coordinates = np.array([coordinates])
+        
+        if frame == 'local':
+            pass
+        else:
+            coordinates = self.to_local_coordinates(coordinates)
+
+        dimension = self.dimension()
+        result = np.array([True] * len(coordinates))
+        for i in range(3):
+            i_components = coordinates[:, i]
+            result = result & (i_components >= -0.5 * dimension[i])
+            result = result & (i_components <= +0.5 * dimension[i])
+        return result if len(result) > 1 else result[0]
+
+    def to_local_coordinates(self, lab_coordinates):
+        lab_coordinates = np.array(lab_coordinates)
+        if lab_coordinates.ndim == 1:
+            lab_coordinates = np.array([lab_coordinates])
+
+        # n: number of PCA components, i.e. shape[0]
+        # m: number of vertices in lab_coordinates, i.e. shape[0]
+        # i: vector dimension, i.e. shape[1] = 3, representing (x, y, z)
+        result = np.einsum(
+            'ni,mi->mn',
+            self.pca.components_, lab_coordinates - self.pca.mean_,
+        )
+        return np.squeeze(result)
+
+    def to_lab_coordinates(self, local_coordinates):
+        local_coordinates = np.array(local_coordinates)
+        if local_coordinates.ndim == 1:
+            local_coordinates = np.array([local_coordinates])
+
+        # n: number of PCA components, i.e. shape[0]
+        # m: number of vertices in lab_coordinates, i.e. shape[0]
+        # i: vector dimension, i.e. shape[1] = 3, representing (x, y, z)
+        # 
+        # First array uses index "in" instead of "ni" because it is the inverse
+        # matrix of PCA that we want to supply. Since PCA is an orthogonal
+        # matrix, this is equivalent to supplying the transpose matrix of PCA.
+        result = np.einsum(
+            'in,mi->mn',
+            self.pca.components_, local_coordinates,
+        ) + self.pca.mean_
+        return np.squeeze(result)
 
     def construct_plotly_mesh3d(self):
         key_index = {key: index for index, key in enumerate(self.vertices)}
