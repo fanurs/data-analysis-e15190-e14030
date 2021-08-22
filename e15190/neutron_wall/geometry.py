@@ -2,7 +2,6 @@ import itertools as itr
 
 import numpy as np
 import pandas as pd
-from scipy.spatial.transform import Rotation
 from sklearn.decomposition import PCA
 
 from e15190 import PROJECT_DIR
@@ -208,60 +207,6 @@ class Bar:
         if self.contain_pyrex:
             raise Exception('Pyrex has already been added')
         self.modify_pyrex('add')
-    
-    def flatten(self, inplace=True):
-        """To make the bar horizontally flat.
-
-        For some unknown reasons, the raw readings from the Inventor file do not
-        describe bar with exact flatness. It turns out that by rotating the bar
-        by a small degree (< 1.0 degree) such that it aligns back the local
-        y-axis to the lab y-axis (pointing upward), we can recover the flatness.
-        Of course, there are some inevitable round-up errors due to
-        floating-point arithmetic. So the final results are rounded up to force
-        coordinates that should have the same numerical values to be exactly
-        identical, e.g. there should only be two distinct sets of y-coordinates,
-        one corresponds to the top surface, another corresponds to the bottom
-        surface.
-
-        Parameters:
-            inplace : bool, default True
-                If `True`, flattening will be applied to the current `Bar`
-                object.  If `False`, a flattened `Bar` object will be returned.
-        
-        Returns:
-            When arugment inplace is set to `False`, a flattened `Bar` object
-            will be returned.
-        """
-        # construct rotation
-        current_y = self.pca.components_[1]
-        target_y = np.array([0.0, 1.0, 0.0])
-        rot_angle = angle_between_vectors(current_y, target_y)
-        rot_vec = np.cross(current_y, target_y)
-        rot_vec /= np.linalg.norm(rot_vec)
-        self.rot_matrix = Rotation.from_rotvec(rot_angle * rot_vec).as_matrix()
-
-        # apply rotation
-        rotated_vertices = dict()
-        for key, vertex in self.vertices.items():
-            rotated_vertices[key] = np.matmul(self.rot_matrix, vertex - self.pca.mean_)
-            rotated_vertices[key] += self.pca.mean_
-
-        # force numerical values to be exactly equal by taking average of close-enough groups
-        key_func = lambda num: round(num, 2)
-        rounded_vertices = np.array(list(rotated_vertices.values()))
-        for ic in range(3):
-            groups = {
-                key: np.mean(list(val))
-                for key, val in itr.groupby(rounded_vertices[:, ic], key=key_func)
-            }
-            rounded_vertices[:, ic] = [groups[key_func(ele)] for ele in rounded_vertices[:, ic]]
-
-        # finalize result
-        flattened_vertices = rounded_vertices
-        if inplace:
-            self.__init__(flattened_vertices)
-        else:
-            return Bar(flattened_vertices)
 
     def is_inside(self, coordinates, frame='local'):
         coordinates = np.array(coordinates, dtype=float)
@@ -410,21 +355,18 @@ class Bar:
         hits = hits[np.sum(norm2, axis=0) > 0]
 
         # convert coordinates
-        if out_coordinates == 'global':
-            pass
-        elif out_coordinates == 'local':
-            hits = np.matmul(self.pca.components_, (hits - self.pca.mean_).T).T
+        if out_coordinates == 'local':
+            hits = self.to_local_coordinates(hits)
 
         return hits
 
 class Wall:
-    def __init__(self, AB, refresh_from_inventor_readings=False, flatten=False):
+    def __init__(self, AB, refresh_from_inventor_readings=False):
         # initialize class parameters
         self.AB = AB.upper()
         self.ab = self.AB.lower()
-        self.path_inventor_readings = _database_dir / f'inventor_readings_NW{self.AB}.dat'
-        self.path_raw = _database_dir / f'NW{self.AB}_raw.dat'
-        self.path_flattened = _database_dir / f'NW{self.AB}_flattened.dat'
+        self.path_inventor_readings = _database_dir / f'inventor_readings_NW{self.AB}.txt'
+        self.path = _database_dir / f'NW{self.AB}.dat'
 
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
@@ -433,8 +375,7 @@ class Wall:
             self.process_and_save_to_database(bars_vertices)
 
         # read in from database
-        path = self.path_flattened if flatten else self.path_raw
-        self.database = pd.read_csv(path, comment='#', delim_whitespace=True)
+        self.database = pd.read_csv(self.path, comment='#', delim_whitespace=True)
         index_names = [f'nw{self.ab}-bar', 'dir_x', 'dir_y', 'dir_z']
         self.database.set_index(index_names, drop=True, inplace=True)
 
@@ -484,25 +425,23 @@ class Wall:
         bar_objects = sorted(bar_objects, key=lambda bar: bar.pca.mean_[1]) # sort from bottom to top
 
         # collect all vertices from all bars and save into a dataframe
-        df, df_flattened = [], []
+        df = []
         for bar_num, bar_obj in enumerate(bar_objects):
-            flattened_bar_obj = bar_obj.flatten(inplace=False)
             for sign, vertex in bar_obj.vertices.items():
                 df.append([bar_num, *sign, *vertex])
-
-                flattened_vertex = flattened_bar_obj.vertices[tuple(sign)]
-                df_flattened.append([bar_num, *sign, *flattened_vertex])
                 
-        columns = [
-            f'nw{self.ab}-bar',
-            'dir_x', 'dir_y', 'dir_z',
-            'x', 'y', 'z',
-        ]
-        df = pd.DataFrame(df, columns=columns)
-        df_flattened = pd.DataFrame(df_flattened, columns=columns)
+        df = pd.DataFrame(
+            df,
+            columns=[
+                f'nw{self.ab}-bar',
+                'dir_x', 'dir_y', 'dir_z',
+                'x', 'y', 'z',
+            ],
+        )
 
         # save to database
-        kwargs = dict(
+        tables.to_fwf(
+            df, self.path_raw,
             comment='# measurement unit: cm',
             floatfmt=[
                 '.0f',
@@ -510,5 +449,3 @@ class Wall:
                 '.4f', '.4f', '.4f',
             ],
         )
-        tables.to_fwf(df, self.path_raw, **kwargs)
-        tables.to_fwf(df_flattened, self.path_flattened, **kwargs)
