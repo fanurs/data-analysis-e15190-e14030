@@ -28,6 +28,7 @@ dependencies:
 
    # plotting
    - matplotlib>=3.3.0
+   - seaborn>=0.11.0
 
    # miscellaneous
    - cryptography=3.4.7
