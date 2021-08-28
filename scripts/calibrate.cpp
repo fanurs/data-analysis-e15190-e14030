@@ -60,6 +60,8 @@ int main(int argc, char* argv[]) {
     inroot_path /= Form("CalibratedData_%04d.root", argparser.run_num);
     RootReader reader(inroot_path.string(), "E15190");
     std::vector<Branch> in_branches {
+        {"VW_multi",      "VetoWall.fmulti",                  "int"},
+        {"VW_bar",        "VetoWall.fnumbar",                 "int[VW_multi]"},
         {"NWB_multi",     "NWB.fmulti",                       "int"},
         {"NWB_bar",       "NWB.fnumbar",                      "int[NWB_multi]"},
         {"NWB_time_L",    "NWB.fTimeLeft",                    "double[NWB_multi]"},
@@ -75,6 +77,8 @@ int main(int argc, char* argv[]) {
     // prepare output (calibrated) ROOT files
     RootWriter writer(argparser.outroot_path, "tree");
     std::vector<Branch> out_branches {
+        {"VW_multi",      "",  "int"},
+        {"VW_bar",        "",  "int[VW_multi]"},
         {"NWB_multi",     "",  "int"},
         {"NWB_bar",       "",  "int[NWB_multi]"},
         {"NWB_time_L",    "",  "double[NWB_multi]"},
@@ -100,8 +104,9 @@ int main(int argc, char* argv[]) {
         }
 
         auto buffer = reader.get_entry(ievt);
+        auto vw_multi     = std::any_cast<int>    (buffer["VW_multi"]);
+        auto vw_bar       = std::any_cast<int*>   (buffer["VW_bar"]);
         auto nwb_multi    = std::any_cast<int>    (buffer["NWB_multi"]);
-        if (nwb_multi == 0) continue;
         auto nwb_bar      = std::any_cast<int*>   (buffer["NWB_bar"]);
         auto nwb_time_L   = std::any_cast<double*>(buffer["NWB_time_L"]);
         auto nwb_time_R   = std::any_cast<double*>(buffer["NWB_time_R"]);
@@ -125,6 +130,8 @@ int main(int argc, char* argv[]) {
             nwb_psd.push_back(0.0);
         }
 
+        writer.set("VW_multi", vw_multi);
+        writer.set("VW_bar", vw_multi, vw_bar);
         writer.set("NWB_multi", nwb_multi);
         writer.set("NWB_bar", nwb_multi, nwb_bar);
         writer.set("NWB_time_L", nwb_multi, nwb_time_L);
