@@ -30,20 +30,18 @@ class PulseShapeDiscriminator:
         self.decompression_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
         self.interpretation_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
         self.features = [
-            f'NW{self.AB}_pos',
-            f'NW{self.AB}_total_L',
-            f'NW{self.AB}_total_R',
-            f'NW{self.AB}_fast_L',
-            f'NW{self.AB}_fast_R',
-            f'NW{self.AB}_light_GM',
+            'pos'
+            'total_L',
+            'total_R',
+            'fast_L',
+            'fast_R',
+            'light_GM',
         ]
         self.database_dir.mkdir(parents=True, exist_ok=True)
         self.root_files_dir.mkdir(parents=True, exist_ok=True)
-        self.particles = {
-            'gamma': 0.0,
-            'neutron': 1.0,
-        }
+        self.particles = {'gamma': 0.0, 'neutron': 1.0}
         self.center_line = {'L': None, 'R': None}
+        self.fast_total = {'L': None, 'R': None}
     
     @classmethod
     def _cut_for_root_file_data(cls, AB):
@@ -149,6 +147,7 @@ class PulseShapeDiscriminator:
             print('\r', flush=True)
         self.bar = bar
         self.df = df
+        self.df.columns = [name.replace(f'NW{self.AB}_', '') for name in self.df.columns]
     
     def randomize_integer_features(self, seed=None):
         rng = np.random.default_rng(seed=seed)
@@ -184,7 +183,7 @@ class PulseShapeDiscriminator:
         x_thres_min = 3000
         for side in ['L', 'R']:
             # produce 2D histogram of fast-total
-            total, fast = f'NW{self.AB}_total_{side}', f'NW{self.AB}_fast_{side}'
+            total, fast = f'total_{side}', f'fast_{side}'
             lin_reg = linregress(self.df[total], self.df[fast])
             predict = lambda x: lin_reg.slope * x + lin_reg.intercept
             hrange = [[0, 4000], [-500, 500]]
@@ -223,8 +222,8 @@ class PulseShapeDiscriminator:
             self.total_threshold[side] = x_thres
 
         self.df = self.df.query(' & '.join([
-            f'NW{self.AB}_total_L < {self.total_threshold["L"]}',
-            f'NW{self.AB}_total_R < {self.total_threshold["R"]}',
+            f'total_L < {self.total_threshold["L"]}',
+            f'total_R < {self.total_threshold["R"]}',
         ]))
 
     def preprocessing(self):
@@ -281,7 +280,7 @@ class PulseShapeDiscriminator:
             hist_log : bool, default False
                 If True, the counts of the histogram will be log-transformed,
                 i.e. `h = log(h + 1)`, where `log` is the natural logarithm
-            kernel_width : float, default 0.1
+            kernel_width : float, default 0.05
                 The width of the kernel used to smooth the histogram.
             kernel_half_range : float, default 2.0
                 The half-range of the kernel.
@@ -389,6 +388,7 @@ class PulseShapeDiscriminator:
 
         def extrapolated_func(x):
             nonlocal x_ranges, functions
+            x = np.array(x)
             return np.piecewise(
                 x,
                 [x_range(x) for x_range in x_ranges],
@@ -402,7 +402,7 @@ class PulseShapeDiscriminator:
         # identify the particles, neutron or gamma, that correspond to the two peaks
         particle_identified = dict()
         for side in ['L', 'R']:
-            total, fast = f'NW{self.AB}_total_{side}', f'NW{self.AB}_fast_{side}'
+            total, fast = f'total_{side}', f'fast_{side}'
             if self.center_line[side] is None:
                 self.center_line[side] = np.polynomial.Polynomial.fit(self.df[total], self.df[fast], 1)
 
@@ -431,12 +431,12 @@ class PulseShapeDiscriminator:
         self.pca.fit(self.df[self.features])
         self.psd_params_from_pca = None
         for component in self.pca.components_:
-            total_L = component[self.features.index(f'NW{self.AB}_total_L')]
-            total_R = component[self.features.index(f'NW{self.AB}_total_R')]
+            total_L = component[self.features.index('total_L')]
+            total_R = component[self.features.index('total_R')]
             if np.sign(total_L) != np.sign(total_R):
                 continue
-            fast_L = component[self.features.index(f'NW{self.AB}_fast_L')]
-            fast_R = component[self.features.index(f'NW{self.AB}_fast_R')]
+            fast_L = component[self.features.index('fast_L')]
+            fast_R = component[self.features.index('fast_R')]
             slope_L = fast_L / total_L
             slope_R = fast_R / total_R
             if np.isclose(slope_L, -1.0, atol=0.2) and np.isclose(slope_R, -1.0, atol=0.2):
@@ -470,13 +470,13 @@ class PulseShapeDiscriminator:
         # initialize function arguments
         if find_peaks_kwargs is None:
             find_peaks_kwargs = dict()
-        total = f'NW{self.AB}_total_{side}'
-        fast = f'NW{self.AB}_fast_{side}'
+        total = f'total_{side}'
+        fast = f'fast_{side}'
         if position_range is None:
             position_range = [-100, -30] if side == 'L' else [30, 100]
 
         # prepare the data for fitting and center the fast-total pairs
-        df = self.df.query(f'{position_range[0]} < NW{self.AB}_pos < {position_range[1]}')
+        df = self.df.query(f'{position_range[0]} < pos < {position_range[1]}')
         df = df[[total, fast]]
         self.center_line[side] = np.polynomial.Polynomial.fit(df[total], df[fast], 1)
         df['cfast'] = df[fast] - self.center_line[side](df[total])
@@ -613,4 +613,17 @@ class PulseShapeDiscriminator:
                     color=colors[particle], linewidth=1.2, linestyle='solid',
                 )
         
-        return fast_total
+        self.fast_total[side] = fast_total
+        return self.fast_total[side]
+    
+    def value_assign(self, side, find_peaks_kwargs=None):
+        if find_peaks_kwargs is None:
+            find_peaks_kwargs = dict()
+        
+        self.fit_fast_total(side, find_peaks_kwargs=find_peaks_kwargs)
+        total = f'total_{side}'
+        fast = f'fast_{side}'
+        cfast = self.df[fast] - self.center_line[side](self.df[total])
+        fgamma = self.fast_total[side]['gamma'](self.df[total])
+        fneutron = self.fast_total[side]['neutron'](self.df[total])
+        self.df[f'vpsd_{side}'] = (cfast - fgamma) / (fneutron - fgamma)
