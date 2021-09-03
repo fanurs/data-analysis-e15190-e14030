@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import numdifftools as nd
 import numpy as np
 import pandas as pd
-from scipy.optimize import curve_fit
-from scipy.stats import linregress
+import scipy.interpolate
+import scipy.optimize
+import scipy.stats
 from sklearn import decomposition
 from sklearn.preprocessing import StandardScaler
 import uproot 
@@ -184,7 +185,7 @@ class PulseShapeDiscriminator:
         for side in ['L', 'R']:
             # produce 2D histogram of fast-total
             total, fast = f'total_{side}', f'fast_{side}'
-            lin_reg = linregress(self.df[total], self.df[fast])
+            lin_reg = scipy.stats.linregress(self.df[total], self.df[fast])
             predict = lambda x: lin_reg.slope * x + lin_reg.intercept
             hrange = [[0, 4000], [-500, 500]]
             hbins = [100, 4000]
@@ -242,6 +243,8 @@ class PulseShapeDiscriminator:
         kernel_half_range=2.0,
         fit_range_width=None,
         return_gaus_fit=False,
+        use_kde=False,
+        kde_bandwidth=None,
     ):
         """Find the first-N highest peaks from the distribution of arr.
 
@@ -290,6 +293,12 @@ class PulseShapeDiscriminator:
                 curves. If None, the width is set to `1.0` in the normalized unit.
             return_gaus_fit : bool, default False
                 If True, the Gaussian fit to each peak is also returned.
+            use_kde : bool, default False
+                If True, KDE is used to find the peak location after the
+                Gaussian fit.
+            kde_bandwidth : float, default None
+                The bandwidth of the KDE in the unit of `arr`. If None, the
+                bandwidth is set to `0.05` in the normalized unit.
             
         Returns:
             If `return_gaus_fit` is False, returns a 1D array of the peak positions
@@ -305,6 +314,7 @@ class PulseShapeDiscriminator:
         arr = transform(arr)
         hrange = [-3, 3] if hrange is None else transform(np.array(hrange))
         fit_range_width = 1.0 if fit_range_width is None else transform(fit_range_width, x0=0.0)
+        kde_bandwidth = 0.05 if kde_bandwidth is None else transform(kde_bandwidth, x0=0.0)
 
         # construct a histogram for peak-finding
         y = fh.histo1d(arr, range=hrange, bins=bins)
@@ -331,11 +341,31 @@ class PulseShapeDiscriminator:
             xpeak, ypeak = x[ipeak], y[ipeak]
             fit_range = [xpeak - 0.5 * fit_range_width, xpeak + 0.5 * fit_range_width]
             mask = (x > fit_range[0]) & (x < fit_range[1])
-            gpar, _ = curve_fit(
-                gaus,
-                x[mask], y[mask],
-                p0=[ypeak, xpeak, 0.1],
-            )
+
+            try:
+                # fit a Gaussian curve to the peak
+                gpar, _ = scipy.optimize.curve_fit(
+                    gaus,
+                    x[mask], y[mask],
+                    p0=[ypeak, xpeak, 0.1],
+                )
+            except RuntimeError as err:
+                if 'Optimal parameters not found' not in str(err):
+                    raise RuntimeError(err)
+                
+                # usually the minimization fails because the peak is too narrow
+                # so we try a finer sampling of the (x, y) points using interpolation
+                # as well as fixing both the amplitude and the width of the Gaussian
+                # varying only sigma 
+                x_fine = np.linspace(fit_range[0], fit_range[1], 200)
+                y_fine = scipy.interpolate.Akima1DInterpolator(x, y)(x_fine)
+                gpar, _ = scipy.optimize.curve_fit(
+                    lambda t, sigma: gaus(t, ypeak, xpeak, sigma),
+                    x_fine, y_fine,
+                    p0=[0.1],
+                )
+                gpar = [ypeak, xpeak, gpar[0]]
+
             if fit_range[0] < gpar[1] < fit_range[1]:
                 xpeak = gpar[1]
             xpeaks.append(xpeak)
@@ -343,6 +373,16 @@ class PulseShapeDiscriminator:
 
             # subtract the peak out from the current distribution
             y = np.clip(y - gaus(x, *gpar), 0.0, None)
+        
+        # use KDE to further pinpoint the peak positions
+        if use_kde:
+            kde = scipy.stats.gaussian_kde(arr, bw_method=kde_bandwidth)
+            for ix, xpeak in enumerate(xpeaks):
+                xpeaks[ix] = float(scipy.optimize.minimize_scalar(
+                    lambda x: -kde(x),
+                    method='bounded',
+                    bounds=[xpeak - 5 * kde_bandwidth, xpeak + 5 * kde_bandwidth],
+                ).x)
 
         # de-normalize the results
         xpeaks = np.array(xpeaks) * arr_std + arr_mean
@@ -549,7 +589,7 @@ class PulseShapeDiscriminator:
                     loss='soft_l1',
                     f_scale=0.1,
                 )
-            pars[particle], _ = curve_fit(
+            pars[particle], _ = scipy.optimize.curve_fit(
                 lambda x, *p: np.polynomial.Polynomial(p)(x),
                 ctrl_pts[particle][:, 0], ctrl_pts[particle][:, 1],
                 **kwargs,
@@ -616,11 +656,7 @@ class PulseShapeDiscriminator:
         self.fast_total[side] = fast_total
         return self.fast_total[side]
     
-    def value_assign(self, side, find_peaks_kwargs=None):
-        if find_peaks_kwargs is None:
-            find_peaks_kwargs = dict()
-        
-        self.fit_fast_total(side, find_peaks_kwargs=find_peaks_kwargs)
+    def value_assign(self, side):
         total = f'total_{side}'
         fast = f'fast_{side}'
         cfast = self.df[fast] - self.center_line[side](self.df[total])
