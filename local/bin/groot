@@ -110,6 +110,7 @@ def get_options(header_dir):
     options += root_cflags.stdout.split()
     options = [ele for ele in options if not ele.startswith('-std=c++')] # we specify -std=c++ version later
     options += root_libs.stdout.split()
+    options += ['-lMathMore']
 
     # directory of local includes
     options += ['-I' + str(header_dir)]
