@@ -17,7 +17,7 @@ class VerboseTimer:
         time_now = time.perf_counter()
 
         if self.status == 'start':
-            raise Exception('Timer had been started, it cannot be started again.')
+            raise RuntimeError('Timer had been started, it cannot be started again.')
         elif self.status == 'pause' or self.status == 'stop':
             self.time_start = time_now
 
@@ -29,15 +29,15 @@ class VerboseTimer:
         if self.status == 'start':
             self.time_diff += time_now - self.time_start
         elif self.status == 'pause':
-            raise Exception('Timer cannot be paused. Timer had been paused.')
+            raise RuntimeError('Timer cannot be paused. Timer had been paused.')
         elif self.status == 'stop':
-            raise Exception('Timer cannot be paused. Timer was not started.')
+            raise RuntimeError('Timer cannot be paused. Timer was not started.')
 
         if show:
             self.print()
         self.status = 'pause'
 
-    def stop(self, show=None, prefix=None, suffix=None):
+    def stop(self, prefix=None, suffix=None, show=None):
         time_now = time.perf_counter()
 
         if self.status == 'start':
@@ -45,7 +45,7 @@ class VerboseTimer:
         if self.status == 'pause':
             self.time_diff += 0.0
         if self.status == 'stop':
-            raise Exception('Timer cannot be stopped. Timer had been stopped.')
+            raise RuntimeError('Timer cannot be stopped. Timer had been stopped.')
 
         if show is True:
             self.print()
@@ -72,19 +72,46 @@ class VerboseTimer:
             suffix = self.print_suffix
         print(prefix + str(self.time_diff) + suffix, **self.print_kwargs)
 
+# ---------------------------
+# Some global functions for using the default timer
+# ---------------------------
 verbose_timer = VerboseTimer()
-def start(*args, **kwargs):
+def start():
+    """Start the timer.
+    """
     global verbose_timer
-    return verbose_timer.start()
+    verbose_timer.start()
 
-def pause(*args, **kwargs):
+def pause(show=False):
+    """Pause the timer.
+    
+    Parameters:
+        show: bool, optional
+            Whether to print the elapsed time accummulated at the time of
+            pausing.
+    """
     global verbose_timer
-    return verbose_timer.pause()
+    verbose_timer.pause()
 
-def stop(*args, **kwargs):
-    global verbose_timer
-    return verbose_timer.stop(*args, **kwargs)
+def stop(prefix=None, suffix=None, show=True):
+    """Stop the timer.
 
-def reset(*args, **kwargs):
+    Parameters:
+        prefix: str, optional
+            Prefix to print before the elapsed time.
+        suffix: str, optional
+            Suffix to print after the elapsed time.
+        show: bool, optional
+            Whether to print the elapsed time.
+        
+    Returns:
+        float: Elapsed time in seconds.
+    """
     global verbose_timer
-    return verbose_timer.reset(*args, **kwargs)
+    return verbose_timer.stop(prefix=prefix, suffix=suffix, show=show)
+
+def reset():
+    """Reset the timer.
+    """
+    global verbose_timer
+    verbose_timer.reset()
