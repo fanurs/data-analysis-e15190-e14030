@@ -9,7 +9,7 @@ from mako.template import Template
 import numpy as np
 import PIL
 
-from nutranspy import PROJECT_DIR
+from e15190 import PROJECT_DIR
 
 class ImageDisplayer:
     def __init__(self):
