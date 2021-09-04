@@ -16,9 +16,7 @@ from astropy import constants as const
 from astropy import units as u
 import pandas as pd
 
-# attributes to be initialized in __init__.py
-MODULE_DIR = None
-PROJECT_DIR = None
+from e15190 import PROJECT_DIR
 
 class DataManager:
     """A class to interacts with the atomic masses.
@@ -136,8 +134,8 @@ class DataManager:
         df['Z'] = df['Z'].astype(int)
         df['A'] = df['A'].astype(int)
         df['symb'] = df['symb'].str.extract(r'([A-Za-z]+)')
-        df['mass_excess'] = df['mass_excess'].str.extract(r'([0-9.]+)').astype(float)
-        df['mass_excess_err'] = df['mass_excess_err'].str.extract(r'([0-9.]+)').astype(float)
+        df['mass_excess'] = df['mass_excess'].str.extract(r'([+-]?\d+\.?\d*)').astype(float)
+        df['mass_excess_err'] = df['mass_excess_err'].str.extract(r'([+-]?\d+\.?\d*)').astype(float)
 
         # construct mapping from `Z` to `symb`
         Z_to_symb = dict(zip(df['Z'], df['symb']))
@@ -212,10 +210,8 @@ class DataManager:
         
         return splitted_content
 
-
-
 # attributes to be initialized in __init__.py
-_data_manager = None
+_data_manager = DataManager()
 
 def get_A_Z(notation, simple_tuple=False):
     """Converts mass-number annotated isotope expression into A and Z.
@@ -283,7 +279,8 @@ def mass(argv, unitless=True, not_found_okay=False, not_found_warning=True):
     amu = const.u * const.c**2
     if found:
         mass_excess = u.Quantity(df.loc[(A, Z)]['mass_excess'], df_units['mass_excess'])
+        mass_excess = mass_excess.value * u.Unit('keV')
     else:
-        mass_excess = 0.0
+        mass_excess = 0.0 * u.Unit('keV')
     mass = (A * amu + mass_excess).to('MeV')
     return mass.value if unitless else mass
