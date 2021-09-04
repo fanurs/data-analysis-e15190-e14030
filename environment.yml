@@ -36,6 +36,7 @@ dependencies:
    - cryptography=3.4.7
    - lxml>=4.6.3
    - autopep8
+   - pytest>=6.2.4
 
    # C++ libraries
    - nlohmann_json=3.9.1
