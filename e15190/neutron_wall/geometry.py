@@ -72,7 +72,8 @@ def angle_between_vectors(u, v, directional=False):
     dot_prod = np.dot(v, u) if u.ndim < v.ndim else np.dot(u, v)
     angle = dot_prod / np.sqrt(np.square(u).sum(axis=-1) * np.square(v).sum(axis=-1))
     angle = np.arccos(angle.clip(-1, 1)) # clip to account for floating-point error
-    angle *= np.sign(np.cross(u, v)) if directional else 1.0
+    sign = np.sign(np.cross(u, v)) if directional else 1.0
+    angle = angle * sign * (sign != 0)  + angle * (sign == 0)
     return angle
 
 class Bar:
