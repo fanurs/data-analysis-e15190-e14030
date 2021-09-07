@@ -25,6 +25,8 @@ using Json = nlohmann::json;
 struct ArgumentParser {
     int run_num = 0;
     std::string outroot_path = "";
+    int first_entry = 0;
+    int n_entries = -1; // negative value means all entries
 
     ArgumentParser(int argc, char* argv[]);
     void print_help();
@@ -106,11 +108,21 @@ int main(int argc, char* argv[]) {
 
     // main loop
     std::setlocale(LC_NUMERIC, "");
-    int n_entries = reader.tree->GetEntries();
-    for (int ievt = 0; ievt < n_entries; ++ievt) {
-        if (ievt % 4321 == 0) {
-            std::cout << Form("\r> %6.2f", 1e2 * ievt / n_entries) << "%" << std::flush;
-            std::cout << Form("%28s", Form("(%'d/%'d)", ievt, n_entries)) << std::flush;
+    int total_n_entries = reader.tree->GetEntries();
+    int last_entry;
+    if (argparser.n_entries < 0) {
+        last_entry = total_n_entries - 1;
+    }
+    else {
+        last_entry = std::min(total_n_entries - 1, argparser.first_entry + argparser.n_entries - 1);
+    }
+    int n_entries = last_entry - argparser.first_entry + 1;
+    int ievt;
+    for (ievt = argparser.first_entry; ievt <= last_entry; ++ievt) {
+        int iprogress = ievt - argparser.first_entry;
+        if (iprogress % 4321 == 0) {
+            std::cout << Form("\r> %6.2f", 1e2 * iprogress / n_entries) << "%" << std::flush;
+            std::cout << Form("%28s", Form("(%'d/%'d)", ievt, total_n_entries - 1)) << std::flush;
         }
 
         auto buffer = reader.get_entry(ievt);
@@ -167,7 +179,7 @@ int main(int argc, char* argv[]) {
 
         writer.fill();
     }
-    std::cout << "\r> 100.00%" << Form("%28s", Form("(%'d/%'d)", n_entries, n_entries)) << std::endl;
+    std::cout << "\r> 100.00%" << Form("%28s", Form("(%'d/%'d)", ievt - 1, total_n_entries - 1)) << std::endl;
 
     writer.write();
 
@@ -178,7 +190,7 @@ ArgumentParser::ArgumentParser(int argc, char* argv[]) {
     opterr = 0; // getopt() return '?' when getting errors
 
     int opt;
-    while((opt = getopt(argc, argv, "hr:o:")) != -1) {
+    while((opt = getopt(argc, argv, "hr:o:i:n:")) != -1) {
         switch (opt) {
             case 'h':
                 this->print_help();
@@ -188,6 +200,12 @@ ArgumentParser::ArgumentParser(int argc, char* argv[]) {
                 break;
             case 'o':
                 this->outroot_path = optarg;
+                break;
+            case 'i':
+                this->first_entry = std::stoi(optarg);
+                break;
+            case 'n':
+                this->n_entries = std::stoi(optarg);
                 break;
             case '?':
                 if (optopt == 'r') {
@@ -214,11 +232,15 @@ ArgumentParser::ArgumentParser(int argc, char* argv[]) {
 void ArgumentParser::print_help() {
     const char* msg = R"(
     Mandatory arguments:
-        -r      HiRA run number (four-digit)
-        -o      ROOT file output path
+        -r      HiRA run number (four-digit).
+        -o      ROOT file output path.
 
     Optional arguments:
-        -h      Print help message
+        -h      Print help message.
+        -i      First entry to process. Default is 0.
+        -n      Number of entries to process. Default is all.
+                If `n + i` is greater than the total number of entries, the
+                program will safely stop after the last entry.
     )";
     std::cout << msg << std::endl;
 }
