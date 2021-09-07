@@ -30,6 +30,11 @@ struct ArgumentParser {
     void print_help();
 };
 
+std::array<double, 2> get_psd(
+    NWPulseShapeDiscriminationParamReader& psd_reader,
+    int bar, double total_L, double total_R, double fast_L, double fast_R, double pos
+);
+
 int main(int argc, char* argv[]) {
     // initialization and argument parsing
     gErrorIgnoreLevel = kError; // ignore warnings
@@ -44,6 +49,10 @@ int main(int argc, char* argv[]) {
     // read in position calibration parameters
     NWBPositionCalibParamReader nwb_pcalib;
     nwb_pcalib.load(argparser.run_num);
+
+    // read in pulse shape discrimination parameters
+    NWPulseShapeDiscriminationParamReader nwb_psd_reader('B');
+    nwb_psd_reader.load(argparser.run_num);
 
     // read in Daniele's ROOT files
     std::ifstream local_paths_json_file(project_dir / "database/local_paths.json");
@@ -91,6 +100,7 @@ int main(int argc, char* argv[]) {
         // new (calibrated) branches
         {"NWB_pos",       "",  "double[NWB_multi]"},
         {"NWB_psd",       "",  "double[NWB_multi]"},
+        {"NWB_psd_perp",  "",  "double[NWB_multi]"},
     };
     writer.set_branches(out_branches);
 
@@ -119,6 +129,7 @@ int main(int argc, char* argv[]) {
         // calibrations
         std::vector<double> nwb_positions;
         std::vector<double> nwb_psd;
+        std::vector<double> nwb_psd_perp;
         for (int m = 0; m < nwb_multi; ++m) {
             // apply position calibration
             int p0 = nwb_pcalib.get(nwb_bar[m], "p0");
@@ -127,7 +138,15 @@ int main(int argc, char* argv[]) {
             nwb_positions.push_back(pos);
 
             // apply pulse shape discrimination
-            nwb_psd.push_back(0.0);
+            std::array<double, 2> psd = get_psd(
+                nwb_psd_reader,
+                nwb_bar[m],
+                double(nwb_total_L[m]), double(nwb_total_R[m]),
+                double(nwb_fast_L[m]), double(nwb_fast_R[m]),
+                pos
+            );
+            nwb_psd.push_back(psd[0]);
+            nwb_psd_perp.push_back(psd[1]);
         }
 
         writer.set("VW_multi", vw_multi);
@@ -144,6 +163,7 @@ int main(int argc, char* argv[]) {
         // new (calibrated) branches
         writer.set("NWB_pos", nwb_positions);
         writer.set("NWB_psd", nwb_psd);
+        writer.set("NWB_psd_perp", nwb_psd_perp);
 
         writer.fill();
     }
@@ -201,4 +221,53 @@ void ArgumentParser::print_help() {
         -h      Print help message
     )";
     std::cout << msg << std::endl;
+}
+
+std::array<double, 2> get_psd(
+    NWPulseShapeDiscriminationParamReader& psd_reader,
+    int bar,
+    double total_L,
+    double total_R,
+    double fast_L,
+    double fast_R,
+    double pos
+) {
+    /*****value assigning*****/
+    double gamma_L = psd_reader.gamma_fast_total_L[bar]->Eval(total_L);
+    double neutron_L = psd_reader.neutron_fast_total_L[bar]->Eval(total_L);
+    double vpsd_L = (fast_L - gamma_L) / (neutron_L - gamma_L);
+
+    double gamma_R = psd_reader.gamma_fast_total_R[bar]->Eval(total_R);
+    double neutron_R = psd_reader.neutron_fast_total_R[bar]->Eval(total_R);
+    double vpsd_R = (fast_R - gamma_R) / (neutron_R - gamma_R);
+
+    /*****position correction*****/
+    gamma_L = psd_reader.gamma_vpsd_L[bar]->Eval(pos);
+    neutron_L = psd_reader.neutron_vpsd_L[bar]->Eval(pos);
+    gamma_R = psd_reader.gamma_vpsd_R[bar]->Eval(pos);
+    neutron_R = psd_reader.neutron_vpsd_R[bar]->Eval(pos);
+
+    std::array<double, 2> xy = {vpsd_L - gamma_L, vpsd_R - gamma_R};
+    std::array<double, 2> gn_vec = {neutron_L - gamma_L, neutron_R - gamma_R};
+    std::array<double, 2> gn_rot90 = {-gn_vec[1], gn_vec[0]};
+
+    // project to gn_vec and gn_rot90
+    double x = (xy[0] * gn_vec[0] + xy[1] * gn_vec[1]);
+    x /= (gn_vec[0] * gn_vec[0] + gn_vec[1] * gn_vec[1]);
+    double y = (xy[0] * gn_rot90[0] + xy[1] * gn_rot90[1]);
+    y /= (gn_rot90[0] * gn_rot90[0] + gn_rot90[1] * gn_rot90[1]);
+
+    // PCA transform
+    x -= psd_reader.pca_mean[bar][0];
+    y -= psd_reader.pca_mean[bar][1];
+    auto& pca_matrix = psd_reader.pca_components[bar];
+    double pca_x = pca_matrix[0][0] * x + pca_matrix[0][1] * y;
+    double pca_y = pca_matrix[1][0] * x + pca_matrix[1][1] * y;
+
+    // normalization
+    auto& xpeaks = psd_reader.pca_xpeaks[bar];
+    double ppsd = (x - xpeaks[0]) / (xpeaks[1] - xpeaks[0]);
+    double ppsd_perp = y;
+
+    return {ppsd, ppsd_perp};
 }
