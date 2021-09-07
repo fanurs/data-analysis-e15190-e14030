@@ -1,4 +1,6 @@
 import concurrent.futures
+import hashlib
+import json
 import warnings
 
 import matplotlib as mpl
@@ -42,7 +44,7 @@ class PulseShapeDiscriminator:
         self.root_files_dir.mkdir(parents=True, exist_ok=True)
         self.particles = {'gamma': 0.0, 'neutron': 1.0}
         self.center_line = {'L': None, 'R': None}
-        self.fast_total = {'L': None, 'R': None}
+        self.cfast_total = {'L': None, 'R': None}
     
     @classmethod
     def _cut_for_root_file_data(cls, AB):
@@ -653,13 +655,294 @@ class PulseShapeDiscriminator:
                     color=colors[particle], linewidth=1.2, linestyle='solid',
                 )
         
-        self.fast_total[side] = fast_total
-        return self.fast_total[side]
-    
+        self.cfast_total[side] = fast_total
+        return self.cfast_total[side]
+
     def value_assign(self, side):
         total = f'total_{side}'
         fast = f'fast_{side}'
         cfast = self.df[fast] - self.center_line[side](self.df[total])
-        fgamma = self.fast_total[side]['gamma'](self.df[total])
-        fneutron = self.fast_total[side]['neutron'](self.df[total])
+        fgamma = self.cfast_total[side]['gamma'](self.df[total])
+        fneutron = self.cfast_total[side]['neutron'](self.df[total])
         self.df[f'vpsd_{side}'] = (cfast - fgamma) / (fneutron - fgamma)
+
+    @staticmethod
+    def find_two_2dpeaks(x, y, **find_peaks_kwargs):
+        pca = decomposition.PCA(n_components=2)
+        pca.fit(np.array([x, y]).T)
+        first_pca = pca.transform(np.array([x, y]).T)[:, 0]
+        xpeaks = PulseShapeDiscriminator.find_topN_peaks(first_pca, n_peaks=2, **find_peaks_kwargs)
+        peak0 = pca.mean_ + pca.components_[0, :] * xpeaks[0]
+        peak1 = pca.mean_ + pca.components_[0, :] * xpeaks[1]
+        slope_01 = (peak1[1] - peak0[1]) / (peak1[0] - peak0[0])
+        if slope_01 > 0:
+            return np.array([peak0, peak1])
+        else:
+            return np.array([peak1, peak0])
+
+    def fit_position_correction(self, light_GM_cut='light_GM > 3'):
+        # identify the neutron-gamma centroids for different position slices
+        pos_ranges = self.create_ranges(-100, 100, width=30, step=20)
+        centroids = {'neutron': [], 'gamma': []}
+        for i, pos_range in enumerate(pos_ranges):
+            subdf = self.df.query(f'{pos_range[0]} < pos < {pos_range[1]} & {light_GM_cut}')[['vpsd_L', 'vpsd_R']]
+            g_centroid, n_centroid = self.find_two_2dpeaks(subdf['vpsd_L'], subdf['vpsd_R'], kernel_width=0.01)
+            centroids['neutron'].append(n_centroid)
+            centroids['gamma'].append(g_centroid)
+
+        # interpolate the centroids as functions of positions
+        centroids = {particle: np.array(centroids[particle]) for particle in centroids}
+        positions = np.mean(pos_ranges, axis=1)
+        centroid_curves = {p: scipy.interpolate.Akima1DInterpolator(positions, centroids[p]) for p in centroids}
+        for particle in centroid_curves:
+            centroid_curves[particle].extrapolate = True
+        
+        # apply the centroid correction to the data
+        subdf = self.df.query(light_GM_cut)
+        g_pos = centroid_curves['gamma'](subdf['pos'])
+        n_pos = centroid_curves['neutron'](subdf['pos'])
+        xy = subdf[['vpsd_L', 'vpsd_R']].to_numpy() - g_pos
+        gn_vec = n_pos - g_pos
+        gn_rot90 = np.vstack([-gn_vec[:, 1], gn_vec[:, 0]]).T
+        x = np.sum(xy * gn_vec, axis=1) / np.sum(np.square(gn_vec), axis=1)
+        y = np.sum(xy * gn_rot90, axis=1) / np.sum(np.square(gn_rot90), axis=1)
+
+        # using PCA to fine tune the centroid positions onto gamma: (0, 0) and neutron: (1, 0)
+        mask = (-1 < x) & (x < 2) & (-1 < y) & (y < 1)
+        pca_xy = decomposition.PCA(n_components=2).fit(np.vstack([x[mask], y[mask]]).T)
+        if pca_xy.components_[0, 0] < 0:
+            pca_xy.components_[0] *= -1
+        if pca_xy.components_[1, 1] < 0:
+            pca_xy.components_[1] *= -1
+        x, y = pca_xy.transform(np.vstack([x, y]).T).T
+        xpeaks = self.find_topN_peaks(x, n_peaks=2, use_kde=True)
+        x = (x - xpeaks[0]) / (xpeaks[1] - xpeaks[0])
+
+        # save all position correction parameters
+        self.position_correction_params = {
+            'centroid_curves': centroid_curves,
+            'pca_xy': pca_xy,
+            'pca_xpeaks': xpeaks,
+        }
+
+    def position_correction(self):
+        """A function that maps (vpsd_L, vpsd_R, pos) to (ppsd, ppsd_perp)
+        """
+        pars = self.position_correction_params # shorthand
+
+        centroids = {
+            'gamma': pars['centroid_curves']['gamma'](self.df['pos']),
+            'neutron': pars['centroid_curves']['neutron'](self.df['pos']),
+        }
+        xy = self.df[['vpsd_L', 'vpsd_R']].to_numpy() - centroids['gamma']
+        gn_vec = centroids['neutron'] - centroids['gamma']
+        gn_rot90 = np.vstack([-gn_vec[:, 1], gn_vec[:, 0]]).T
+        x = np.sum(xy * gn_vec, axis=1) / np.sum(np.square(gn_vec), axis=1)
+        y = np.sum(xy * gn_rot90, axis=1) / np.sum(np.square(gn_rot90), axis=1)
+        x, y = pars['pca_xy'].transform(np.vstack([x, y]).T).T
+        x = (x - pars['pca_xpeaks'][0]) / (pars['pca_xpeaks'][1] - pars['pca_xpeaks'][0])
+
+        self.df['ppsd'] = x
+        self.df['ppsd_perp'] = y
+
+    @property
+    def _run_hash_str(self):
+        runs = sorted(set(self.df['run']))
+        runs_hash = hashlib.sha256(','.join([str(run) for run in runs]).encode()).hexdigest()
+        return f'run-{min(runs):04d}-{max(runs):04d}-h{runs_hash[-5:]}'
+
+    def save_parameters(self, path=None):
+        # prepare JSON path
+        filename = f'NW{self.AB}-bar{self.bar:02d}.json'
+        if path is None:
+            path = self.database_dir / 'calib_params' / self._run_hash_str / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        # the container for all JSON serialized parameters to be written to file
+        pars = {
+            'runs': sorted(set(self.df['run'])),
+            'run_hash_str': self._run_hash_str,
+            'NW': self.AB,
+            'bar': self.bar,
+        }
+
+        # prepare fast-total relations into JSON serializable
+        totals = np.arange(0, 4100 + 1e-9, 20.0)
+        pars['fast_total'] = {
+            'totals': totals,
+            'center_line_L': self.center_line['L'](totals),
+            'center_line_R': self.center_line['R'](totals),
+            'gamma_cfasts_L': self.cfast_total['L']['gamma'](totals),
+            'neutron_cfasts_L': self.cfast_total['L']['neutron'](totals),
+            'gamma_cfasts_R': self.cfast_total['R']['gamma'](totals),
+            'neutron_cfasts_R': self.cfast_total['R']['neutron'](totals),
+        }
+
+        # prepare the position correction parameters into JSON serializable
+        pos_pars = self.position_correction_params
+        positions = np.arange(-100, 100 + 1e-9, 5.0)
+        pars['position_correction'] = {
+            'centroid_curves': {
+                'positions': positions,
+                'gamma_centroids': pos_pars['centroid_curves']['gamma'](positions),
+                'neutron_centroids': pos_pars['centroid_curves']['neutron'](positions),
+            },
+            'pca': {
+                'mean': pos_pars['pca_xy'].mean_.tolist(),
+                'components': pos_pars['pca_xy'].components_.tolist(),
+                'xpeaks': pos_pars['pca_xpeaks'].tolist(),
+            },
+        }
+        
+        # write to file
+        def default(obj):
+            if isinstance(obj, np.ndarray):
+                return np.round(obj, 5).tolist()
+            raise TypeError(f'{obj.__class__.__name__} is not JSON serializable')
+        with open(path, 'w') as file:
+            json.dump(pars, file, indent=4, default=default)
+    
+    def _draw_fast_total(self, side, ax, cut):
+        total, fast = f'total_{side}', f'fast_{side}'
+        subdf = self.df.query(cut)[[total, fast]]
+        subdf['cfast'] = subdf[fast] - self.center_line[side](subdf[total])
+
+        # two-dimensional histogram
+        h = fh.plot_histo2d(
+            ax.hist2d,
+            subdf[total], subdf['cfast'],
+            range=[[0, 4000], [-150, 200]],
+            bins=[500, 175],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
+
+        # fast-total relations
+        total_plt = np.linspace(0, 4000, 200)
+        for particle, ft in self.cfast_total[side].items():
+            ax.plot(total_plt, ft(total_plt), color='black', linewidth=1.5, zorder=10)
+            ax.plot(total_plt, ft(total_plt), color='gold', linewidth=1.2, zorder=20)
+        
+        # designs
+        ax.set_xlim(0, 4000)
+        ax.set_ylim(-150, 200)
+        ax.set_xlabel(f'TOTAL-{side}')
+        ax.set_ylabel(f'Centered FAST-{side}')
+
+    def _draw_vpsd2d(self, ax, cut):
+        subdf = self.df.query(cut)
+
+        # two-dimensional histogram
+        h = fh.plot_histo2d(
+            ax.hist2d,
+            subdf['vpsd_L'], subdf['vpsd_R'],
+            range=[[-2, 3], [-2, 3]],
+            bins=[250, 250],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
+
+        # design
+        ax.set_xlim(-2, 3)
+        ax.set_ylim(-2, 3)
+        ax.set_xlabel('VPSD-L')
+        ax.set_ylabel('VPSD-R')
+
+    def _draw_ppsd2d(self, ax, cut):
+        subdf = self.df.query(cut)
+
+        # two-dimensional histogram
+        h = fh.plot_histo2d(
+            ax.hist2d,
+            subdf['ppsd'], subdf['ppsd_perp'],
+            range=[[-2, 3], [-2, 2]],
+            bins=[250, 200],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
+
+        # design
+        ax.set_xlim(-2, 3)
+        ax.set_ylim(-2, 2)
+        ax.set_xlabel('PPSD')
+        ax.set_ylabel('PPSD-perpendicular')
+    
+    def _draw_ppsd2d_vs_lightGM(self, ax, cut):
+        subdf = self.df.query(cut)
+
+        # two-dimensional histogram
+        fh.plot_histo2d(
+            ax.hist2d,
+            subdf['ppsd'], subdf['light_GM'],
+            range=[[-3, 4], [0, 60]],
+            bins=[350, 300],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        ax.fill_betweenx([0, 3], -4, 5, color='silver', alpha=0.6, edgecolor='black', linewidth=1.5)
+        ax.axvline(0.5, color='black', linewidth=1.5, zorder=10)
+        ax.axvline(0.5, color='gold', linewidth=1.2, zorder=20)
+
+        # design
+        ax.set_xlim(-3, 4)
+        ax.set_ylim(0, 60)
+        ax.set_xlabel('PPSD')
+        ax.set_ylabel('G.M. light (MeVee)')
+
+    def _draw_ppsd1d(self, ax, cut):
+        subdf = self.df.query(cut)
+        fh.plot_histo1d(
+            ax.hist,
+            subdf['ppsd'],
+            range=[-3, 4],
+            bins=700,
+            histtype='step',
+            color='navy',
+            density=True,
+        )
+        ax.axvline(0.5, color='gold', linewidth=1.2)
+
+        # design
+        ax.set_xlim(-3, 4)
+        ax.set_ylim(0, )
+        ax.set_xlabel('PPSD')
+        ax.set_ylabel('Probability density')
+        
+    def save_to_gallery(self, path=None, cut='light_GM > 3', show_plot=False):
+        filename = f'{self._run_hash_str}-NW{self.AB}-bar{self.bar:02d}.png'
+        if path is None:
+            path = self.database_dir / 'gallery' / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        fig, ax = plt.subplots(ncols=3, nrows=2, figsize=(13, 8), constrained_layout=True)
+        fig.suptitle(f'{self._run_hash_str}: NW{self.AB}-bar{self.bar:02d}')
+
+        rc = (0, 0)
+        _cut = ' & '.join([f'({cut})', '(-100 < pos < -40)'])
+        self._draw_fast_total('L', ax[rc], _cut)
+
+        rc = (1, 0)
+        _cut = ' & '.join([f'({cut})', '(40 < pos < 100)'])
+        self._draw_fast_total('R', ax[rc], _cut)
+
+        rc = (0, 1)
+        self._draw_vpsd2d(ax[rc], cut)
+
+        rc = (1, 1)
+        self._draw_ppsd2d(ax[rc], cut)
+
+        rc = (0, 2)
+        self._draw_ppsd2d_vs_lightGM(ax[rc], 'light_GM > 1')
+
+        rc = (1, 2)
+        self._draw_ppsd1d(ax[rc], cut)
+
+        plt.draw()
+        fig.savefig(path, dpi=500, bbox_inches='tight')
+        if show_plot:
+            plt.show()
+        else:
+            plt.close()
