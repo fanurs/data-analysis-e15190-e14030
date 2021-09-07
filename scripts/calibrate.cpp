@@ -232,6 +232,14 @@ std::array<double, 2> get_psd(
     double fast_R,
     double pos
 ) {
+    /*****eliminate bad data*****/
+    if (total_L < 0 || total_R < 0 || fast_L < 0 || fast_R < 0
+        || total_L > 4097 || total_R > 4097 || fast_L > 4097 || fast_R > 4097
+        || pos < -120 || pos > 120
+    ) {
+        return {-9999.0, -9999.0};
+    }
+
     /*****value assigning*****/
     double gamma_L = psd_reader.gamma_fast_total_L[bar]->Eval(total_L);
     double neutron_L = psd_reader.neutron_fast_total_L[bar]->Eval(total_L);
