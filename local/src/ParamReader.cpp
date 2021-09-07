@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -8,12 +9,17 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Math/Interpolator.h"
+#include "Math/InterpolationTypes.h"
 #include "TTreeReaderValue.h"
 
 #include "ParamReader.h"
 
 using Json = nlohmann::json;
 
+/*************************************/
+/*****NWBPositionCalibParamReader*****/
+/*************************************/
 NWBPositionCalibParamReader::NWBPositionCalibParamReader() {
     // initialize paths
     const char* PROJECT_DIR = getenv("PROJECT_DIR");
@@ -125,4 +131,151 @@ void NWBPositionCalibParamReader::set_index(const std::string& index_name) {
 
 double NWBPositionCalibParamReader::get(int bar, const std::string& par) {
     return this->run_param[std::make_pair(bar, par)];
+}
+
+
+/***********************************************/
+/*****NWPulseShapeDiscriminationParamReader*****/
+/***********************************************/
+NWPulseShapeDiscriminationParamReader::NWPulseShapeDiscriminationParamReader(const char AB) {
+    this->AB = toupper(AB);
+    this->ab = tolower(this->AB);
+
+    for (int bar = 1; bar <= 24; ++bar) {
+        this->bars.push_back(bar);
+    }
+
+    const char* PROJECT_DIR = getenv("PROJECT_DIR");
+    if (PROJECT_DIR == nullptr) {
+        std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
+        exit(1);
+    }
+    this->param_dir = PROJECT_DIR / this->param_reldir;
+}
+
+NWPulseShapeDiscriminationParamReader::~NWPulseShapeDiscriminationParamReader() { }
+
+void NWPulseShapeDiscriminationParamReader::reconstruct_interpolators(int bar) {
+    auto method = ROOT::Math::Interpolation::kAKIMA;
+
+    /*****Fast-total interpolation*****/
+    auto& fast_total = this->database[bar]["fast_total"];
+    auto& totals = fast_total["totals"];
+    std::vector<double> fasts;
+
+    // gamma_L
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = fast_total["center_line_L"][i].get<double>() + fast_total["gamma_cfasts_L"][i].get<double>();
+        fasts.push_back(fast);
+    }
+    this->gamma_fast_total_L[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+
+    // neutron_L
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = fast_total["center_line_L"][i].get<double>() + fast_total["neutron_cfasts_L"][i].get<double>();
+        fasts.push_back(fast);
+    }
+    this->neutron_fast_total_L[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+
+    // gamma_R
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = fast_total["center_line_R"][i].get<double>() + fast_total["gamma_cfasts_R"][i].get<double>();
+        fasts.push_back(fast);
+    }
+    this->gamma_fast_total_R[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+
+    // neutron_R
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = fast_total["center_line_R"][i].get<double>() + fast_total["neutron_cfasts_R"][i].get<double>();
+        fasts.push_back(fast);
+    }
+    this->neutron_fast_total_R[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+
+    /*****VPSD centroids interpolation*****/
+    auto& pos_correction = this->database[bar]["position_correction"];
+    auto& centroids = pos_correction["centroid_curves"];
+    auto& positions = centroids["positions"];
+    std::vector<double> coords;
+
+    // gamma_L
+    coords.clear();
+    for (int i = 0; i < positions.size(); ++i) {
+        coords.push_back(centroids["gamma_centroids"][i][0].get<double>());
+    }
+    this->gamma_vpsd_L[bar] = new ROOT::Math::Interpolator(positions, coords, method);
+
+    // neutron_L
+    coords.clear();
+    for (int i = 0; i < positions.size(); ++i) {
+        coords.push_back(centroids["neutron_centroids"][i][0].get<double>());
+    }
+    this->neutron_vpsd_L[bar] = new ROOT::Math::Interpolator(positions, coords, method);
+
+    // gamma_R
+    coords.clear();
+    for (int i = 0; i < positions.size(); ++i) {
+        coords.push_back(centroids["gamma_centroids"][i][1].get<double>());
+    }
+    this->gamma_vpsd_R[bar] = new ROOT::Math::Interpolator(positions, coords, method);
+
+    // neutron_R
+    coords.clear();
+    for (int i = 0; i < positions.size(); ++i) {
+        coords.push_back(centroids["neutron_centroids"][i][1].get<double>());
+    }
+    this->neutron_vpsd_R[bar] = new ROOT::Math::Interpolator(positions, coords, method);
+}
+
+void NWPulseShapeDiscriminationParamReader::process_pca(int bar) {
+    auto& pca = this->database[bar]["position_correction"]["pca"];
+    this->pca_mean[bar] = {pca["mean"][0].get<double>(), pca["mean"][1].get<double>()};
+    this->pca_components[bar][0] = {pca["components"][0][0].get<double>(), pca["components"][0][1].get<double>()};
+    this->pca_components[bar][1] = {pca["components"][1][0].get<double>(), pca["components"][1][1].get<double>()};
+    this->pca_xpeaks[bar] = {pca["xpeaks"][0].get<double>(), pca["xpeaks"][1].get<double>()};
+}
+
+bool NWPulseShapeDiscriminationParamReader::load_single_bar(int run, int bar) {
+    bool found_run = false;
+    for (auto& batch_dir: std::filesystem::directory_iterator(this->param_dir)) {
+        std::filesystem::path filepath = batch_dir;
+        filepath /= Form("NW%c-bar%02d.json", this->AB, bar);
+
+        // read in JSON file
+        std::ifstream file(filepath.string());
+        if (!file.is_open()) {
+            std::cerr << "Fail to open JSON file: " << filepath.string() << std::endl;
+            exit(1);
+        }
+        Json json_buf;
+        file >> json_buf;
+        file.close();
+
+        // check if run is in this batch
+        auto& runs = json_buf["runs"];
+        if (std::find(runs.begin(), runs.end(), run) != runs.end()) {
+            found_run = true;
+
+            // load in the parameters
+            this->database[bar] = json_buf;
+            this->reconstruct_interpolators(bar);
+            this->process_pca(bar);
+
+            break;
+        }
+    }
+    return found_run;
+}
+
+bool NWPulseShapeDiscriminationParamReader::load(int run) {
+    bool found_all_bars = true;
+    for (int bar: this->bars) {
+        if (!this->load_single_bar(run, bar)) {
+            found_all_bars = false;
+        }
+    }
+    return found_all_bars;
 }
