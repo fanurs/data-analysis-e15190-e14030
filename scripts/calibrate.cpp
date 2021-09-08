@@ -71,38 +71,86 @@ int main(int argc, char* argv[]) {
     inroot_path /= Form("CalibratedData_%04d.root", argparser.run_num);
     RootReader reader(inroot_path.string(), "E15190");
     std::vector<Branch> in_branches {
-        {"VW_multi",      "VetoWall.fmulti",                  "int"},
-        {"VW_bar",        "VetoWall.fnumbar",                 "int[VW_multi]"},
-        {"NWB_multi",     "NWB.fmulti",                       "int"},
-        {"NWB_bar",       "NWB.fnumbar",                      "int[NWB_multi]"},
-        {"NWB_time_L",    "NWB.fTimeLeft",                    "double[NWB_multi]"},
-        {"NWB_time_R",    "NWB.fTimeRight",                   "double[NWB_multi]"},
-        {"NWB_total_L",   "NWB.fLeft",                        "short[NWB_multi]"},
-        {"NWB_total_R",   "NWB.fRight",                       "short[NWB_multi]"},
-        {"NWB_fast_L",    "NWB.ffastLeft",                    "short[NWB_multi]"},
-        {"NWB_fast_R",    "NWB.ffastRight",                   "short[NWB_multi]"},
-        {"NWB_light_GM",  "NWB.fGeoMeanSaturationCorrected",  "double[NWB_multi]"},
+        // TDC triggers
+        {"TDC_hira_ds_nwtdc",  "TDCTriggers.HiRA_DS_TRG_NWTDC",    "double"},
+        {"TDC_hira_live",      "TDCTriggers.HiRA_LIVE",            "double"},
+        {"TDC_master",         "TDCTriggers.MASTER_TRG",           "double"},
+        {"TDC_master_nw",      "TDCTriggers.MASTER_TRG_NWTDC",     "double"},
+        {"TDC_master_vw",      "TDCTriggers.MASTER_TRG_VWTDC",     "double"},
+        {"TDC_nw_ds",          "TDCTriggers.NW_DS_TRG",            "double"},
+        {"TDC_nw_ds_nwtdc",    "TDCTriggers.NW_DS_TRG_NWTDC",      "double"},
+        {"TDC_rf_nwtdc",       "TDCTriggers.RF_TRG_NWTDC",         "double"},
+        {"TDC_mb_hira",        "TDCTriggers.uBallHiRA_TRG",        "double"},
+        {"TDC_mb_hira_nwtdc",  "TDCTriggers.uBallHiRA_TRG_NWTDC",  "double"},
+        {"TDC_mb_nw",          "TDCTriggers.uBallNW_TRG",          "double"},
+        {"TDC_mb_nw_nwtdc",    "TDCTriggers.uBallNW_TRG_NWTDC",    "double"},
+        {"TDC_mb_ds",          "TDCTriggers.uBall_DS_TRG",         "double"},
+
+        // Microball
+        {"MB_multi",           "uBall.fmulti",                     "int"},
+
+        // Veto Wall
+        {"VW_multi",           "VetoWall.fmulti",                  "int"},
+        {"VW_bar",             "VetoWall.fnumbar",                 "int[VW_multi]"},
+
+        // Neutron Wall B
+        {"NWB_multi",          "NWB.fmulti",                       "int"},
+        {"NWB_bar",            "NWB.fnumbar",                      "int[NWB_multi]"},
+        {"NWB_time_L",         "NWB.fTimeLeft",                    "double[NWB_multi]"},
+        {"NWB_time_R",         "NWB.fTimeRight",                   "double[NWB_multi]"},
+        {"NWB_total_L",        "NWB.fLeft",                        "short[NWB_multi]"},
+        {"NWB_total_R",        "NWB.fRight",                       "short[NWB_multi]"},
+        {"NWB_fast_L",         "NWB.ffastLeft",                    "short[NWB_multi]"},
+        {"NWB_fast_R",         "NWB.ffastRight",                   "short[NWB_multi]"},
+        {"NWB_light_GM",       "NWB.fGeoMeanSaturationCorrected",  "double[NWB_multi]"},
+        {"NWB_theta",          "NWB.fThetaRan",                    "double[NWB_multi]"},
+        {"NWB_phi",            "NWB.fPhiRan",                      "double[NWB_multi]"},
+        {"NWB_distance",       "NWB.fDistRancm",                   "double[NWB_multi]"},
     };
     reader.set_branches(in_branches);
 
     // prepare output (calibrated) ROOT files
     RootWriter writer(argparser.outroot_path, "tree");
     std::vector<Branch> out_branches {
-        {"VW_multi",      "",  "int"},
-        {"VW_bar",        "",  "int[VW_multi]"},
-        {"NWB_multi",     "",  "int"},
-        {"NWB_bar",       "",  "int[NWB_multi]"},
-        {"NWB_time_L",    "",  "double[NWB_multi]"},
-        {"NWB_time_R",    "",  "double[NWB_multi]"},
-        {"NWB_total_L",   "",  "short[NWB_multi]"},
-        {"NWB_total_R",   "",  "short[NWB_multi]"},
-        {"NWB_fast_L",    "",  "short[NWB_multi]"},
-        {"NWB_fast_R",    "",  "short[NWB_multi]"},
-        {"NWB_light_GM",  "",  "double[NWB_multi]"},
+        // TDC triggers
+        {"TDC_hira_ds_nwtdc",  "",  "double"},
+        {"TDC_hira_live",      "",  "double"},
+        {"TDC_master",         "",  "double"},
+        {"TDC_master_nw",      "",  "double"},
+        {"TDC_master_vw",      "",  "double"},
+        {"TDC_nw_ds",          "",  "double"},
+        {"TDC_nw_ds_nwtdc",    "",  "double"},
+        {"TDC_rf_nwtdc",       "",  "double"},
+        {"TDC_mb_hira",        "",  "double"},
+        {"TDC_mb_hira_nwtdc",  "",  "double"},
+        {"TDC_mb_nw",          "",  "double"},
+        {"TDC_mb_nw_nwtdc",    "",  "double"},
+        {"TDC_mb_ds",          "",  "double"},
+
+        // Microball
+        {"MB_multi",           "",  "int"},
+
+        // Veto Wall
+        {"VW_multi",           "",  "int"},
+        {"VW_bar",             "",  "int[VW_multi]"},
+
+        // Neutron Wall B
+        {"NWB_multi",          "",  "int"},
+        {"NWB_bar",            "",  "int[NWB_multi]"},
+        {"NWB_time_L",         "",  "double[NWB_multi]"},
+        {"NWB_time_R",         "",  "double[NWB_multi]"},
+        {"NWB_total_L",        "",  "short[NWB_multi]"},
+        {"NWB_total_R",        "",  "short[NWB_multi]"},
+        {"NWB_fast_L",         "",  "short[NWB_multi]"},
+        {"NWB_fast_R",         "",  "short[NWB_multi]"},
+        {"NWB_light_GM",       "",  "double[NWB_multi]"},
+        {"NWB_theta",          "",  "double[NWB_multi]"},
+        {"NWB_phi",            "",  "double[NWB_multi]"},
+        {"NWB_distance",       "",  "double[NWB_multi]"},
         // new (calibrated) branches
-        {"NWB_pos",       "",  "double[NWB_multi]"},
-        {"NWB_psd",       "",  "double[NWB_multi]"},
-        {"NWB_psd_perp",  "",  "double[NWB_multi]"},
+        {"NWB_pos",            "",  "double[NWB_multi]"},
+        {"NWB_psd",            "",  "double[NWB_multi]"},
+        {"NWB_psd_perp",       "",  "double[NWB_multi]"},
     };
     writer.set_branches(out_branches);
 
@@ -126,6 +174,21 @@ int main(int argc, char* argv[]) {
         }
 
         auto buffer = reader.get_entry(ievt);
+        auto tdc_hira_ds_nwtdc = std::any_cast<double>(buffer["TDC_hira_ds_nwtdc"]);
+        auto tdc_hira_live     = std::any_cast<double>(buffer["TDC_hira_live"]);
+        auto tdc_master        = std::any_cast<double>(buffer["TDC_master"]);
+        auto tdc_master_nw     = std::any_cast<double>(buffer["TDC_master_nw"]);
+        auto tdc_master_vw     = std::any_cast<double>(buffer["TDC_master_vw"]);
+        auto tdc_nw_ds         = std::any_cast<double>(buffer["TDC_nw_ds"]);
+        auto tdc_nw_ds_nwtdc   = std::any_cast<double>(buffer["TDC_nw_ds_nwtdc"]);
+        auto tdc_rf_nwtdc      = std::any_cast<double>(buffer["TDC_rf_nwtdc"]);
+        auto tdc_mb_hira       = std::any_cast<double>(buffer["TDC_mb_hira"]);
+        auto tdc_mb_hira_nwtdc = std::any_cast<double>(buffer["TDC_mb_hira_nwtdc"]);
+        auto tdc_mb_nw         = std::any_cast<double>(buffer["TDC_mb_nw"]);
+        auto tdc_mb_nw_nwtdc   = std::any_cast<double>(buffer["TDC_mb_nw_nwtdc"]);
+        auto tdc_mb_ds         = std::any_cast<double>(buffer["TDC_mb_ds"]);
+
+        auto mb_multi     = std::any_cast<int>    (buffer["MB_multi"]);
         auto vw_multi     = std::any_cast<int>    (buffer["VW_multi"]);
         auto vw_bar       = std::any_cast<int*>   (buffer["VW_bar"]);
         auto nwb_multi    = std::any_cast<int>    (buffer["NWB_multi"]);
@@ -137,6 +200,9 @@ int main(int argc, char* argv[]) {
         auto nwb_fast_L   = std::any_cast<short*> (buffer["NWB_fast_L"]);
         auto nwb_fast_R   = std::any_cast<short*> (buffer["NWB_fast_R"]);
         auto nwb_light_GM = std::any_cast<double*>(buffer["NWB_light_GM"]);
+        auto nwb_theta    = std::any_cast<double*>(buffer["NWB_theta"]);
+        auto nwb_phi      = std::any_cast<double*>(buffer["NWB_phi"]);
+        auto nwb_distance = std::any_cast<double*>(buffer["NWB_distance"]);
 
         // calibrations
         std::vector<double> nwb_positions;
@@ -161,6 +227,20 @@ int main(int argc, char* argv[]) {
             nwb_psd_perp.push_back(psd[1]);
         }
 
+        writer.set("TDC_hira_ds_nwtdc", tdc_hira_ds_nwtdc);
+        writer.set("TDC_hira_live", tdc_hira_live);
+        writer.set("TDC_master", tdc_master);
+        writer.set("TDC_master_nw", tdc_master_nw);
+        writer.set("TDC_master_vw", tdc_master_vw);
+        writer.set("TDC_nw_ds", tdc_nw_ds);
+        writer.set("TDC_nw_ds_nwtdc", tdc_nw_ds_nwtdc);
+        writer.set("TDC_rf_nwtdc", tdc_rf_nwtdc);
+        writer.set("TDC_mb_hira", tdc_mb_hira);
+        writer.set("TDC_mb_hira_nwtdc", tdc_mb_hira_nwtdc);
+        writer.set("TDC_mb_nw", tdc_mb_nw);
+        writer.set("TDC_mb_nw_nwtdc", tdc_mb_nw_nwtdc);
+        writer.set("TDC_mb_ds", tdc_mb_ds);
+        writer.set("MB_multi", mb_multi);
         writer.set("VW_multi", vw_multi);
         writer.set("VW_bar", vw_multi, vw_bar);
         writer.set("NWB_multi", nwb_multi);
