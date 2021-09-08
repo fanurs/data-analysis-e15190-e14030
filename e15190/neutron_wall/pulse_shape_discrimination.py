@@ -674,11 +674,7 @@ class PulseShapeDiscriminator:
         xpeaks = PulseShapeDiscriminator.find_topN_peaks(first_pca, n_peaks=2, **find_peaks_kwargs)
         peak0 = pca.mean_ + pca.components_[0, :] * xpeaks[0]
         peak1 = pca.mean_ + pca.components_[0, :] * xpeaks[1]
-        slope_01 = (peak1[1] - peak0[1]) / (peak1[0] - peak0[0])
-        if slope_01 > 0:
-            return np.array([peak0, peak1])
-        else:
-            return np.array([peak1, peak0])
+        return np.array(sorted([peak0, peak1], key=lambda v: np.linalg.norm(v)))
 
     def fit_position_correction(self, light_GM_cut='light_GM > 3'):
         # identify the neutron-gamma centroids for different position slices
