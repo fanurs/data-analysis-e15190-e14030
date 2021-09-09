@@ -102,7 +102,7 @@ class Bar:
                 orthogonal due to floating-point errors. Hence, we may want to
                 check if the PCA matric we compute is "nearly orthogonal".
         """
-        self.contain_pyrex = contain_pyrex
+        self.contain_pyrex = True # always starts with True
         self.pyrex_thickness = 2.54 / 8 # cm
         self.vertices = np.array(vertices)
         self.pca = PCA(n_components=3, svd_solver='full')
