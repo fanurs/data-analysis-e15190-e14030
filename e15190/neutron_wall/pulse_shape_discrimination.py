@@ -45,6 +45,7 @@ class PulseShapeDiscriminator:
         self.particles = {'gamma': 0.0, 'neutron': 1.0}
         self.center_line = {'L': None, 'R': None}
         self.cfast_total = {'L': None, 'R': None}
+        self.ctrl_pts = {'L': None, 'R': None}
     
     @classmethod
     def _cut_for_root_file_data(cls, AB):
@@ -397,7 +398,7 @@ class PulseShapeDiscriminator:
         xpeaks = xpeaks[isorted]
         gpars = gpars[isorted]
         
-        return xpeaks if not return_gaus_fit else (xpeaks, gpars)
+        return xpeaks if not return_gaus_fit else gpars
 
     @staticmethod
     def extrapolate_linearly(func, boundary):
@@ -596,14 +597,27 @@ class PulseShapeDiscriminator:
                 ctrl_pts[particle][:, 0], ctrl_pts[particle][:, 1],
                 **kwargs,
             )
-        
-        # finalize fast-total relations
+
+        # construct fast-total relations
         fast_total = {particle: None for particle in self.particles}
         for particle in fast_total:
             fast_total[particle] = self.extrapolate_linearly(
                 np.polynomial.Polynomial(pars[particle]),
                 [ctrl_pts[particle][0, 0], ctrl_pts[particle][-1, 0]],
             )
+
+        # save all the control points, including the removed ones
+        self.ctrl_pts[side] = dict()
+        for particle, ctps in ctrl_pts.items():
+            if particle in removed_ctrl_pts:
+                rm_ctps = removed_ctrl_pts[particle]
+                df = np.vstack([ctps, rm_ctps])
+                df = pd.DataFrame(df, columns=['total', 'fast'])
+                df['valid'] = [True] * len(ctps) + [False] * len(rm_ctps)
+            else:
+                df = pd.DataFrame(ctps, columns=['total', 'fast'])
+                df['valid'] = [True] * len(ctps)
+            self.ctrl_pts[side][particle] = df
 
         # plot for debug or check
         if ax:
@@ -659,12 +673,36 @@ class PulseShapeDiscriminator:
         return self.cfast_total[side]
 
     def value_assign(self, side):
+        """Value-assign a PSD value to each entry.
+
+        Assigns gamma to 0 and neutron to 1. Values in between, e.g. 0.5, would
+        mean that the algorithm has a hard time confidently distinguishing
+        between gamma and neutron. However, values that are far from the
+        assigned values, e.g. 10.0 or -10.0, are likely to be noise too. So when
+        trying to select a particle, it is better to specify a range of assigned
+        values, VPSDs, e.g. [-1, 0.5] for gamma and [0.5, 2] for neutron.
+
+        Of course, this function is only assigning the PSD value based on
+        information from one side of the NW bar, which does not give very good
+        neutron-gamma separation. Also, hit position information is not used at
+        all. Eventually, the method `PulseShapeDiscriminator.fit()` would
+        provide a better PSD parameter that is built on top of this one-sided
+        VPSD parameter.
+
+        Parameters:
+            side : 'L' or 'R'
+                The side of the NW bar to do the value-assignment.
+        """
         total = f'total_{side}'
         fast = f'fast_{side}'
         cfast = self.df[fast] - self.center_line[side](self.df[total])
         fgamma = self.cfast_total[side]['gamma'](self.df[total])
         fneutron = self.cfast_total[side]['neutron'](self.df[total])
-        self.df[f'vpsd_{side}'] = (cfast - fgamma) / (fneutron - fgamma)
+        self.df[f'vpsd_{side}'] = np.where(
+            fneutron < fgamma,
+            (cfast - fgamma) / (fneutron - fgamma),
+            -9999.0,
+        )
 
     @staticmethod
     def find_two_2dpeaks(x, y, **find_peaks_kwargs):
@@ -676,12 +714,18 @@ class PulseShapeDiscriminator:
         peak1 = pca.mean_ + pca.components_[0, :] * xpeaks[1]
         return np.array(sorted([peak0, peak1], key=lambda v: np.linalg.norm(v)))
 
-    def fit_position_correction(self, light_GM_cut='light_GM > 3'):
+    def fit_position_correction(self, light_GM_cut='light_GM > 2'):
+        vpsd_cut = '(-4 < vpsd_L < 5) & (-4 < vpsd_R < 5)'
+
         # identify the neutron-gamma centroids for different position slices
         pos_ranges = self.create_ranges(-100, 100, width=30, step=20)
         centroids = {'neutron': [], 'gamma': []}
         for i, pos_range in enumerate(pos_ranges):
-            subdf = self.df.query(f'{pos_range[0]} < pos < {pos_range[1]} & {light_GM_cut}')[['vpsd_L', 'vpsd_R']]
+            subdf = self.df.query(' & '.join([
+                f'{pos_range[0]} < pos < {pos_range[1]}',
+                vpsd_cut,
+                light_GM_cut,
+            ]))[['vpsd_L', 'vpsd_R']]
             g_centroid, n_centroid = self.find_two_2dpeaks(subdf['vpsd_L'], subdf['vpsd_R'], kernel_width=0.01)
             centroids['neutron'].append(n_centroid)
             centroids['gamma'].append(g_centroid)
@@ -694,7 +738,7 @@ class PulseShapeDiscriminator:
             centroid_curves[particle].extrapolate = True
         
         # apply the centroid correction to the data
-        subdf = self.df.query(light_GM_cut)
+        subdf = self.df.query(light_GM_cut + ' & ' + vpsd_cut)
         g_pos = centroid_curves['gamma'](subdf['pos'])
         n_pos = centroid_curves['neutron'](subdf['pos'])
         xy = subdf[['vpsd_L', 'vpsd_R']].to_numpy() - g_pos
@@ -704,14 +748,14 @@ class PulseShapeDiscriminator:
         y = np.sum(xy * gn_rot90, axis=1) / np.sum(np.square(gn_rot90), axis=1)
 
         # using PCA to fine tune the centroid positions onto gamma: (0, 0) and neutron: (1, 0)
-        mask = (-1 < x) & (x < 2) & (-1 < y) & (y < 1)
+        mask = (-2 < x) & (x < 3) & (-1 < y) & (y < 1)
         pca_xy = decomposition.PCA(n_components=2).fit(np.vstack([x[mask], y[mask]]).T)
         if pca_xy.components_[0, 0] < 0:
             pca_xy.components_[0] *= -1
         if pca_xy.components_[1, 1] < 0:
             pca_xy.components_[1] *= -1
         x, y = pca_xy.transform(np.vstack([x, y]).T).T
-        xpeaks = self.find_topN_peaks(x, n_peaks=2, use_kde=True)
+        xpeaks = self.find_topN_peaks(x[(x > -2) & (x < 3)], n_peaks=2, use_kde=True)
         x = (x - xpeaks[0]) / (xpeaks[1] - xpeaks[0])
 
         # save all position correction parameters
@@ -741,6 +785,29 @@ class PulseShapeDiscriminator:
         self.df['ppsd'] = x
         self.df['ppsd_perp'] = y
 
+    def fit(self):
+        self.preprocessing()
+        for side in 'LR':
+            self.fit_fast_total(side)
+            self.value_assign(side)
+        self.fit_position_correction()
+        self.position_correction()
+
+    @staticmethod
+    def figure_of_merit(arr, **find_peaks_kwargs):
+        """Calculate the figure-of-merit that quantifies the two-peak separation
+
+        The formula is F.O.M. = |x0 - x1| / (FWHM0 + FWHM1), which is standard
+        adopted in many literature on the subject of pulse shape discrimination.
+        One slight modification here is that, instead of using the actual FWHM,
+        we estimate it by first fitting a Gaussian around the peak, then take
+        FWHM to be ~2.3548 times sigma, the standard deviation.
+        """
+        find_peaks_kwargs.update(dict(return_gaus_fit=True))
+        gpars = PulseShapeDiscriminator.find_topN_peaks(arr, **find_peaks_kwargs)
+        fwhm = lambda sigma: 2 * np.sqrt(2 * np.log(2)) * sigma
+        return np.abs(gpars[1, 1] - gpars[0, 1]) / (fwhm(gpars[0, 2]) + fwhm(gpars[1, 2]))
+
     @property
     def _run_hash_str(self):
         runs = sorted(set(self.df['run']))
@@ -765,6 +832,8 @@ class PulseShapeDiscriminator:
         # prepare fast-total relations into JSON serializable
         totals = np.arange(0, 4100 + 1e-9, 20.0)
         pars['fast_total'] = {
+            'nonlinear_total_L': self.total_threshold['L'],
+            'nonlinear_total_R': self.total_threshold['R'],
             'totals': totals,
             'center_line_L': self.center_line['L'](totals),
             'center_line_R': self.center_line['R'](totals),
@@ -797,7 +866,7 @@ class PulseShapeDiscriminator:
             raise TypeError(f'{obj.__class__.__name__} is not JSON serializable')
         with open(path, 'w') as file:
             json.dump(pars, file, indent=4, default=default)
-    
+
     def _draw_fast_total(self, side, ax, cut):
         total, fast = f'total_{side}', f'fast_{side}'
         subdf = self.df.query(cut)[[total, fast]]
@@ -820,6 +889,26 @@ class PulseShapeDiscriminator:
             ax.plot(total_plt, ft(total_plt), color='black', linewidth=1.5, zorder=10)
             ax.plot(total_plt, ft(total_plt), color='gold', linewidth=1.2, zorder=20)
         
+        # control points
+        for particle, ctrl_pts in self.ctrl_pts[side].items():
+            if particle == 'neutron':
+                kw = dict(fmt='o', color='navy')
+            else:
+                kw = dict(fmt='s', color='darkgreen')
+
+            sub_ctrl_pts = ctrl_pts.query('valid == True')
+            ax.errorbar(
+                sub_ctrl_pts['total'], sub_ctrl_pts['fast'],
+                markerfacecolor='white', markersize=3, linewidth=0.6, zorder=100,
+                **kw,
+            )
+            sub_ctrl_pts = ctrl_pts.query('valid == False')
+            ax.errorbar(
+                sub_ctrl_pts['total'], sub_ctrl_pts['fast'],
+                markerfacecolor='red', markersize=4, linewidth=0.6, zorder=100,
+                **kw,
+            )
+        
         # designs
         ax.set_xlim(0, 4000)
         ax.set_ylim(-150, 200)
@@ -840,11 +929,63 @@ class PulseShapeDiscriminator:
         )
         plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
 
+        # position correction curves
+        pos_pars = self.position_correction_params
+        positions = np.linspace(-100, 100, 500)
+        for particle, curve in pos_pars['centroid_curves'].items():
+            centroids = curve(positions)
+            ax.plot(centroids[:, 0], centroids[:, 1], color='black', linewidth=1.5, zorder=10)
+            color = 'navy' if particle == 'neutron' else 'green'
+            ax.plot(centroids[:, 0], centroids[:, 1], color=color, linewidth=1.2, zorder=20)
+
         # design
         ax.set_xlim(-2, 3)
         ax.set_ylim(-2, 3)
-        ax.set_xlabel('VPSD-L')
-        ax.set_ylabel('VPSD-R')
+        ax.set_xlabel(r'VPSD-L $v^{(\mathrm{L})}$')
+        ax.set_ylabel(r'VPSD-R $v^{(\mathrm{R})}$')
+
+    def _draw_centroid_curves(self, ax):
+        curves = self.position_correction_params['centroid_curves']
+        tw = ax.twinx()
+        for particle, curve in curves.items():
+            color = 'navy' if particle == 'neutron' else 'green'
+            symb = r'n' if particle == 'neutron' else r'\gamma'
+
+            centroids = curve(curve.x)
+            kw = dict(color=color, markersize=5, linewidth=0.6)
+            ax.errorbar(
+                curve.x, centroids[:, 0],
+                fmt='*', label=r'$v^{(\mathrm{L})}_%s$' % symb,
+                **kw,
+            )
+            tw.errorbar(
+                curve.x, centroids[:, 1],
+                fmt='P', markerfacecolor='white', label=r'$v^{(\mathrm{R})}_%s$' % symb,
+                **kw,
+            )
+
+            pos_plt = np.linspace(-110, 110, 500)
+            c_plt = curve(pos_plt)
+            ax.plot(pos_plt, c_plt[:, 0], **kw)
+            tw.plot(pos_plt, c_plt[:, 1], linestyle='dashed', **kw)
+        
+        # design
+        ax.set_xlabel(f'NW{self.AB} hit position ' + r'$x$' + ' (cm)')
+        ax.set_ylabel(r'VPSD-L $v^{(\mathrm{L})}$')
+        tw.set_ylabel(r'VPSD-R $v^{(\mathrm{R})}$')
+        ax.set_xlim(-120, 120)
+        ax.set_ylim(ax.get_ylim()[0], 1.1 * np.diff(ax.get_ylim())[0] + ax.get_ylim()[0])
+        tw.set_ylim(tw.get_ylim()[0], 1.1 * np.diff(tw.get_ylim())[0] + tw.get_ylim()[0])
+        kw = dict(
+            labelspacing=0.0,
+            handlelength=0.3,
+            handletextpad=0.2,
+            borderaxespad=0.3,
+            ncol=2,
+            columnspacing=0.8,
+        )
+        ax.legend(loc='upper left', **kw)
+        tw.legend(loc='upper right', **kw)
 
     def _draw_ppsd2d(self, ax, cut):
         subdf = self.df.query(cut)
@@ -865,12 +1006,12 @@ class PulseShapeDiscriminator:
         ax.set_ylim(-2, 2)
         ax.set_xlabel('PPSD')
         ax.set_ylabel('PPSD-perpendicular')
-    
-    def _draw_ppsd2d_vs_lightGM(self, ax, cut):
+
+    def _draw_ppsd_vs_lightGM(self, ax, cut):
         subdf = self.df.query(cut)
 
         # two-dimensional histogram
-        fh.plot_histo2d(
+        h = fh.plot_histo2d(
             ax.hist2d,
             subdf['ppsd'], subdf['light_GM'],
             range=[[-3, 4], [0, 60]],
@@ -878,9 +1019,10 @@ class PulseShapeDiscriminator:
             cmap=mpl.cm.jet,
             norm=mpl.colors.LogNorm(vmin=1),
         )
+        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
         ax.fill_betweenx([0, 3], -4, 5, color='silver', alpha=0.6, edgecolor='black', linewidth=1.5)
-        ax.axvline(0.5, color='black', linewidth=1.5, zorder=10)
-        ax.axvline(0.5, color='gold', linewidth=1.2, zorder=20)
+        ax.axvline(0.5, color='black', linewidth=1.2, zorder=10)
+        ax.axvline(0.5, color='gold', linewidth=0.9, zorder=20)
 
         # design
         ax.set_xlim(-3, 4)
@@ -888,7 +1030,29 @@ class PulseShapeDiscriminator:
         ax.set_xlabel('PPSD')
         ax.set_ylabel('G.M. light (MeVee)')
 
-    def _draw_ppsd1d(self, ax, cut):
+    def _draw_ppsd_vs_pos(self, ax, cut):
+        subdf = self.df.query(cut)
+
+        # two-dimensional histogram
+        h = fh.plot_histo2d(
+            ax.hist2d,
+            subdf['pos'], subdf['ppsd'],
+            range=[[-120, 120], [-3, 4]],
+            bins=[240, 350],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
+        ax.axhline(0.5, color='black', linewidth=1.2, zorder=10)
+        ax.axhline(0.5, color='gold', linewidth=0.9, zorder=20)
+        
+        # design
+        ax.set_xlim(-120, 120)
+        ax.set_ylim(-3, 4)
+        ax.set_xlabel(f'NW{self.AB} hit position ' + r'$x$' + ' (cm)')
+        ax.set_ylabel('PPSD')
+
+    def _draw_ppsd(self, ax, cut):
         subdf = self.df.query(cut)
         fh.plot_histo1d(
             ax.hist,
@@ -899,45 +1063,108 @@ class PulseShapeDiscriminator:
             color='navy',
             density=True,
         )
-        ax.axvline(0.5, color='gold', linewidth=1.2)
+        ax.axvline(0.5, color='gold', linewidth=1.0)
 
         # design
         ax.set_xlim(-3, 4)
         ax.set_ylim(0, )
         ax.set_xlabel('PPSD')
         ax.set_ylabel('Probability density')
-        
-    def save_to_gallery(self, path=None, cut='light_GM > 3', show_plot=False):
+
+    def _draw_figure_of_merits(self, ax, cut):
+        subdf = self.df.query(cut)[['ppsd', 'ppsd_perp', 'pos', 'light_GM']]
+
+        # as function of light GM
+        light_GM_ranges = self.create_ranges(3, 60, width=10, step=5)
+        light_fom = []
+        for light_GM_range in light_GM_ranges:
+            subdf_light = subdf.query(' & '.join([
+                f'{light_GM_range[0]} <= light_GM < {light_GM_range[1]}',
+                '-3 < ppsd < 4',
+                '-1 < ppsd_perp < 1',
+            ]))
+            if len(subdf_light) < 500:
+                break
+            light_mean = np.mean(light_GM_range)
+            fom = self.figure_of_merit(subdf_light['ppsd'])
+            light_fom.append([light_mean, fom])
+        light_fom = pd.DataFrame(light_fom, columns=['light_GM', 'fom'])
+
+        # design
+        ax.errorbar(
+            light_fom['light_GM'], light_fom['fom'],
+            fmt='o-', color='crimson', linestyle='dashed', linewidth=0.8,
+        )
+        ax.set_xlim(0, 60)
+        ax.set_ylim(0.5, 1.5)
+        ax.set_xlabel('G.M. light (MeVee)', color='crimson')
+        ax.set_ylabel('Figure of merit')
+
+        # as function of position
+        pos_ranges = self.create_ranges(-100, 100, width=30, step=15)
+        pos_fom = []
+        for pos_range in pos_ranges:
+            subdf_pos = subdf.query(' & '.join([
+                f'{pos_range[0]} <= pos < {pos_range[1]}',
+                '-3 < ppsd < 4',
+                '-1 < ppsd_perp < 1',
+            ]))
+            pos_mean = np.mean(pos_range)
+            fom = self.figure_of_merit(subdf_pos['ppsd'])
+            pos_fom.append([pos_mean, fom])
+        pos_fom = pd.DataFrame(pos_fom, columns=['pos', 'fom'])
+
+        # plot
+        tw = ax.twiny()
+        tw.errorbar(
+            pos_fom['pos'], pos_fom['fom'],
+            fmt='^-', markerfacecolor='white', color='navy', linewidth=0.8,
+        )
+        tw.set_xlim(-120, 120)
+        tw.set_xlabel(f'NW{self.AB} hit position ' + r'$x$' + ' (cm)', color='navy')
+        tw.set_ylabel('Figure-of-merit')
+
+    def save_to_gallery(self, path=None, cut='light_GM > 3', show_plot=False, save=True):
         filename = f'{self._run_hash_str}-NW{self.AB}-bar{self.bar:02d}.png'
         if path is None:
             path = self.database_dir / 'gallery' / filename
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        fig, ax = plt.subplots(ncols=3, nrows=2, figsize=(13, 8), constrained_layout=True)
+        fig, ax = plt.subplots(ncols=3, nrows=3, figsize=(13, 11), constrained_layout=True)
         fig.suptitle(f'{self._run_hash_str}: NW{self.AB}-bar{self.bar:02d}')
 
         rc = (0, 0)
         _cut = ' & '.join([f'({cut})', '(-100 < pos < -40)'])
         self._draw_fast_total('L', ax[rc], _cut)
-
-        rc = (1, 0)
+        
+        rc = (0, 1)
         _cut = ' & '.join([f'({cut})', '(40 < pos < 100)'])
         self._draw_fast_total('R', ax[rc], _cut)
 
-        rc = (0, 1)
+        rc = (0, 2)
         self._draw_vpsd2d(ax[rc], cut)
+
+        rc = (1, 0)
+        self._draw_centroid_curves(ax[rc])
 
         rc = (1, 1)
         self._draw_ppsd2d(ax[rc], cut)
 
-        rc = (0, 2)
-        self._draw_ppsd2d_vs_lightGM(ax[rc], 'light_GM > 1')
-
         rc = (1, 2)
-        self._draw_ppsd1d(ax[rc], cut)
+        self._draw_ppsd_vs_lightGM(ax[rc], 'light_GM > 1')
+
+        rc = (2, 0)
+        self._draw_figure_of_merits(ax[rc], cut)
+
+        rc = (2, 1)
+        self._draw_ppsd_vs_pos(ax[rc], cut)
+
+        rc = (2, 2)
+        self._draw_ppsd(ax[rc], cut)
 
         plt.draw()
-        fig.savefig(path, dpi=500, bbox_inches='tight')
+        if save:
+            fig.savefig(path, dpi=500, bbox_inches='tight')
         if show_plot:
             plt.show()
         else:
