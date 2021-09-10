@@ -67,8 +67,8 @@ class CoordinateConversion:
         """
         # A trick to avoid "-0.00", which will lead to very different results
         # when fed into np.arctan2() in some edge cases:
-        # >>> np.arctan(-0.0, -1.0) = np.pi
-        # >>> np.arctan2(-0.0, -1.0) # -np.pi.
+        # >>> np.arctan2(+0.0, -1.0) = np.pi
+        # >>> np.arctan2(-0.0, -1.0) = -np.pi
         x = x + 0.0
         y = y + 0.0
         z = z + 0.0
