@@ -188,6 +188,17 @@ def test_spherical_to_cartesian():
         output = func(radius[n], theta[n], phi[n])
         for i in range(3):
             assert output[i] == pytest.approx(deco_outputs[n, i])
+    
+    # test as a mixed of scalars and numpy arrays
+    outputs = np.array(func(radius[0], theta, phi)).T
+    for n, output in enumerate(outputs):
+        assert output == pytest.approx(func(radius[0], theta[n], phi[n]))
+    outputs = np.array(func(radius, theta[0], phi)).T
+    for n, output in enumerate(outputs):
+        assert output == pytest.approx(func(radius[n], theta[0], phi[n]))
+    outputs = np.array(func(radius, theta, phi[0])).T
+    for n, output in enumerate(outputs):
+        assert output == pytest.approx(func(radius[n], theta[n], phi[0]))
 
 def test_cartesian_to_spherical():
     func = geo.cartesian_to_spherical
@@ -208,6 +219,17 @@ def test_cartesian_to_spherical():
         output = func(x[n], y[n], z[n])
         for i in range(3):
             assert output[i] == pytest.approx(deco_outputs[n, i])
+    
+    # test as a mixed of scalars and numpy arrays
+    outputs = np.array(func(x[0], y, z)).T
+    for n, output in enumerate(outputs):
+        assert output == pytest.approx(func(x[0], y[n], z[n]))
+    outputs = np.array(func(x, y[0], z)).T
+    for n, output in enumerate(outputs):
+        assert output == pytest.approx(func(x[n], y[0], z[n]))
+    outputs = np.array(func(x, y, z[0])).T
+    for n, output in enumerate(outputs):
+        assert output == pytest.approx(func(x[n], y[n], z[0]))
 
 def test_angle_between():
     func = geo.angle_between
