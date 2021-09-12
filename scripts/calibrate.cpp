@@ -89,6 +89,10 @@ int main(int argc, char* argv[]) {
         // Microball
         {"MB_multi",           "uBall.fmulti",                     "int"},
 
+        // Forward Array
+        {"FA_multi",           "ForwardArray.fmulti",              "int"},
+        {"FA_time_min",        "ForwardArray.fTimeMin",            "double"},
+
         // Veto Wall
         {"VW_multi",           "VetoWall.fmulti",                  "int"},
         {"VW_bar",             "VetoWall.fnumbar",                 "int[VW_multi]"},
@@ -96,6 +100,7 @@ int main(int argc, char* argv[]) {
         // Neutron Wall B
         {"NWB_multi",          "NWB.fmulti",                       "int"},
         {"NWB_bar",            "NWB.fnumbar",                      "int[NWB_multi]"},
+        {"NWB_time",           "NWB.fTimeMean",                    "double[NWB_multi]"},
         {"NWB_time_L",         "NWB.fTimeLeft",                    "double[NWB_multi]"},
         {"NWB_time_R",         "NWB.fTimeRight",                   "double[NWB_multi]"},
         {"NWB_total_L",        "NWB.fLeft",                        "short[NWB_multi]"},
@@ -130,6 +135,10 @@ int main(int argc, char* argv[]) {
         // Microball
         {"MB_multi",           "",  "int"},
 
+        // Forward Array
+        {"FA_multi",           "",  "int"},
+        {"FA_time_min",        "",  "double"},
+
         // Veto Wall
         {"VW_multi",           "",  "int"},
         {"VW_bar",             "",  "int[VW_multi]"},
@@ -137,6 +146,7 @@ int main(int argc, char* argv[]) {
         // Neutron Wall B
         {"NWB_multi",          "",  "int"},
         {"NWB_bar",            "",  "int[NWB_multi]"},
+        {"NWB_time",           "",  "double[NWB_multi]"},
         {"NWB_time_L",         "",  "double[NWB_multi]"},
         {"NWB_time_R",         "",  "double[NWB_multi]"},
         {"NWB_total_L",        "",  "short[NWB_multi]"},
@@ -189,10 +199,13 @@ int main(int argc, char* argv[]) {
         auto tdc_mb_ds         = std::any_cast<double>(buffer["TDC_mb_ds"]);
 
         auto mb_multi     = std::any_cast<int>    (buffer["MB_multi"]);
+        auto fa_multi     = std::any_cast<int>    (buffer["FA_multi"]);
+        auto fa_time_min  = std::any_cast<double> (buffer["FA_time_min"]);
         auto vw_multi     = std::any_cast<int>    (buffer["VW_multi"]);
         auto vw_bar       = std::any_cast<int*>   (buffer["VW_bar"]);
         auto nwb_multi    = std::any_cast<int>    (buffer["NWB_multi"]);
         auto nwb_bar      = std::any_cast<int*>   (buffer["NWB_bar"]);
+        auto nwb_time     = std::any_cast<double*>(buffer["NWB_time"]);
         auto nwb_time_L   = std::any_cast<double*>(buffer["NWB_time_L"]);
         auto nwb_time_R   = std::any_cast<double*>(buffer["NWB_time_R"]);
         auto nwb_total_L  = std::any_cast<short*> (buffer["NWB_total_L"]);
@@ -240,11 +253,15 @@ int main(int argc, char* argv[]) {
         writer.set("TDC_mb_nw", tdc_mb_nw);
         writer.set("TDC_mb_nw_nwtdc", tdc_mb_nw_nwtdc);
         writer.set("TDC_mb_ds", tdc_mb_ds);
+
         writer.set("MB_multi", mb_multi);
+        writer.set("FA_multi", fa_multi);
+        writer.set("FA_time_min", fa_time_min);
         writer.set("VW_multi", vw_multi);
         writer.set("VW_bar", vw_multi, vw_bar);
         writer.set("NWB_multi", nwb_multi);
         writer.set("NWB_bar", nwb_multi, nwb_bar);
+        writer.set("NWB_time", nwb_multi, nwb_time);
         writer.set("NWB_time_L", nwb_multi, nwb_time_L);
         writer.set("NWB_time_R", nwb_multi, nwb_time_R);
         writer.set("NWB_total_L", nwb_multi, nwb_total_L);
@@ -252,6 +269,9 @@ int main(int argc, char* argv[]) {
         writer.set("NWB_fast_L", nwb_multi, nwb_fast_L);
         writer.set("NWB_fast_R", nwb_multi, nwb_fast_R);
         writer.set("NWB_light_GM", nwb_multi, nwb_light_GM);
+        writer.set("NWB_theta", nwb_multi, nwb_theta);
+        writer.set("NWB_phi", nwb_multi, nwb_phi);
+        writer.set("NWB_distance", nwb_multi, nwb_distance);
         // new (calibrated) branches
         writer.set("NWB_pos", nwb_positions);
         writer.set("NWB_psd", nwb_psd);
