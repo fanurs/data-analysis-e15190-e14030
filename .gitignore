@@ -20,6 +20,7 @@ wmu_mysql_database.h5
 env_e15190/
 local/etc
 dev*.py
+scratch/
 
 # local database
 database/local_paths.json
