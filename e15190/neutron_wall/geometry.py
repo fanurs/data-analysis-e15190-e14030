@@ -1,80 +1,18 @@
+import copy
 import itertools as itr
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 
 from e15190 import PROJECT_DIR
-from e15190.utilities import tables
+from e15190.utilities import fast_histogram as fh
+from e15190.utilities import geometry as geom
 from e15190.utilities import ray_triangle_intersection as rti
+from e15190.utilities import tables
 
 _database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
-
-def spherical_to_cartesian(radius, polar, azimuth):
-    """Convert coordinates from spherical system to Cartesian system.
-
-    All angles are presented with the unit of radian.
-
-    Parameters:
-        radius : scalar or array-like
-            Distance from the origin.
-        polar : scalar or array-like
-            Angle measured from the +z-axis.
-        azimuth : sclar or array-like
-            Counterclockwise angle measured from the +x-axis on the xy-plane.
-
-    Returns:
-        If all arguments are scalars, returns `(x, y, z)`. If all arguments are
-        arrays, returns `np.vstack([x, y, z])`.
-    """
-    is_array = any(map(lambda x: hasattr(x, '__len__'), (radius, polar, azimuth)))
-    radius, polar, azimuth = map(lambda _x: np.array(_x), (radius, polar, azimuth))
-
-    sin_polar = np.sin(polar)
-    result = np.vstack([
-        radius * sin_polar * np.cos(azimuth),
-        radius * sin_polar * np.sin(azimuth),
-        radius * np.cos(polar),
-    ])
-    return result if is_array else tuple(result.ravel())
-
-def cartesian_to_spherical(x, y, z):
-    """Convert coordinates from Cartesian system to spherical system.
-
-    This function follow the convention in most physics literature that place
-    polar angle before azimuthal angle, i.e. it returns tuples (radius, polar,
-    azimuth). The polar angle is given within the range of $[0, 2\pi]$. The
-    azimuthal angle, following the convetion of `atan2()`, is given within the
-    range of $(-\pi, \pi]$.
-
-    Parameters:
-        x : scalar or array-like
-        y : scalar or array-like
-        z : sclar or array-like
-
-    Returns:
-        If all arguments are scalars, returns `(radius, polar, azimuth)`. If all
-        arguments are arrays, returns `np.vstack([radius, polar azimuth])`.
-    """
-    is_array = any(map(lambda _x: hasattr(_x, '__len__'), (x, y, z)))
-    x, y, z = map(lambda _x: np.array(_x), (x, y, z))
-
-    rho2 = x**2 + y**2
-    result = np.vstack([
-        np.sqrt(rho2 + z**2),
-        np.arctan2(np.sqrt(rho2), z),
-        np.arctan2(y, x),
-    ])
-    return result if is_array else tuple(result.ravel())
-
-def angle_between_vectors(u, v, directional=False):
-    u, v = map(lambda x: np.array(x), (u, v))
-    dot_prod = np.dot(v, u) if u.ndim < v.ndim else np.dot(u, v)
-    angle = dot_prod / np.sqrt(np.square(u).sum(axis=-1) * np.square(v).sum(axis=-1))
-    angle = np.arccos(angle.clip(-1, 1)) # clip to account for floating-point error
-    sign = np.sign(np.cross(u, v)) if directional else 1.0
-    angle = angle * sign * (sign != 0)  + angle * (sign == 0)
-    return angle
 
 class Bar:
     def __init__(self, vertices, contain_pyrex=True, check_pca_orthogonal=True):
@@ -259,6 +197,33 @@ class Bar:
         ) + self.pca.mean_
         return np.squeeze(result)
 
+    def randomize_from_local_x(
+        self,
+        local_x,
+        local_ynorm=[-0.5, 0.5],
+        local_znorm=[-0.5, 0.5],
+        random_seed=None,
+        return_frame='lab',
+    ):
+        rng = np.random.default_rng(random_seed)
+        n_pts = len(local_x)
+
+        if isinstance(local_ynorm, (int, float)):
+            local_y = [local_ynorm * self.height] * n_pts
+        else:
+            local_y = rng.uniform(*local_ynorm, size=n_pts) * self.height
+
+        if isinstance(local_znorm, (int, float)):
+            local_z = [local_znorm * self.thickness] * n_pts
+        else:
+            local_z = rng.uniform(*local_znorm, size=n_pts) * self.thickness
+
+        local_result = np.array([local_x, local_y, local_z]).T
+        if return_frame == 'local':
+            return local_result
+        else:
+            return self.to_lab_coordinates(local_result)
+
     def construct_plotly_mesh3d(self):
         key_index = {key: index for index, key in enumerate(self.vertices)}
         tri_indices = []
@@ -278,6 +243,39 @@ class Bar:
         self.triangle_mesh = rti.TriangleMesh(vertices, tri_indices)
     
     def simple_simulation(self, n_rays=10, random_seed=None):
+        """A simple ray simulation on the neutron wall bar.
+
+        Simple simulation means that there is no scattering, reflection,
+        refraction, or any other actual physics consideration. Instead, we are
+        only calculating geometrical intersections of random rays with the
+        neutron wall bar geometry.
+
+        Since the solid angle of the neutron wall bar is very small, the
+        function would first identify the smallest rectangular region in the
+        (theta, phi) space that fully contains the neutron wall bar. Then, it
+        would randomly emit rays toward this minimal region. Both theta range
+        and phi range will be saved, so that user can calculate the actual solid
+        angle later on.
+
+        Parameters
+            n_rays : int, default 10
+                Number of rays to be emitted. Not all of them are guaranteed to
+                interact.
+            random_seed : int, default None
+                Random seed to be used for random number generation. If None, a
+                time-based seed will be used, i.e. non-reproducible.
+        
+        Returns
+            A dictionary with the following keys and array shapes:
+                * origin : shape (3, )
+                * azimuth_range : shape (2, )
+                * polar_range : shape (2, )
+                * intersections : shape (12, n_rays, 3)
+            The first component of intersections has a size of 12, which comes
+            from the 12 triangles that made up the neutron wall bar (we are
+            using triangular mesh). Other functions, `self.get_hit_positions()`
+            can be used to further simplify the intersection points.
+        """
         if 'triangle_mesh' not in self.__dict__:
             self.construct_plotly_mesh3d()
         rng = np.random.default_rng(random_seed)
@@ -292,7 +290,7 @@ class Bar:
         zrho_vecs = np.vstack([vertices[:, 2], np.linalg.norm(xy_vecs, axis=1)]).T
         def identify_angle_range(vecs):
             mean_vec = np.mean(vecs, axis=0)
-            angles = angle_between_vectors(mean_vec, vecs, directional=True)
+            angles = geom.angle_between(mean_vec, vecs, directional=True)
             angles += np.arctan2(mean_vec[1], mean_vec[0])
             return np.array([angles.min(), angles.max()])
         azimuth_range, polar_range = map(identify_angle_range, (xy_vecs, zrho_vecs))
@@ -306,24 +304,58 @@ class Bar:
         # simulate
         polars = np.arccos(rng.uniform(*np.cos(polar_range), size=n_rays).clip(-1, 1))
         azimuths = rng.uniform(*azimuth_range, size=n_rays)
-        rays = spherical_to_cartesian(1.0, polars, azimuths).T
+        rays = np.transpose(geom.spherical_to_cartesian(1.0, polars, azimuths))
         triangles = self.triangle_mesh.get_triangles()
         intersections = rti.moller_trumbore(origin, rays, triangles)
 
         # save results
-        self.simulation_result = dict()
-        var_names = ['origin', 'azimuth_range', 'polar_range', 'intersections']
-        for var in var_names:
-            self.simulation_result[var] = locals()[var]
+        self.simulation_result = {
+            'origin': origin,
+            'azimuth_range': azimuth_range,
+            'polar_range': polar_range,
+            'intersections': intersections,
+        }
         return self.simulation_result
     
-    def analyze_hit_positions(
+    def get_hit_positions(
         self,
-        out_coordinates='local',
         hit_t='uniform',
+        frame='local',
+        coordinate='cartesian',
         random_seed=None,
         tol=1e-9,
     ):
+        """Return the hit positions of the simulation.
+
+        This function should be called after `self.simulation_result` is filled,
+        e.g. by `self.simple_simulation()`.
+
+        Parameters
+            hit_t: scalar or callable or 'uniform', default 'uniform'
+                If scalar, its value should be within [0, 1], with 0 being at
+                the incident point at the surface, 1 being at the exit point,
+                and the rest being somewhere in between. If callable, it should
+                take in an integer `n_rays`, and return an array of size
+                `n_rays` that collect the `hit_t` values. If 'uniform', the
+                `hit_t` values will be uniformly distributed in [0, 1].
+            frame: 'local' or 'lab', default 'local'
+                The coordinate frame of the returned hit positions.
+            coordinate: 'cartesian' or 'spherical', default 'cartesian'
+                The coordinate system of the returned hit positions.
+            random_seed: int, default None
+                The random seed used to generate the `hit_t` values. If None, a
+                time-based seed will be used, i.e. non-reproducible.
+            tol: float, default 1e-9
+                The tolerance used to filter out hit points that are too close
+                to the origin, i.e. there were no intersections. The default
+                simulation setting is such that if there were no intersections,
+                the hit position will be the origin. Here, we simply put in a
+                non-zero tolerance to account for any floating point errors.
+        
+        Returns
+            hit_positions: ndarray, shape (n_rays, 3)
+                The hit positions of the simulation.
+        """
         sim_res = self.simulation_result # shorthand
 
         # shift to make origin at zero
@@ -355,14 +387,62 @@ class Bar:
         # throw away non-interacting hits
         hits = hits[np.sum(norm2, axis=0) > 0]
 
-        # convert coordinates
-        if out_coordinates == 'local':
+        # convert frame and coordinates
+        if frame == 'local':
             hits = self.to_local_coordinates(hits)
-
+        if coordinate == 'spherical':
+            hits = geom.cartesian_to_spherical(hits)
         return hits
+    
+    def draw_hit_pattern2d(
+        self,
+        hits,
+        ax,
+        frame='lab',
+        coordinate='spherical',
+        cartesian_coordinates=('x', 'y'),
+        cmap='jet',
+    ):
+        cmap = copy.copy(plt.get_cmap(cmap))
+        cmap.set_under('white')
+
+        if frame == 'lab' and coordinate == 'spherical':
+            hist = fh.plot_histo2d(
+                ax.hist2d,
+                np.degrees(hits[:, 1]), np.degrees(hits[:, 2]),
+                range=[[25, 55], [-30, 30]],
+                bins=[250, 250],
+                cmap=cmap,
+                vmin=1,
+            )
+
+            ax.set_xlabel(r'Polar $\theta$ (deg)')
+            ax.set_ylabel(r'Azimuth $\phi$ (deg)')
+
+        elif frame == 'local' and coordinate == 'cartesian':
+            cart = cartesian_coordinates # shorthand
+            j = {'x': 0, 'y': 1, 'z': 2}
+            ranges = dict(x=[-120, 120], y=[-4.5, 4.5], z=[-4.5, 4.5])
+            bins = dict(x=200, y=100, z=100)
+
+            hist = fh.plot_histo2d(
+                ax.hist2d,
+                hits[:, j[cart[0]]], hits[:, j[cart[1]]],
+                range=[ranges[cart[0]], ranges[cart[1]]],
+                bins=[bins[cart[0]], bins[cart[1]]],
+                cmap=cmap,
+                vmin=1,
+            )
+
+            ax.set_xlabel(r'$%s$ (cm)' % cart[0])
+            ax.set_ylabel(r'$%s$ (cm)' % cart[1])
+        else:
+            raise ValueError('Frame-coordinate pair undefined yet')
+
+        return hist
 
 class Wall:
-    def __init__(self, AB, refresh_from_inventor_readings=False):
+    def __init__(self, AB, contain_pyrex=True, refresh_from_inventor_readings=False):
         # initialize class parameters
         self.AB = AB.upper()
         self.ab = self.AB.lower()
@@ -382,7 +462,10 @@ class Wall:
 
         # construct a dictionary of bar objects
         bar_nums = self.database.index.get_level_values(f'nw{self.ab}-bar')
-        self.bars = {b: Bar(self.database.loc[b][['x', 'y', 'z']]) for b in bar_nums}
+        self.bars = {
+            b: Bar(self.database.loc[b][['x', 'y', 'z']], contain_pyrex=contain_pyrex)
+            for b in bar_nums
+        }
     
     def read_from_inventor_readings(self):
         with open(self.path_inventor_readings, 'r') as file:
