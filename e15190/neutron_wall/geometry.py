@@ -146,7 +146,7 @@ class Bar:
         self.loc_vertices = dict(sorted(self.loc_vertices.items()))
 
         # remove Pyrex if requested
-        if not self.contain_pyrex:
+        if not contain_pyrex:
             self.remove_pyrex()
         else:
             # database always have included Pyrex, so no action is required
