@@ -1,14 +1,10 @@
 // standard libraries
-#include <any>
 #include <array>
 #include <clocale>
 #include <cstdlib>
-#include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <string>
-#include <unistd.h>
-#include <vector>
 
 // third-party libraries
 #include <nlohmann/json.hpp>
@@ -18,20 +14,12 @@
 
 // local libraries
 #include "ParamReader.h"
-#include "RootIO.h"
+#include "calibrate.h"
 
 using Json = nlohmann::json;
 
-struct ArgumentParser {
-    int run_num = 0;
-    std::string outroot_path = "";
-    int first_entry = 0;
-    int n_entries = -1; // negative value means all entries
-
-    ArgumentParser(int argc, char* argv[]);
-    void print_help();
-};
-
+// forward declarations of calibration functions
+double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R);
 std::array<double, 2> get_psd(
     NWPulseShapeDiscriminationParamReader& psd_reader,
     int bar, double total_L, double total_R, double fast_L, double fast_R, double pos
@@ -56,7 +44,7 @@ int main(int argc, char* argv[]) {
     NWPulseShapeDiscriminationParamReader nwb_psd_reader('B');
     nwb_psd_reader.load(argparser.run_num);
 
-    // read in Daniele's ROOT files
+    // read in Daniele's ROOT files (Kuan's version)
     std::ifstream local_paths_json_file(project_dir / "database/local_paths.json");
     Json local_paths_json;
     try {
@@ -69,104 +57,15 @@ int main(int argc, char* argv[]) {
     }
     std::filesystem::path inroot_path = local_paths_json["daniele_root_files_dir"].get<std::string>();
     inroot_path /= Form("CalibratedData_%04d.root", argparser.run_num);
-    RootReader reader(inroot_path.string(), "E15190");
-    std::vector<Branch> in_branches {
-        // TDC triggers
-        {"TDC_hira_ds_nwtdc",  "TDCTriggers.HiRA_DS_TRG_NWTDC",    "double"},
-        {"TDC_hira_live",      "TDCTriggers.HiRA_LIVE",            "double"},
-        {"TDC_master",         "TDCTriggers.MASTER_TRG",           "double"},
-        {"TDC_master_nw",      "TDCTriggers.MASTER_TRG_NWTDC",     "double"},
-        {"TDC_master_vw",      "TDCTriggers.MASTER_TRG_VWTDC",     "double"},
-        {"TDC_nw_ds",          "TDCTriggers.NW_DS_TRG",            "double"},
-        {"TDC_nw_ds_nwtdc",    "TDCTriggers.NW_DS_TRG_NWTDC",      "double"},
-        {"TDC_rf_nwtdc",       "TDCTriggers.RF_TRG_NWTDC",         "double"},
-        {"TDC_mb_hira",        "TDCTriggers.uBallHiRA_TRG",        "double"},
-        {"TDC_mb_hira_nwtdc",  "TDCTriggers.uBallHiRA_TRG_NWTDC",  "double"},
-        {"TDC_mb_nw",          "TDCTriggers.uBallNW_TRG",          "double"},
-        {"TDC_mb_nw_nwtdc",    "TDCTriggers.uBallNW_TRG_NWTDC",    "double"},
-        {"TDC_mb_ds",          "TDCTriggers.uBall_DS_TRG",         "double"},
-
-        // Microball
-        {"MB_multi",           "uBall.fmulti",                     "int"},
-
-        // Forward Array
-        {"FA_multi",           "ForwardArray.fmulti",              "int"},
-        {"FA_time_min",        "ForwardArray.fTimeMin",            "double"},
-
-        // Veto Wall
-        {"VW_multi",           "VetoWall.fmulti",                  "int"},
-        {"VW_bar",             "VetoWall.fnumbar",                 "int[VW_multi]"},
-
-        // Neutron Wall B
-        {"NWB_multi",          "NWB.fmulti",                       "int"},
-        {"NWB_bar",            "NWB.fnumbar",                      "int[NWB_multi]"},
-        {"NWB_time",           "NWB.fTimeMean",                    "double[NWB_multi]"},
-        {"NWB_time_L",         "NWB.fTimeLeft",                    "double[NWB_multi]"},
-        {"NWB_time_R",         "NWB.fTimeRight",                   "double[NWB_multi]"},
-        {"NWB_total_L",        "NWB.fLeft",                        "short[NWB_multi]"},
-        {"NWB_total_R",        "NWB.fRight",                       "short[NWB_multi]"},
-        {"NWB_fast_L",         "NWB.ffastLeft",                    "short[NWB_multi]"},
-        {"NWB_fast_R",         "NWB.ffastRight",                   "short[NWB_multi]"},
-        {"NWB_light_GM",       "NWB.fGeoMeanSaturationCorrected",  "double[NWB_multi]"},
-        {"NWB_theta",          "NWB.fThetaRan",                    "double[NWB_multi]"},
-        {"NWB_phi",            "NWB.fPhiRan",                      "double[NWB_multi]"},
-        {"NWB_distance",       "NWB.fDistRancm",                   "double[NWB_multi]"},
-    };
-    reader.set_branches(in_branches);
+    TChain* intree = get_input_tree(inroot_path.string(), "E15190");
 
     // prepare output (calibrated) ROOT files
-    RootWriter writer(argparser.outroot_path, "tree");
-    std::vector<Branch> out_branches {
-        // TDC triggers
-        {"TDC_hira_ds_nwtdc",  "",  "double"},
-        {"TDC_hira_live",      "",  "double"},
-        {"TDC_master",         "",  "double"},
-        {"TDC_master_nw",      "",  "double"},
-        {"TDC_master_vw",      "",  "double"},
-        {"TDC_nw_ds",          "",  "double"},
-        {"TDC_nw_ds_nwtdc",    "",  "double"},
-        {"TDC_rf_nwtdc",       "",  "double"},
-        {"TDC_mb_hira",        "",  "double"},
-        {"TDC_mb_hira_nwtdc",  "",  "double"},
-        {"TDC_mb_nw",          "",  "double"},
-        {"TDC_mb_nw_nwtdc",    "",  "double"},
-        {"TDC_mb_ds",          "",  "double"},
+    TFile* outroot = new TFile(argparser.outroot_path.c_str(), "RECREATE");
+    TTree* outtree = get_output_tree(outroot, "tree");
 
-        // Microball
-        {"MB_multi",           "",  "int"},
-
-        // Forward Array
-        {"FA_multi",           "",  "int"},
-        {"FA_time_min",        "",  "double"},
-
-        // Veto Wall
-        {"VW_multi",           "",  "int"},
-        {"VW_bar",             "",  "int[VW_multi]"},
-
-        // Neutron Wall B
-        {"NWB_multi",          "",  "int"},
-        {"NWB_bar",            "",  "int[NWB_multi]"},
-        {"NWB_time",           "",  "double[NWB_multi]"},
-        {"NWB_time_L",         "",  "double[NWB_multi]"},
-        {"NWB_time_R",         "",  "double[NWB_multi]"},
-        {"NWB_total_L",        "",  "short[NWB_multi]"},
-        {"NWB_total_R",        "",  "short[NWB_multi]"},
-        {"NWB_fast_L",         "",  "short[NWB_multi]"},
-        {"NWB_fast_R",         "",  "short[NWB_multi]"},
-        {"NWB_light_GM",       "",  "double[NWB_multi]"},
-        {"NWB_theta",          "",  "double[NWB_multi]"},
-        {"NWB_phi",            "",  "double[NWB_multi]"},
-        {"NWB_distance",       "",  "double[NWB_multi]"},
-        // new (calibrated) branches
-        {"NWB_pos",            "",  "double[NWB_multi]"},
-        {"NWB_psd",            "",  "double[NWB_multi]"},
-        {"NWB_psd_perp",       "",  "double[NWB_multi]"},
-    };
-    writer.set_branches(out_branches);
-
-    // main loop
+    // preparing progress bar
     std::setlocale(LC_NUMERIC, "");
-    int total_n_entries = reader.tree->GetEntries();
+    int total_n_entries = intree->GetEntries();
     int last_entry;
     if (argparser.n_entries < 0) {
         last_entry = total_n_entries - 1;
@@ -175,174 +74,61 @@ int main(int argc, char* argv[]) {
         last_entry = std::min(total_n_entries - 1, argparser.first_entry + argparser.n_entries - 1);
     }
     int n_entries = last_entry - argparser.first_entry + 1;
+
+    // main loop
     int ievt;
+    Container& evt = container; // a shorter alias; see "calibrate.h"
     for (ievt = argparser.first_entry; ievt <= last_entry; ++ievt) {
+        // progress bar
         int iprogress = ievt - argparser.first_entry;
         if (iprogress % 4321 == 0) {
             std::cout << Form("\r> %6.2f", 1e2 * iprogress / n_entries) << "%" << std::flush;
             std::cout << Form("%28s", Form("(%'d/%'d)", ievt, total_n_entries - 1)) << std::flush;
         }
 
-        auto buffer = reader.get_entry(ievt);
-        auto tdc_hira_ds_nwtdc = std::any_cast<double>(buffer["TDC_hira_ds_nwtdc"]);
-        auto tdc_hira_live     = std::any_cast<double>(buffer["TDC_hira_live"]);
-        auto tdc_master        = std::any_cast<double>(buffer["TDC_master"]);
-        auto tdc_master_nw     = std::any_cast<double>(buffer["TDC_master_nw"]);
-        auto tdc_master_vw     = std::any_cast<double>(buffer["TDC_master_vw"]);
-        auto tdc_nw_ds         = std::any_cast<double>(buffer["TDC_nw_ds"]);
-        auto tdc_nw_ds_nwtdc   = std::any_cast<double>(buffer["TDC_nw_ds_nwtdc"]);
-        auto tdc_rf_nwtdc      = std::any_cast<double>(buffer["TDC_rf_nwtdc"]);
-        auto tdc_mb_hira       = std::any_cast<double>(buffer["TDC_mb_hira"]);
-        auto tdc_mb_hira_nwtdc = std::any_cast<double>(buffer["TDC_mb_hira_nwtdc"]);
-        auto tdc_mb_nw         = std::any_cast<double>(buffer["TDC_mb_nw"]);
-        auto tdc_mb_nw_nwtdc   = std::any_cast<double>(buffer["TDC_mb_nw_nwtdc"]);
-        auto tdc_mb_ds         = std::any_cast<double>(buffer["TDC_mb_ds"]);
-
-        auto mb_multi     = std::any_cast<int>    (buffer["MB_multi"]);
-        auto fa_multi     = std::any_cast<int>    (buffer["FA_multi"]);
-        auto fa_time_min  = std::any_cast<double> (buffer["FA_time_min"]);
-        auto vw_multi     = std::any_cast<int>    (buffer["VW_multi"]);
-        auto vw_bar       = std::any_cast<int*>   (buffer["VW_bar"]);
-        auto nwb_multi    = std::any_cast<int>    (buffer["NWB_multi"]);
-        auto nwb_bar      = std::any_cast<int*>   (buffer["NWB_bar"]);
-        auto nwb_time     = std::any_cast<double*>(buffer["NWB_time"]);
-        auto nwb_time_L   = std::any_cast<double*>(buffer["NWB_time_L"]);
-        auto nwb_time_R   = std::any_cast<double*>(buffer["NWB_time_R"]);
-        auto nwb_total_L  = std::any_cast<short*> (buffer["NWB_total_L"]);
-        auto nwb_total_R  = std::any_cast<short*> (buffer["NWB_total_R"]);
-        auto nwb_fast_L   = std::any_cast<short*> (buffer["NWB_fast_L"]);
-        auto nwb_fast_R   = std::any_cast<short*> (buffer["NWB_fast_R"]);
-        auto nwb_light_GM = std::any_cast<double*>(buffer["NWB_light_GM"]);
-        auto nwb_theta    = std::any_cast<double*>(buffer["NWB_theta"]);
-        auto nwb_phi      = std::any_cast<double*>(buffer["NWB_phi"]);
-        auto nwb_distance = std::any_cast<double*>(buffer["NWB_distance"]);
+        intree->GetEntry(ievt);
 
         // calibrations
-        std::vector<double> nwb_positions;
-        std::vector<double> nwb_psd;
-        std::vector<double> nwb_psd_perp;
-        for (int m = 0; m < nwb_multi; ++m) {
-            // apply position calibration
-            int p0 = nwb_pcalib.get(nwb_bar[m], "p0");
-            int p1 = nwb_pcalib.get(nwb_bar[m], "p1");
-            double pos = p0 + p1 * (nwb_time_L[m] - nwb_time_R[m]);
-            nwb_positions.push_back(pos);
+        for (int m = 0; m < evt.NWB_multi; ++m) {
+            // position calibration
+            evt.NWB_pos[m] = get_position(
+                nwb_pcalib,
+                evt.NWB_bar[m],
+                evt.NWB_time_L[m],
+                evt.NWB_time_R[m]
+            );
 
-            // apply pulse shape discrimination
+            // pulse shape discrimination
             std::array<double, 2> psd = get_psd(
                 nwb_psd_reader,
-                nwb_bar[m],
-                double(nwb_total_L[m]), double(nwb_total_R[m]),
-                double(nwb_fast_L[m]), double(nwb_fast_R[m]),
-                pos
+                evt.NWB_bar[m],
+                double(evt.NWB_total_L[m]),
+                double(evt.NWB_total_R[m]),
+                double(evt.NWB_fast_L[m]),
+                double(evt.NWB_fast_R[m]),
+                evt.NWB_pos[m]
             );
-            nwb_psd.push_back(psd[0]);
-            nwb_psd_perp.push_back(psd[1]);
+            evt.NWB_psd[m] = psd[0];
+            evt.NWB_psd_perp[m] = psd[1];
         }
 
-        writer.set("TDC_hira_ds_nwtdc", tdc_hira_ds_nwtdc);
-        writer.set("TDC_hira_live", tdc_hira_live);
-        writer.set("TDC_master", tdc_master);
-        writer.set("TDC_master_nw", tdc_master_nw);
-        writer.set("TDC_master_vw", tdc_master_vw);
-        writer.set("TDC_nw_ds", tdc_nw_ds);
-        writer.set("TDC_nw_ds_nwtdc", tdc_nw_ds_nwtdc);
-        writer.set("TDC_rf_nwtdc", tdc_rf_nwtdc);
-        writer.set("TDC_mb_hira", tdc_mb_hira);
-        writer.set("TDC_mb_hira_nwtdc", tdc_mb_hira_nwtdc);
-        writer.set("TDC_mb_nw", tdc_mb_nw);
-        writer.set("TDC_mb_nw_nwtdc", tdc_mb_nw_nwtdc);
-        writer.set("TDC_mb_ds", tdc_mb_ds);
-
-        writer.set("MB_multi", mb_multi);
-        writer.set("FA_multi", fa_multi);
-        writer.set("FA_time_min", fa_time_min);
-        writer.set("VW_multi", vw_multi);
-        writer.set("VW_bar", vw_multi, vw_bar);
-        writer.set("NWB_multi", nwb_multi);
-        writer.set("NWB_bar", nwb_multi, nwb_bar);
-        writer.set("NWB_time", nwb_multi, nwb_time);
-        writer.set("NWB_time_L", nwb_multi, nwb_time_L);
-        writer.set("NWB_time_R", nwb_multi, nwb_time_R);
-        writer.set("NWB_total_L", nwb_multi, nwb_total_L);
-        writer.set("NWB_total_R", nwb_multi, nwb_total_R);
-        writer.set("NWB_fast_L", nwb_multi, nwb_fast_L);
-        writer.set("NWB_fast_R", nwb_multi, nwb_fast_R);
-        writer.set("NWB_light_GM", nwb_multi, nwb_light_GM);
-        writer.set("NWB_theta", nwb_multi, nwb_theta);
-        writer.set("NWB_phi", nwb_multi, nwb_phi);
-        writer.set("NWB_distance", nwb_multi, nwb_distance);
-        // new (calibrated) branches
-        writer.set("NWB_pos", nwb_positions);
-        writer.set("NWB_psd", nwb_psd);
-        writer.set("NWB_psd_perp", nwb_psd_perp);
-
-        writer.fill();
+        outtree->Fill();
     }
     std::cout << "\r> 100.00%" << Form("%28s", Form("(%'d/%'d)", ievt - 1, total_n_entries - 1)) << std::endl;
 
-    writer.write();
+    // save output to file
+    outroot->cd();
+    outtree->Write();
+    outroot->Close();
 
     return 0;
 }
 
-ArgumentParser::ArgumentParser(int argc, char* argv[]) {
-    opterr = 0; // getopt() return '?' when getting errors
-
-    int opt;
-    while((opt = getopt(argc, argv, "hr:o:i:n:")) != -1) {
-        switch (opt) {
-            case 'h':
-                this->print_help();
-                exit(0);
-            case 'r':
-                this->run_num = std::stoi(optarg);
-                break;
-            case 'o':
-                this->outroot_path = optarg;
-                break;
-            case 'i':
-                this->first_entry = std::stoi(optarg);
-                break;
-            case 'n':
-                this->n_entries = std::stoi(optarg);
-                break;
-            case '?':
-                if (optopt == 'r') {
-                    std::cerr << "Option -" << char(optopt) << " requires an argument" << std::endl;
-                }
-                else {
-                    std::cerr << "Unknown option -" << char(optopt) << std::endl;
-                }
-                exit(1);
-        }
-    }
-
-    // check for mandatory arguments
-    if (this->run_num == 0) {
-        std::cerr << "Option -r is mandatory" << std::endl;
-        exit(1);
-    }
-    if (this->outroot_path == "") {
-        std::cerr << "Option -o is mandatory" << std::endl;
-        exit(1);
-    }
-}
-
-void ArgumentParser::print_help() {
-    const char* msg = R"(
-    Mandatory arguments:
-        -r      HiRA run number (four-digit).
-        -o      ROOT file output path.
-
-    Optional arguments:
-        -h      Print help message.
-        -i      First entry to process. Default is 0.
-        -n      Number of entries to process. Default is all.
-                If `n + i` is greater than the total number of entries, the
-                program will safely stop after the last entry.
-    )";
-    std::cout << msg << std::endl;
+double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R) {
+    int p0 = nw_pcalib.get(bar, "p0");
+    int p1 = nw_pcalib.get(bar, "p1");
+    double pos = p0 + p1 * (time_L - time_R);
+    return pos;
 }
 
 std::array<double, 2> get_psd(
