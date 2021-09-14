@@ -12,8 +12,6 @@ from e15190.utilities import geometry as geom
 from e15190.utilities import ray_triangle_intersection as rti
 from e15190.utilities import tables
 
-_database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
-
 class Bar:
     def __init__(self, vertices, contain_pyrex=True, check_pca_orthogonal=True):
         """Construct a Neutron Wall bar, either from Wall A or Wall B.
@@ -24,12 +22,16 @@ class Bar:
                 (cm). As long as all eight vertices are distincit, i.e. can
                 properly define a cuboid, the order of vertices does not matter
                 because PCA will be applied to automatically identify the 1st,
-                2nd and 3rd principal axes of the bar.
-            contain_pyrex : bool, default True            
-                The raw readings from the Inventor files or database include the
-                Pyrex container thickness. If `True`, the Pyrex will not be
-                removed; if `False`, the Pyrex will be removed, leaving only the
-                scintillation material.
+                2nd and 3rd principal axes of the bar. These vertices are always
+                assumed to have included the Pyrex thickness
+            contain_pyrex : bool, default True
+                The input `vertices` are always assumed to have included the
+                Pyrex thickness. If this function is supplied with the raw
+                readings from the Inventor files or database, then no extra care
+                is needed as those measurements always include the Pyrex
+                thickness. If `True`, the Pyrex will not be removed; if `False`,
+                the Pyrex will be removed, leaving only the scintillation
+                material.
             check_pca_orthogonal : boo, default True
                 If `True`, an Exception is raised whenever the PCA matrix is not
                 orthogonal; if `False`, no check would be done.
@@ -147,63 +149,68 @@ class Bar:
             raise Exception('Pyrex has already been added')
         self.modify_pyrex('add')
 
-    def is_inside(self, coordinates, frame='local'):
-        coordinates = np.array(coordinates, dtype=float)
-        if coordinates.ndim == 1:
-            coordinates = np.array([coordinates])
+    @staticmethod
+    def _deco_numpy_ndim(func):
+        def inner(x, *args, **kwargs):
+            x = np.array(x)
+            ndim = x.ndim
+            if ndim == 1:
+                x = np.array([x])
+            result = func(x, *args, **kwargs)
+            return result if ndim == 2 else np.squeeze(result)
+        return inner
+
+    def to_local_coordinates(self, lab_coordinates):
+        return self._deco_numpy_ndim(self.pca.transform)(lab_coordinates)
+
+    def to_lab_coordinates(self, local_coordinates):
+        return self._deco_numpy_ndim(self.pca.inverse_transform)(local_coordinates)
+
+    def is_inside(self, coordinates, frame='local', tol=5e-4):
+        """Check if the given coordinates are inside the bar.
+
+        Parameters
+            coordinates : 3-tuple or list of 3-tuples
+                The coordinates to be checked. Only support Cartesian
+                coordinates.
+            frame : 'local' or 'lab', default 'local'
+                The frame of the coordinates.
+            tol : float, default 5e-4
+                The tolerance of the boundary check in the unit of centimeters.
         
+        Returns:
+            bool or an array of bool
+                `True` if the coordinates are inside the bar, otherwise `False`.
+        """
+        # convert into 2d numpy array of shape (n_points, 3)
+        coordinates = np.array(coordinates, dtype=float)
+        
+        # convert to local frame
         if frame == 'local':
             pass
         else:
             coordinates = self.to_local_coordinates(coordinates)
 
+        # convert into 2d numpy array of shape (n_points, 3)
+        if coordinates.ndim == 1:
+            coordinates = np.array([coordinates])
+
+        # check if the coordinates are inside the bar
         dimension = self.dimension()
         result = np.array([True] * len(coordinates))
         for i in range(3):
             i_components = coordinates[:, i]
-            result = result & (i_components >= -0.5 * dimension[i])
-            result = result & (i_components <= +0.5 * dimension[i])
+            result = result & (i_components >= -0.5 * dimension[i] - tol)
+            result = result & (i_components <= +0.5 * dimension[i] + tol)
         return result if len(result) > 1 else result[0]
-
-    def to_local_coordinates(self, lab_coordinates):
-        lab_coordinates = np.array(lab_coordinates)
-        if lab_coordinates.ndim == 1:
-            lab_coordinates = np.array([lab_coordinates])
-
-        # n: number of PCA components, i.e. shape[0]
-        # m: number of vertices in lab_coordinates, i.e. shape[0]
-        # i: vector dimension, i.e. shape[1] = 3, representing (x, y, z)
-        result = np.einsum(
-            'ni,mi->mn',
-            self.pca.components_, lab_coordinates - self.pca.mean_,
-        )
-        return np.squeeze(result)
-
-    def to_lab_coordinates(self, local_coordinates):
-        local_coordinates = np.array(local_coordinates)
-        if local_coordinates.ndim == 1:
-            local_coordinates = np.array([local_coordinates])
-
-        # n: number of PCA components, i.e. shape[0]
-        # m: number of vertices in lab_coordinates, i.e. shape[0]
-        # i: vector dimension, i.e. shape[1] = 3, representing (x, y, z)
-        # 
-        # First array uses index "in" instead of "ni" because it is the inverse
-        # matrix of PCA that we want to supply. Since PCA is an orthogonal
-        # matrix, this is equivalent to supplying the transpose matrix of PCA.
-        result = np.einsum(
-            'in,mi->mn',
-            self.pca.components_, local_coordinates,
-        ) + self.pca.mean_
-        return np.squeeze(result)
 
     def randomize_from_local_x(
         self,
         local_x,
+        return_frame='lab',
         local_ynorm=[-0.5, 0.5],
         local_znorm=[-0.5, 0.5],
         random_seed=None,
-        return_frame='lab',
     ):
         rng = np.random.default_rng(random_seed)
         n_pts = len(local_x)
@@ -336,8 +343,9 @@ class Bar:
                 the incident point at the surface, 1 being at the exit point,
                 and the rest being somewhere in between. If callable, it should
                 take in an integer `n_rays`, and return an array of size
-                `n_rays` that collect the `hit_t` values. If 'uniform', the
-                `hit_t` values will be uniformly distributed in [0, 1].
+                `n_rays` that collect the `hit_t` values in the range of [0, 1].
+                If 'uniform', the `hit_t` values will be uniformly distributed
+                over [0, 1].
             frame: 'local' or 'lab', default 'local'
                 The coordinate frame of the returned hit positions.
             coordinate: 'cartesian' or 'spherical', default 'cartesian'
@@ -386,6 +394,8 @@ class Bar:
 
         # throw away non-interacting hits
         hits = hits[np.sum(norm2, axis=0) > 0]
+        if len(hits) == 0:
+            return hits
 
         # convert frame and coordinates
         if frame == 'local':
@@ -403,7 +413,10 @@ class Bar:
         cartesian_coordinates=('x', 'y'),
         cmap='jet',
     ):
-        cmap = copy.copy(plt.get_cmap(cmap))
+        if isinstance(cmap, str):
+            cmap = copy.copy(plt.get_cmap(cmap))
+        else:
+            cmap = copy.copy(cmap)
         cmap.set_under('white')
 
         if frame == 'lab' and coordinate == 'spherical':
@@ -442,18 +455,20 @@ class Bar:
         return hist
 
 class Wall:
+    database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
+
     def __init__(self, AB, contain_pyrex=True, refresh_from_inventor_readings=False):
         # initialize class parameters
         self.AB = AB.upper()
         self.ab = self.AB.lower()
-        self.path_inventor_readings = _database_dir / f'inventor_readings_NW{self.AB}.txt'
-        self.path = _database_dir / f'NW{self.AB}.dat'
+        self.path_inventor_readings = self.database_dir / f'inventor_readings_NW{self.AB}.txt'
+        self.path = self.database_dir / f'NW{self.AB}.dat'
 
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
         if self._refresh_from_inventor_readings:
-            bars_vertices = self.read_from_inventor_readings()
-            self.process_and_save_to_database(bars_vertices)
+            bars_vertices = self.read_from_inventor_readings(self.path_inventor_readings)
+            self.process_and_save_to_database(self.AB, self.path, bars_vertices)
 
         # read in from database
         self.database = pd.read_csv(self.path, comment='#', delim_whitespace=True)
@@ -467,8 +482,9 @@ class Wall:
             for b in bar_nums
         }
     
-    def read_from_inventor_readings(self):
-        with open(self.path_inventor_readings, 'r') as file:
+    @staticmethod
+    def read_from_inventor_readings(filepath):
+        with open(filepath, 'r') as file:
             lines = file.readlines()
         
         # containers for process the lines
@@ -503,7 +519,8 @@ class Wall:
         
         return bars_vertices
     
-    def process_and_save_to_database(self, bars_vertices):
+    @staticmethod
+    def process_and_save_to_database(AB, filepath, bars_vertices):
         # construct bar objects from vertices and sort
         bar_objects = [Bar(vertices) for vertices in bars_vertices]
         bar_objects = sorted(bar_objects, key=lambda bar: bar.pca.mean_[1]) # sort from bottom to top
@@ -517,7 +534,7 @@ class Wall:
         df = pd.DataFrame(
             df,
             columns=[
-                f'nw{self.ab}-bar',
+                f'nw{AB.lower()}-bar',
                 'dir_x', 'dir_y', 'dir_z',
                 'x', 'y', 'z',
             ],
@@ -525,7 +542,7 @@ class Wall:
 
         # save to database
         tables.to_fwf(
-            df, self.path_raw,
+            df, filepath,
             comment='# measurement unit: cm',
             floatfmt=[
                 '.0f',
