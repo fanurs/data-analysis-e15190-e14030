@@ -32,6 +32,7 @@ dependencies:
    - matplotlib>=3.3.0
    - seaborn>=0.11.0
    - alphashape>=1.3.1
+   - plotly::plotly>=5.0.0
 
    # miscellaneous
    - cryptography=3.4.7
