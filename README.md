@@ -11,9 +11,9 @@ This repository primarily focuses on neutron wall analysis. Instead of starting 
 This decision was made after considering the fact that all major authors of the framework had left the group. It is simply safer and more efficient to keep it as "legacy code", and build on top of the ROOT files it generated. Fortunately, most of the calibrations have already been done. While some are found to be off later on, most are already good enough for a simple "first-order" analysis.
 
 **Table of contents**
-1. [Installation](#installation)
-1. [Structure of the repository](#structure-of-the-repository)
-1. [Unit tests](#unit-tests)
+1. [Installation](#1-installation)
+1. [Structure of the repository](#2-structure-of-the-repository)
+1. [Unit tests](#3-unit-tests)
 
 ## 1. Installation
 If you are not familiar with conda, more detailed instructions can be found at [`doc/installation.md`](doc/installation.md).
