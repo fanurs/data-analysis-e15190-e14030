@@ -22,7 +22,7 @@ If you are not familiar with conda, more detailed instructions can be found at [
 git clone https://github.com/Fanurs/data-analysis-e15190-e14030.git
 ```
 2. Install (if haven't) and activate `conda`.
-3. Build the conda environment:
+3. Build the conda environment. This step is *time-consuming* (~hours). Use a screen session whenever possible.
 ```console
 cd data-analysis-e15190-e14030/
 ./build.py
