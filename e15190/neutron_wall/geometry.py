@@ -1,5 +1,6 @@
 import copy
 import itertools as itr
+import inspect
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -212,6 +213,37 @@ class Bar:
         local_znorm=[-0.5, 0.5],
         random_seed=None,
     ):
+        """Returns randomized point(s) from the given local x coordinate(s).
+
+        This is useful for getting a uniform hit distribution within the bulk of
+        the bar. Experimentally, we can only determine the local x coordinate
+        for each hit.
+
+        Parameters:
+            local_x : float or list of floats
+                The local x coordinate(s) of the point(s) in centimeters.
+            return_frame : 'lab' or 'local', default 'lab'
+                The frame of the returned point(s) in Cartesian coordinates.
+            local_ynorm : float or 2-tuple of floats, default [-0.5, 0.5]
+                The range of randomization in the local y coordinate. If float,
+                no randomization is performed. Center is at `0.0`; the top
+                surface is `+0.5`; the bottom surface is `-0.5`. Values outside
+                this range will still be calculated, but those points will be
+                outside the bar.
+            local_znorm : float or 2-tuple of floats, default [-0.5, 0.5]
+                The range of randomization in the local z coordinate. If float,
+                no randomization is performed. Center is at `0.0`; the front
+                surface is `+0.5`; the back surface is `-0.5`. Values outside
+                this range will still be calculated, but those points will be
+                outside the bar.
+            random_seed : int, default None
+                The random seed to be used. If None, randomization is
+                non-reproducible.
+        
+        Returns:
+            3-tuple or list of 3-tuples
+                The randomized point(s) in Cartesian coordinates.
+        """
         rng = np.random.default_rng(random_seed)
         n_pts = len(local_x)
 
@@ -248,7 +280,7 @@ class Bar:
         
         vertices = np.array(list(self.vertices.values()))
         self.triangle_mesh = rti.TriangleMesh(vertices, tri_indices)
-    
+
     def simple_simulation(self, n_rays=10, random_seed=None):
         """A simple ray simulation on the neutron wall bar.
 
@@ -462,16 +494,18 @@ class Wall:
         self.AB = AB.upper()
         self.ab = self.AB.lower()
         self.path_inventor_readings = self.database_dir / f'inventor_readings_NW{self.AB}.txt'
-        self.path = self.database_dir / f'NW{self.AB}.dat'
+        self.path_vertices = self.database_dir / f'NW{self.AB}_vertices.dat'
+        self.path_pca = self.database_dir / f'NW{self.AB}_pca.dat'
 
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
         if self._refresh_from_inventor_readings:
-            bars_vertices = self.read_from_inventor_readings(self.path_inventor_readings)
-            self.process_and_save_to_database(self.AB, self.path, bars_vertices)
+            bars = self.read_from_inventor_readings(self.path_inventor_readings)
+            self.save_vertices_to_database(self.AB, self.path_vertices, bars)
+            self.save_pca_to_database(self.AB, self.path_pca, bars)
 
         # read in from database
-        self.database = pd.read_csv(self.path, comment='#', delim_whitespace=True)
+        self.database = pd.read_csv(self.path_vertices, comment='#', delim_whitespace=True)
         index_names = [f'nw{self.ab}-bar', 'dir_x', 'dir_y', 'dir_z']
         self.database.set_index(index_names, drop=True, inplace=True)
 
@@ -517,17 +551,26 @@ class Wall:
                 bars_vertices.append(vertices)
                 vertices = []
         
-        return bars_vertices
+        # create Bar objects
+        bars = [Bar(vertices) for vertices in bars_vertices]
+        bars = sorted(bars, key=lambda bar: bar.pca.mean_[1]) # sort from bottom to top
+        return bars
     
     @staticmethod
-    def process_and_save_to_database(AB, filepath, bars_vertices):
-        # construct bar objects from vertices and sort
-        bar_objects = [Bar(vertices) for vertices in bars_vertices]
-        bar_objects = sorted(bar_objects, key=lambda bar: bar.pca.mean_[1]) # sort from bottom to top
-
+    def save_vertices_to_database(AB, filepath, bars):
+        """
+        Parameters
+            AB : 'A' or 'B'
+                Neutron wall A or B.
+            filepath : str or pathlib.Path
+                Path to the database file.
+            bars : list of Bar objects
+                Sorted from bottom to top. The bottommost bar is numbered 0; the
+                topmost bar is numbered 24.
+        """
         # collect all vertices from all bars and save into a dataframe
         df = []
-        for bar_num, bar_obj in enumerate(bar_objects):
+        for bar_num, bar_obj in enumerate(bars):
             for sign, vertex in bar_obj.vertices.items():
                 df.append([bar_num, *sign, *vertex])
                 
@@ -548,5 +591,49 @@ class Wall:
                 '.0f',
                 '.0f', '.0f', '.0f',
                 '.4f', '.4f', '.4f',
+            ],
+        )
+
+    @staticmethod
+    def save_pca_to_database(AB, filepath, bars):
+        """
+        Parameters
+            AB : str
+                Neutron wall A or B.
+            filepath : str or pathlib.Path
+                Path to the database file.
+            bars : list of Bar objects
+                Sorted from bottom to top. The bottommost bar is numbered 0; the
+                topmost bar is numbered 24.
+        """
+        # collect all PCA components and means from all bars and save into a dataframe
+        df = []
+        for bar_num, bar_obj in enumerate(bars):
+            df.append([bar_num, 'L', *bar_obj.pca.mean_])
+            for ic, component in enumerate(bar_obj.pca.components_):
+                df.append([bar_num, 'XYZ'[ic], *component])
+
+        df = pd.DataFrame(
+            df,
+            columns=[
+                f'nw{AB.lower()}-bar',
+                'vector',
+                'lab-x', 'lab-y', 'lab-z',
+            ],
+        )
+
+        # save to database
+        tables.to_fwf(
+            df, filepath,
+            comment=inspect.cleandoc('''
+                # measurement unit: cm
+                # vector:
+                #   - L is NW bar center in lab frame
+                #   - X, Y, Z are NW bar's principal components in lab frame w.r.t. to L
+            '''),
+            floatfmt=[
+                '.0f',
+                's',
+                '.5f', '.5f', '.5f',
             ],
         )
