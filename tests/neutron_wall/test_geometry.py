@@ -3,6 +3,8 @@ import pytest
 import itertools
 import tempfile
 
+import matplotlib as mpl
+mpl.use('Agg') # backend plotting, i.e. to suppress window pops up
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -13,17 +15,31 @@ from e15190.utilities import geometry as geom
 class TestWall:
     def test_read_from_inventor_readings(self):
         wall = nwgeom.Wall
-        bar_vertices = wall.read_from_inventor_readings(wall.database_dir / 'inventor_readings_NWB.txt')
-        assert np.shape(bar_vertices) == (25, 8, 3) # (n_bars, n_vertices, 3)
+        for AB in ('A', 'B'):
+            bars = wall.read_from_inventor_readings(wall.database_dir / f'inventor_readings_NW{AB}.txt')
+            assert len(bars) == 25
+            for bar in bars:
+                assert isinstance(bar, nwgeom.Bar)
 
-    def test_process_and_save_to_database(self):
+    def test_save_vertices_to_database(self):
         wall = nwgeom.Wall
-        bar_vertices = wall.read_from_inventor_readings(wall.database_dir / 'inventor_readings_NWB.txt')
-        tmp_path = tempfile.NamedTemporaryFile(suffix='.dat').name
-        wall.process_and_save_to_database('B', tmp_path, bar_vertices)
-        df = pd.read_csv(tmp_path, delim_whitespace=True, comment='#')
-        assert tuple(df.columns) == ('nwb-bar', 'dir_x', 'dir_y', 'dir_z', 'x', 'y', 'z')
-        assert len(df) == 25 * 8 # n_bars * n_vertices
+        for AB in ('A', 'B'):
+            bars = wall.read_from_inventor_readings(wall.database_dir / f'inventor_readings_NW{AB}.txt')
+            tmp_path = tempfile.NamedTemporaryFile(suffix='.dat').name
+            wall.save_vertices_to_database('B', tmp_path, bars)
+            df = pd.read_csv(tmp_path, delim_whitespace=True, comment='#')
+            assert tuple(df.columns) == ('nwb-bar', 'dir_x', 'dir_y', 'dir_z', 'x', 'y', 'z')
+            assert len(df) == 25 * 8 # n_bars * n_vertices
+    
+    def test_save_pca_to_database(self):
+        wall = nwgeom.Wall
+        for AB in ('A', 'B'):
+            bars = wall.read_from_inventor_readings(wall.database_dir / f'inventor_readings_NW{AB}.txt')
+            tmp_path = tempfile.NamedTemporaryFile(suffix='.dat').name
+            wall.save_pca_to_database('B', tmp_path, bars)
+            df = pd.read_csv(tmp_path, delim_whitespace=True, comment='#')
+            assert tuple(df.columns) == ('nwb-bar', 'vector', 'lab-x', 'lab-y', 'lab-z')
+            assert len(df) == 25 * 4 # n_bars * (1 mean + 3 components)
 
     def test___init__(self):
         pyrex_wall = nwgeom.Wall('B', contain_pyrex=True, refresh_from_inventor_readings=False)
