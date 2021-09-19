@@ -38,15 +38,15 @@ echo $PROJECT_DIR
 
 ## 2. Structure of the repository
 This repository is written mainly in Python 3.8 and C++20 (`-std=c++2a` in GCC 9 and earlier).
-- **`e15190/`**: Core Python source codes for doing calibration and analysis
-- **`database/`**: For storing all the calibration parameters, cache files (e.g. `.h5` files), images, ROOT files, Mako templates, etc.
-- **`local/`**: Miscellaneous local configuration files, scripts, etc. C++ source codes also go into here, mainly to separate them from the Python source codes in `e15190/`.
-- **`scripts/`**: Here are all the calibration scripts and batch scripts (for parallel computing).
-- **`tests/`**: Unit tests.
-- **`env_e15190/`**: Where the conda environment is built.
-- **`doc/`**: Documentation.
-- **`environment.yml`**: Configuration file for setting up the conda environment.
-- **`build.py`**: Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.
+- [**`e15190/`**](e15190/): Core Python source codes for doing calibration and analysis
+- [**`database/`**](database/): For storing all the calibration parameters, cache files (e.g. `.h5` files), images, ROOT files, Mako templates, etc.
+- [**`local/`**](local/): Miscellaneous local configuration files, scripts, etc. C++ source codes also go into here, mainly to separate them from the Python source codes in `e15190/`.
+- [**`scripts/`**](scripts/): Here are all the calibration scripts and batch scripts (for parallel computing).
+- [**`tests/`**](tests): Unit tests.
+- **`env_e15190/`**: Where the conda environment is built. This directory should not be committed to git. Any custom modifications should be added as symbolic links directing to `local/`.
+- [**`doc/`**](doc/): Documentation.
+- [**`environment.yml`**](environment.yml): Configuration file for setting up the conda environment.
+- [**`build.py`**](build.py): Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.
 
 ## 3. Unit tests
 We are using the [`pytest`](https://docs.pytest.org/) framework. To test everything, simply activate the conda environment, go do the project directory and type:
@@ -60,6 +60,6 @@ pytest tests/utilities/test_timer.py
 
 **When to do unit testing?**
 * Right after installation, run all tests to see if things are working correctly.
-* After changing any codes, run all tests to check in case things that were previously working are now broken, a.k.a. regression testing. [<span style="color: red;">Important!</span>]
+* After changing any codes, run all tests to check in case things that were previously working are now broken, a.k.a. regression testing. [<b style="color: red;">Important!</b>]
 * You are also encouraged to write and run tests *while* developing the source code. This is often considered as the best practice, though sometimes a little too tedious.
 * Any other scenarios where you think there might be a chance to break things, i.e. server updates, conda environment updates, git merge with other collaborators, etc.
