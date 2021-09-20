@@ -609,9 +609,12 @@ class Wall:
         # collect all PCA components and means from all bars and save into a dataframe
         df = []
         for bar_num, bar_obj in enumerate(bars):
+            if bar_obj.contain_pyrex:
+                bar_obj.remove_pyrex()
             df.append([bar_num, 'L', *bar_obj.pca.mean_])
             for ic, component in enumerate(bar_obj.pca.components_):
-                df.append([bar_num, 'XYZ'[ic], *component])
+                scaled_component = bar_obj.dimension(ic) * component
+                df.append([bar_num, 'XYZ'[ic], *scaled_component])
 
         df = pd.DataFrame(
             df,
@@ -629,7 +632,8 @@ class Wall:
                 # measurement unit: cm
                 # vector:
                 #   - L is NW bar center in lab frame
-                #   - X, Y, Z are NW bar's principal components in lab frame w.r.t. to L
+                #   - X, Y, Z are NW bar's principal components in lab frame w.r.t. to L,
+                #     with the lengths equal to the bar's respective dimensions (without Pyrex)
             '''),
             floatfmt=[
                 '.0f',
