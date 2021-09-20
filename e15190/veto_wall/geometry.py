@@ -5,75 +5,9 @@ import pandas as pd
 from sklearn.decomposition import PCA
 
 from e15190 import PROJECT_DIR
-from e15190.utilities import tables
+from e15190.utilities import geometry as geom
 from e15190.utilities import ray_triangle_intersection as rti
-
-_database_dir = PROJECT_DIR / 'database/veto_wall/geometry'
-
-def spherical_to_cartesian(radius, polar, azimuth):
-    """Convert coordinates from spherical system to Cartesian system.
-
-    All angles are presented with the unit of radian.
-
-    Parameters:
-        radius : scalar or array-like
-            Distance from the origin.
-        polar : scalar or array-like
-            Angle measured from the +z-axis.
-        azimuth : sclar or array-like
-            Counterclockwise angle measured from the +x-axis on the xy-plane.
-
-    Returns:
-        If all arguments are scalars, returns `(x, y, z)`. If all arguments are
-        arrays, returns `np.vstack([x, y, z])`.
-    """
-    is_array = any(map(lambda x: hasattr(x, '__len__'), (radius, polar, azimuth)))
-    radius, polar, azimuth = map(lambda _x: np.array(_x), (radius, polar, azimuth))
-
-    sin_polar = np.sin(polar)
-    result = np.vstack([
-        radius * sin_polar * np.cos(azimuth),
-        radius * sin_polar * np.sin(azimuth),
-        radius * np.cos(polar),
-    ])
-    return result if is_array else tuple(result.ravel())
-
-def cartesian_to_spherical(x, y, z):
-    """Convert coordinates from Cartesian system to spherical system.
-
-    This function follow the convention in most physics literature that place
-    polar angle before azimuthal angle, i.e. it returns tuples (radius, polar,
-    azimuth). The polar angle is given within the range of $[0, 2\pi]$. The
-    azimuthal angle, following the convetion of `atan2()`, is given within the
-    range of $(-\pi, \pi]$.
-
-    Parameters:
-        x : scalar or array-like
-        y : scalar or array-like
-        z : sclar or array-like
-
-    Returns:
-        If all arguments are scalars, returns `(radius, polar, azimuth)`. If all
-        arguments are arrays, returns `np.vstack([radius, polar azimuth])`.
-    """
-    is_array = any(map(lambda _x: hasattr(_x, '__len__'), (x, y, z)))
-    x, y, z = map(lambda _x: np.array(_x), (x, y, z))
-
-    rho2 = x**2 + y**2
-    result = np.vstack([
-        np.sqrt(rho2 + z**2),
-        np.arctan2(np.sqrt(rho2), z),
-        np.arctan2(y, x),
-    ])
-    return result if is_array else tuple(result.ravel())
-
-def angle_between_vectors(u, v, directional=False):
-    u, v = map(lambda x: np.array(x), (u, v))
-    dot_prod = np.dot(v, u) if u.ndim < v.ndim else np.dot(u, v)
-    angle = dot_prod / np.sqrt(np.square(u).sum(axis=-1) * np.square(v).sum(axis=-1))
-    angle = np.arccos(angle.clip(-1, 1)) # clip to account for floating-point error
-    angle *= np.sign(np.cross(u, v)) if directional else 1.0
-    return angle
+from e15190.utilities import tables
 
 class Bar:
     def __init__(self, vertices):
@@ -240,7 +174,7 @@ class Bar:
         zrho_vecs = np.vstack([vertices[:, 2], np.linalg.norm(xy_vecs, axis=1)]).T
         def identify_angle_range(vecs):
             mean_vec = np.mean(vecs, axis=0)
-            angles = angle_between_vectors(mean_vec, vecs, directional=True)
+            angles = geom.angle_between(mean_vec, vecs, directional=True)
             angles += np.arctan2(mean_vec[1], mean_vec[0])
             return np.array([angles.min(), angles.max()])
         azimuth_range, polar_range = map(identify_angle_range, (xy_vecs, zrho_vecs))
@@ -254,7 +188,7 @@ class Bar:
         # simulate
         polars = np.arccos(rng.uniform(*np.cos(polar_range), size=n_rays).clip(-1, 1))
         azimuths = rng.uniform(*azimuth_range, size=n_rays)
-        rays = spherical_to_cartesian(1.0, polars, azimuths).T
+        rays = np.transpose(geom.spherical_to_cartesian(1.0, polars, azimuths))
         triangles = self.triangle_mesh.get_triangles()
         intersections = rti.moller_trumbore(origin, rays, triangles)
 
@@ -310,10 +244,12 @@ class Bar:
         return hits
 
 class Wall:
+    database_dir = PROJECT_DIR / 'database/veto_wall/geometry'
+
     def __init__(self, refresh_from_inventor_readings=False):
         # initialize class parameters
-        self.path_inventor_readings = _database_dir / f'inventor_readings_VW.dat'
-        self.path_raw = _database_dir / f'VW.dat'
+        self.path_inventor_readings = database_dir / f'inventor_readings_VW.dat'
+        self.path_raw = database_dir / f'VW.dat'
 
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
