@@ -5,6 +5,8 @@ import numpy as np
 import plotly.graph_objects as go
 import sympy as sp
 
+from e15190.utilities import geometry as geom
+
 def moller_trumbore(ray_origin, ray_vectors, triangles, mode='einsum', tol=1e-9):
     """Implementation of Moller-Trumbore ray-triangle intersection algorithm
     To read more about the mathematical derivation, visit
@@ -117,6 +119,43 @@ def _moller_trumbore_with_loop_over_triangles(ray_origin, ray_vectors, triangles
         intersections.append(ray_origin + t * ray_vectors * (t > tol))
 
     return np.array(intersections)
+
+def emit_isotropic_rays(
+    n_rays,
+    polar_range=[0, np.pi],
+    azimuth_range=[-np.pi, np.pi],
+    random_seed=None,
+    frame='cartesian',
+):
+    """Return rays with random directions (isotropic emission).
+
+    Parameters:
+        n_rays : int
+            Number of rays to be emitted.
+        polar_range : 2-tuple or 2-list, default [0, np.pi]
+            The range of polar angles in radians.
+        azimuth_range : 2-tuple or 2-list, default [-np.pi, np.pi]
+            The range of azimuth angles in radians.
+        random_seed : int, default None
+            Random seed for the random number generator. If `None`, then the
+            randomization is non-reproducible.
+        frame : 'cartesian' or 'spherical', default 'cartesian'
+            If 'cartesian', the rays are returned as rows of `(x, y, z)`; if
+            'spherical', the rays are returned as rows of `(1, theta, phi)`, in
+            radians.
+
+    Returns:
+        A numpy.ndarray of rays with shape (n_rays, 3).
+    """
+    rng = np.random.default_rng(random_seed)
+    polars = np.arccos(rng.uniform(*np.cos(polar_range), size=n_rays).clip(-1, 1))
+    azimuths = rng.uniform(*azimuth_range, size=n_rays)
+    if frame == 'cartesian':
+        rays = np.column_stack(geom.spherical_to_cartesian(1.0, polars, azimuths))
+    else:
+        rays = np.column_stack([polars, azimuths])
+        rays = np.insert(rays, 0, 1.0, axis=1)
+    return rays
 
 class TriangleMesh:
     def __init__(self, vertices, tri_indices):
