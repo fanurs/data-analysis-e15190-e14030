@@ -47,7 +47,7 @@ public:
 
 //New Work
     std::filesystem::path pca_reldir = "database/neutron_wall/geometry";
-    std::string dat_filename = "NWB_pca_old.dat";
+    std::string dat_filename = "NWB_pca.dat";
     std::filesystem::path pca_path;
     std::map<std::pair<int, std::string>, double>L;//center of the NW bar
     std::map<std::pair<int, std::string>, double>X;//NW's principal components w.r.t L
