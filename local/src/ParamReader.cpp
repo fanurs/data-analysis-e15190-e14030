@@ -29,6 +29,9 @@ NWBPositionCalibParamReader::NWBPositionCalibParamReader() {
     }
     this->pcalib_dir = PROJECT_DIR / this->pcalib_reldir;
     this->json_path = this->pcalib_dir / this->json_filename;
+     
+    //New Work
+    this->pca_path=PROJECT_DIR / this->pca_reldir/this->dat_filename;
 
     // read in the final calibration file (JSON)
     std::ifstream file(this->json_path.string());
@@ -38,7 +41,54 @@ NWBPositionCalibParamReader::NWBPositionCalibParamReader() {
     }
     file >> this->database;
     file.close();
+
+//New Work
+    // read in the PCA.dat file
+    int barno;
+    std::string TP;
+    double q1,q2,q3;
+    std::ifstream datfile(this->pca_path.string());
+    if (!datfile.is_open()) {
+        std::cerr << "Fail to open NW_pac.dat file: " << this->pca_path.string() << std::endl;
+        exit(1);
+    }
+    std::string line;
+    while(getline(datfile,line))
+	{
+	line.erase(line.begin(), find_if(line.begin(), line.end(), not1(std::ptr_fun<int, int>(isspace)))); 
+	if(line[0]=='#')continue;
+	std::istringstream ss(line);
+	
+	ss>>barno>>TP>>q1>>q2>>q3;
+       
+	if(TP=="L"){
+                    this->L[std::make_pair(barno, "L0")] = q1;
+                    this->L[std::make_pair(barno, "L1")] = q2;
+                    this->L[std::make_pair(barno, "L2")] = q3;
+		   }
+       if(TP=="X"){
+                    this->X[std::make_pair(barno, "X0")] = q1;
+                    this->X[std::make_pair(barno, "X1")] = q2;
+                    this->X[std::make_pair(barno, "X2")] = q3;
+		   }
+        if(TP=="Y"){
+                    this->Y[std::make_pair(barno, "Y0")] = q1;
+                    this->Y[std::make_pair(barno, "Y1")] = q2;
+                    this->Y[std::make_pair(barno, "Y2")] = q3;
+		   }
+       if(TP=="Z"){
+                    this->Z[std::make_pair(barno, "Z0")] = q1;
+                    this->Z[std::make_pair(barno, "Z1")] = q2;
+                    this->Z[std::make_pair(barno, "Z2")] = q3;
+		   }
+	
+        }
+   
+    datfile.close();
+   
+
 }
+
 
 NWBPositionCalibParamReader::~NWBPositionCalibParamReader() { }
 
@@ -133,6 +183,18 @@ double NWBPositionCalibParamReader::get(int bar, const std::string& par) {
     return this->run_param[std::make_pair(bar, par)];
 }
 
+double NWBPositionCalibParamReader::getL(int bar, const std::string& par) {
+    return this->L[std::make_pair(bar, par)];
+}
+double NWBPositionCalibParamReader::getX(int bar, const std::string& par) {
+    return this->X[std::make_pair(bar, par)];
+}
+double NWBPositionCalibParamReader::getY(int bar, const std::string& par) {
+    return this->Y[std::make_pair(bar, par)];
+}
+double NWBPositionCalibParamReader::getZ(int bar, const std::string& par) {
+    return this->Z[std::make_pair(bar, par)];
+}
 
 /***********************************************/
 /*****NWPulseShapeDiscriminationParamReader*****/
@@ -279,3 +341,5 @@ bool NWPulseShapeDiscriminationParamReader::load(int run) {
     }
     return found_all_bars;
 }
+
+
