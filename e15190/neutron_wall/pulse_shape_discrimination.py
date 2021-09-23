@@ -1,6 +1,7 @@
 import concurrent.futures
 import hashlib
 import json
+import pathlib
 import warnings
 
 import matplotlib as mpl
@@ -16,13 +17,14 @@ from sklearn.preprocessing import StandardScaler
 import uproot 
 
 from e15190 import PROJECT_DIR
+from e15190.neutron_wall.position_calibration import NWBCalibrationReader
 from e15190.utilities import fast_histogram as fh
 from e15190.utilities import styles
 styles.set_matplotlib_style(mpl)
 
 class PulseShapeDiscriminator:
     database_dir = PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'
-    root_files_dir = PROJECT_DIR / 'database/root_files'
+    root_files_dir = None # the input root files directory (Daniele's ROOT files)
     light_GM_range = [1.0, 200.0] # MeVee
     pos_range = [-120.0, 120.0] # cm
     adc_range = [0, 4000] # the upper limit is 4096, but those would definitely be saturated.
@@ -41,11 +43,15 @@ class PulseShapeDiscriminator:
             'light_GM',
         ]
         self.database_dir.mkdir(parents=True, exist_ok=True)
-        self.root_files_dir.mkdir(parents=True, exist_ok=True)
         self.particles = {'gamma': 0.0, 'neutron': 1.0}
         self.center_line = {'L': None, 'R': None}
         self.cfast_total = {'L': None, 'R': None}
         self.ctrl_pts = {'L': None, 'R': None}
+
+        # initialize input root files directory
+        path = PROJECT_DIR / 'database/local_paths.json'
+        with open(path, 'r') as file:
+            self.root_files_dir = pathlib.Path(json.load(file)['daniele_root_files_dir'])
     
     @classmethod
     def _cut_for_root_file_data(cls, AB):
@@ -66,7 +72,7 @@ class PulseShapeDiscriminator:
         return ' & '.join([f'({c.strip()})' for c in cuts])
 
     def read_run_from_root_file(self, run, tree_name=None, apply_cut=True):
-        path = self.root_files_dir / f'run-{run:04d}.root'
+        path = self.root_files_dir / f'CalibratedData_{run:04d}.root'
 
         # determine the tree_name
         if tree_name is None:
@@ -78,28 +84,44 @@ class PulseShapeDiscriminator:
                 raise Exception(f'Multiple objects found in {path}')
 
         # load in the data
-        nw_branches = [
-            'bar',
-            'total_L',
-            'total_R',
-            'fast_L',
-            'fast_R',
-            'pos',
-            'light_GM',
-        ]
-        branch_names = [f'NW{self.AB}_{name}' for name in nw_branches]
-        branch_names.append('VW_multi')
+        branches = { # new name -> old name
+            f'NW{self.AB}_bar'     : f'NW{self.AB}.fnumbar',
+            f'NW{self.AB}_total_L' : f'NW{self.AB}.fLeft',
+            f'NW{self.AB}_total_R' : f'NW{self.AB}.fRight',
+            f'NW{self.AB}_fast_L'  : f'NW{self.AB}.ffastLeft',
+            f'NW{self.AB}_fast_R'  : f'NW{self.AB}.ffastRight',
+            f'NW{self.AB}_time_L'  : f'NW{self.AB}.fTimeLeft',
+            f'NW{self.AB}_time_R'  : f'NW{self.AB}.fTimeRight',
+            f'NW{self.AB}_light_GM': f'NW{self.AB}.fGeoMeanSaturationCorrected',
+             'VW_multi'            :  'VetoWall.fmulti',
+        }
         with uproot.open(str(path) + ':' + tree_name) as tree:
             df = tree.arrays(
-                branch_names,
+                list(branches.values()),
                 library='pd',
                 decompression_executor=self.decompression_executor,
                 interpretation_executor=self.interpretation_executor,
             )
+        df.columns = list(branches.keys())
+
+        # apply position calibration
+        calib_reader = NWBCalibrationReader()
+        df[f'NW{self.AB}_pos'] = self.get_position(
+            df[[f'NW{self.AB}_bar', f'NW{self.AB}_time_L', f'NW{self.AB}_time_R']],
+            calib_reader(run),
+        )
+        df.drop([f'NW{self.AB}_time_L', f'NW{self.AB}_time_R'], axis=1, inplace=True)
 
         if apply_cut:
             df = df.query(self._cut_for_root_file_data(self.AB))
         return df
+    
+    @staticmethod
+    def get_position(df_time, pos_calib_params):
+        pars = pos_calib_params # shorthand
+        df_time.columns = ['bar', 'time_L', 'time_R']
+        pars = pars.loc[df_time['bar']].to_numpy()
+        return pars[:, 0] + pars[:, 1] * (df_time['time_L'] - df_time['time_R'])
     
     def cache_run(self, run, tree_name=None):
         """Read in the data from ROOT file and save relevant branches to an HDF5 file.
