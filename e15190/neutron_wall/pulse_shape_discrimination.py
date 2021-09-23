@@ -1183,6 +1183,8 @@ class PulseShapeDiscriminator:
         filename = f'{self._run_hash_str}-NW{self.AB}-bar{self.bar:02d}.png'
         if path is None:
             path = self.database_dir / 'gallery' / filename
+        elif isinstance(path, str):
+            path = pathlib.Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
         fig, ax = plt.subplots(ncols=3, nrows=3, figsize=(13, 11), constrained_layout=True)
