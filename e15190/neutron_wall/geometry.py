@@ -1,10 +1,14 @@
 import copy
+import functools
 import itertools as itr
 import inspect
 
+from alphashape import alphashape
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy.integrate
+import scipy.interpolate
 from sklearn.decomposition import PCA
 
 from e15190 import PROJECT_DIR
@@ -281,7 +285,14 @@ class Bar:
         vertices = np.array(list(self.vertices.values()))
         self.triangle_mesh = rti.TriangleMesh(vertices, tri_indices)
 
-    def simple_simulation(self, n_rays=10, random_seed=None):
+    def simple_simulation(
+        self,
+        n_rays=10,
+        random_seed=None,
+        polar_range=None,
+        azimuth_range=None,
+        save_result=True,
+    ):
         """A simple ray simulation on the neutron wall bar.
 
         Simple simulation means that there is no scattering, reflection,
@@ -303,6 +314,16 @@ class Bar:
             random_seed : int, default None
                 Random seed to be used for random number generation. If None, a
                 time-based seed will be used, i.e. non-reproducible.
+            polar_range : 2-tuple of floats or None, default None
+                The polar range in radians. If None, the algorithm will use the
+                minimal range determined by the bar vertices. This allows more
+                efficient simulation.
+            azimuth_range : 2-tuple of floats or None, default None
+                The azimuth range in radians. If None, the algorithm will use
+                the minimal range determined by the bar vertices. This allows
+                more efficient simulation.
+            save_result : bool, default True
+                Whether to save the result to this object.
         
         Returns
             A dictionary with the following keys and array shapes:
@@ -324,43 +345,50 @@ class Bar:
         # The region is orthogonal in the (polar, azimuth) space, i.e. some
         # rectangle, so users can later easily recover the cross section from
         # the isotropy of simulation rays.
-        vertices = np.array(list(self.vertices.values()))
-        xy_vecs = vertices[:, [0, 1]]
-        zrho_vecs = np.vstack([vertices[:, 2], np.linalg.norm(xy_vecs, axis=1)]).T
-        def identify_angle_range(vecs):
-            mean_vec = np.mean(vecs, axis=0)
-            angles = geom.angle_between(mean_vec, vecs, directional=True)
-            angles += np.arctan2(mean_vec[1], mean_vec[0])
-            return np.array([angles.min(), angles.max()])
-        azimuth_range, polar_range = map(identify_angle_range, (xy_vecs, zrho_vecs))
-        def slight_widening(range_, fraction=0.01):
-            delta_width = fraction * (range_[1] - range_[0])
-            range_[0] -= delta_width
-            range_[1] += delta_width
-            return range_
-        azimuth_range, polar_range = map(slight_widening, (azimuth_range, polar_range))
+        if polar_range is None and azimuth_range is None:
+            vertices = np.array(list(self.vertices.values()))
+            xy_vecs = vertices[:, [0, 1]]
+            zrho_vecs = np.vstack([vertices[:, 2], np.linalg.norm(xy_vecs, axis=1)]).T
+
+            def identify_angle_range(vecs):
+                mean_vec = np.mean(vecs, axis=0)
+                angles = geom.angle_between(mean_vec, vecs, directional=True)
+                angles += np.arctan2(mean_vec[1], mean_vec[0])
+                return np.array([angles.min(), angles.max()])
+            azimuth_range, polar_range = map(identify_angle_range, (xy_vecs, zrho_vecs))
+
+            def slight_widening(range_, fraction=0.01):
+                delta_width = fraction * (range_[1] - range_[0])
+                range_[0] -= delta_width
+                range_[1] += delta_width
+                return range_
+            azimuth_range, polar_range = map(slight_widening, (azimuth_range, polar_range))
 
         # simulate
-        polars = np.arccos(rng.uniform(*np.cos(polar_range), size=n_rays).clip(-1, 1))
-        azimuths = rng.uniform(*azimuth_range, size=n_rays)
-        rays = np.transpose(geom.spherical_to_cartesian(1.0, polars, azimuths))
+        rays = rti.emit_isotropic_rays(
+            n_rays,
+            polar_range=polar_range, azimuth_range=azimuth_range,
+        )
         triangles = self.triangle_mesh.get_triangles()
         intersections = rti.moller_trumbore(origin, rays, triangles)
 
         # save results
-        self.simulation_result = {
+        simulation_result = {
             'origin': origin,
             'azimuth_range': azimuth_range,
             'polar_range': polar_range,
             'intersections': intersections,
         }
-        return self.simulation_result
+        if save_result:
+            self.simulation_result = simulation_result
+        return simulation_result
     
     def get_hit_positions(
         self,
         hit_t='uniform',
         frame='local',
         coordinate='cartesian',
+        simulation_result=None,
         random_seed=None,
         tol=1e-9,
     ):
@@ -382,6 +410,9 @@ class Bar:
                 The coordinate frame of the returned hit positions.
             coordinate: 'cartesian' or 'spherical', default 'cartesian'
                 The coordinate system of the returned hit positions.
+            simulation_result: dict, default None
+                The simulation result to be used. If None, the function uses
+                `self.simulation_result`.
             random_seed: int, default None
                 The random seed used to generate the `hit_t` values. If None, a
                 time-based seed will be used, i.e. non-reproducible.
@@ -396,7 +427,10 @@ class Bar:
             hit_positions: ndarray, shape (n_rays, 3)
                 The hit positions of the simulation.
         """
-        sim_res = self.simulation_result # shorthand
+        if simulation_result is None:
+            sim_res = self.simulation_result # shorthand
+        else:
+            sim_res = simulation_result
 
         # shift to make origin at zero
         hits = sim_res['intersections'] - sim_res['origin']
@@ -436,6 +470,128 @@ class Bar:
             hits = geom.cartesian_to_spherical(hits)
         return hits
     
+    def get_total_solid_angle_monte_carlo(
+        self,
+        n_rays=1_000_000,
+        random_seed=None,
+        return_error=False,
+        verbose=False,
+    ):
+        # get the solid angle of minimal region
+        sim_result = self.simple_simulation(save_result=False, random_seed=random_seed)
+        region_solid_angle = np.ptp(sim_result['azimuth_range'])
+        region_solid_angle *= np.ptp(np.cos(sim_result['polar_range']))
+
+        n_rays_per_sim = int(2e5)
+        n_rays_list = [n_rays_per_sim] * (n_rays // n_rays_per_sim) + [n_rays % n_rays_per_sim]
+        n_hits = 0
+        n_simulated = 0
+        for n in n_rays_list:
+            if verbose:
+                print(f'\rSimulated {n_simulated:,d} rays', end='')
+                n_simulated += n
+            sim_res = self.simple_simulation(
+                n_rays=n,
+                polar_range=sim_result['polar_range'],
+                azimuth_range=sim_result['azimuth_range'],
+                save_result=False,
+            )
+            n_hits += len(self.get_hit_positions(hit_t=0, simulation_result=sim_res))
+        if verbose:
+            print(f'\rSimulated {n_rays:,d} rays')
+        
+        solid_angle = (n_hits / n_rays) * region_solid_angle
+        if return_error:
+            error = (np.sqrt(n_hits) / n_rays) * region_solid_angle
+            return solid_angle, error
+        else:
+            return solid_angle
+    
+    @functools.lru_cache(maxsize=5)
+    def get_theta_phi_alphashape(self, n_loc_x=250, alpha=10.0):
+        loc_x = np.linspace(-0.5 * self.length, 0.5 * self.length, n_loc_x)
+        coords = np.vstack([
+            # self.randomize_from_local_x(loc_x, local_ynorm=0.0, local_znorm=0.5),
+            # self.randomize_from_local_x(loc_x, local_ynorm=0.0, local_znorm=-0.5),
+            # self.randomize_from_local_x(loc_x, local_ynorm=0.5, local_znorm=0.0),
+            # self.randomize_from_local_x(loc_x, local_ynorm=-0.5, local_znorm=0.0),
+            self.randomize_from_local_x(loc_x, local_ynorm=0.5, local_znorm=0.5),
+            self.randomize_from_local_x(loc_x, local_ynorm=-0.5, local_znorm=0.5),
+            self.randomize_from_local_x(loc_x, local_ynorm=0.5, local_znorm=-0.5),
+            self.randomize_from_local_x(loc_x, local_ynorm=-0.5, local_znorm=-0.5),
+        ])
+        coords = geom.cartesian_to_spherical(coords)
+        ashape = alphashape(coords[:, [1, 2]], alpha)
+        return np.transpose(ashape.exterior.coords.xy) # (theta, phi)
+    
+    @staticmethod
+    def _split_theta_phi_alphashape_to_upper_and_lower(ashape):
+        i_min = np.argmin(ashape[:, 0])
+        i_max = np.argmax(ashape[:, 0])
+        i_min, i_max = min(i_min, i_max), max(i_min, i_max)
+        upper_ashape = ashape[i_min:i_max + 1]
+        lower_ashape = ashape[np.mod(range(i_max, i_min + len(ashape) + 1), len(ashape))]
+        if np.max(lower_ashape[:, 1]) > np.max(upper_ashape[:, 1]):
+            upper_ashape, lower_ashape = lower_ashape, upper_ashape
+        return {
+            'upper': np.array(sorted(upper_ashape, key=lambda x: x[0])),
+            'lower': np.array(sorted(lower_ashape, key=lambda x: x[0])),
+        }
+    
+    def get_total_solid_angle_alphashape(self, return_error=False):
+        ashape = self.get_theta_phi_alphashape()
+        delta_phi = self.get_geometry_efficiency_alphashape()
+
+        # integrate to get the total solid angle
+        theta_range = [np.min(ashape[:, 0]), np.max(ashape[:, 0])]
+        integrate = scipy.integrate.quadrature
+        integrand = lambda theta: delta_phi(theta) * np.sin(theta)
+        total_solid_angle, err = integrate(integrand, *theta_range)
+        if return_error:
+            return total_solid_angle, err
+        else:
+            return total_solid_angle
+    
+    @functools.lru_cache(maxsize=5)
+    def get_total_solid_angle(
+        self,
+        method='alphashape',
+        **kwargs,
+    ):
+        """Return the total solid angle of the bar.
+
+        Parameters
+            method : 'alphashape' or 'monte_carlo'
+                The method to use to calculate the total solid angle.
+            kwargs : dict()
+                Keyword arguments to pass to the method.
+        
+        Returns
+            Total solid angle in steradians (sr).
+        """
+        method = method.lower()
+        method = ''.join(c for c in method if c.isalpha())
+        if method == 'alphashape':
+            return self.get_total_solid_angle_alphashape(**kwargs)
+        elif method == 'montecarlo':
+            return self.get_total_solid_angle_monte_carlo(**kwargs)
+        else:
+            raise ValueError(f'Unknown method: {method}')
+
+    def get_geometry_efficiency_alphashape(self):
+        ashape = self.get_theta_phi_alphashape()
+        ashape = self._split_theta_phi_alphashape_to_upper_and_lower(ashape)
+
+        # find the delta-phi as a function of theta using interpolation
+        interp = lambda x, y: scipy.interpolate.interp1d(
+            x, y,
+            kind='linear', fill_value=0.0, bounds_error=False,
+        )
+        upper_line = interp(ashape['upper'][:, 0], ashape['upper'][:, 1])
+        lower_line = interp(ashape['lower'][:, 0], ashape['lower'][:, 1])
+        delta_phi = lambda theta: upper_line(theta) - lower_line(theta)
+        return delta_phi
+
     def draw_hit_pattern2d(
         self,
         hits,
