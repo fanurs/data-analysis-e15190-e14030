@@ -40,10 +40,10 @@ echo $PROJECT_DIR
 This repository is written mainly in Python 3.8 and C++20 (`-std=c++2a` in GCC 9 and earlier).
 - [**`e15190/`**](e15190/): Core Python source codes for doing calibration and analysis
 - [**`database/`**](database/): For storing all the calibration parameters, cache files (e.g. `.h5` files), images, ROOT files, Mako templates, etc.
-- [**`local/`**](local/): Miscellaneous local configuration files, scripts, etc. C++ source codes also go into here, mainly to separate them from the Python source codes in `e15190/`.
+- [**`local/`**](local/): Miscellaneous local configuration files, scripts, etc. C++ source codes also go into here, mainly to separate them from the Python source codes in [`e15190/`](e15190/).
 - [**`scripts/`**](scripts/): Here are all the calibration scripts and batch scripts (for parallel computing).
 - [**`tests/`**](tests): Unit tests.
-- **`env_e15190/`**: Where the conda environment is built. This directory should not be committed to git. Any custom modifications should be added as symbolic links directing to `local/`.
+- **`env_e15190/`**: Where the conda environment is built. This directory should not be committed to git. Any custom modifications should be added as symbolic links directing to [`local/`](local/).
 - [**`doc/`**](doc/): Documentation.
 - [**`environment.yml`**](environment.yml): Configuration file for setting up the conda environment.
 - [**`build.py`**](build.py): Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.
