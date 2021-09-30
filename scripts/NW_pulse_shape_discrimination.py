@@ -69,7 +69,7 @@ def get_args():
     if args.AB not in ['A', 'B']:
         raise ValueError(f'Invalid wall type: "{args.AB}"')
     
-    # process in runs
+    # process the runs
     runs = []
     for run_str in args.runs:
         run_range = [int(run) for run in run_str.split('-')]
