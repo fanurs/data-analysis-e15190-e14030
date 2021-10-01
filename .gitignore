@@ -15,6 +15,9 @@ wmu_mysql_database.h5
 *.so
 *.exe
 
+# documentation builds
+docs/build/doctrees/*
+
 # local files
 .vscode/
 env_e15190/
