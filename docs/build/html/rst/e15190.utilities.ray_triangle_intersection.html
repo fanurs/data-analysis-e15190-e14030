@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.utilities.ray_triangle_intersection module &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.ray_triangle_intersection module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-e15190.utilities.ray_triangle_intersection">
+<span id="e15190-utilities-ray-triangle-intersection-module"></span><h1>e15190.utilities.ray_triangle_intersection module<a class="headerlink" href="#module-e15190.utilities.ray_triangle_intersection" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.TriangleMesh">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.ray_triangle_intersection.</span></span><span class="sig-name descname"><span class="pre">TriangleMesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tri_indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.TriangleMesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.TriangleMesh.get_triangles">
+<span class="sig-name descname"><span class="pre">get_triangles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.TriangleMesh.get_triangles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.TriangleMesh.plotly_trace">
+<span class="sig-name descname"><span class="pre">plotly_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.TriangleMesh.plotly_trace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.emit_isotropic_rays">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.ray_triangle_intersection.</span></span><span class="sig-name descname"><span class="pre">emit_isotropic_rays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polar_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">3.141592653589793]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-</span> <span class="pre">3.141592653589793,</span> <span class="pre">3.141592653589793]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cartesian'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.emit_isotropic_rays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return rays with random directions (isotropic emission).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_rays</strong> – int
+Number of rays to be emitted.</p></li>
+<li><p><strong>polar_range</strong> – 2-tuple or 2-list, default [0, np.pi]
+The range of polar angles in radians.</p></li>
+<li><p><strong>azimuth_range</strong> – 2-tuple or 2-list, default [-np.pi, np.pi]
+The range of azimuth angles in radians.</p></li>
+<li><p><strong>random_seed</strong> – int, default None
+Random seed for the random number generator. If <cite>None</cite>, then the
+randomization is non-reproducible.</p></li>
+<li><p><strong>frame</strong> – ‘cartesian’ or ‘spherical’, default ‘cartesian’
+If ‘cartesian’, the rays are returned as rows of <cite>(x, y, z)</cite>; if
+‘spherical’, the rays are returned as rows of <cite>(1, theta, phi)</cite>, in
+radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy.ndarray of rays with shape (n_rays, 3).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.moller_trumbore">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.ray_triangle_intersection.</span></span><span class="sig-name descname"><span class="pre">moller_trumbore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ray_origin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ray_vectors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triangles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'einsum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.moller_trumbore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of Moller-Trumbore ray-triangle intersection algorithm
+To read more about the mathematical derivation, visit
+<a class="reference external" href="https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection">https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ray_origin</strong> – array of shape (3, )
+This implementation only allows all rays to have one common origin.</p></li>
+<li><p><strong>ray_vectors</strong> – array of shape (n_rays, 3)
+The ray vectors are only used to tell the directions. No
+normalization is needed.</p></li>
+<li><p><strong>triangles</strong> – array of shape (n_triangles, 3, 3)
+An array of 3 x 3 arrays. Each 3 x 3 array consists of three
+vertices that specify the triangle. For example, the y-coordinate of
+the first vertex in the fifth triangle would be
+<cite>triangles[4][0][1]</cite>.</p></li>
+<li><p><strong>mode</strong> – str, default <cite>‘einsum’</cite>
+To select different implementations of the algorithm. In ‘einsum’
+mode, the <cite>numpy.einsum()</cite> function is heavily used to optimize the
+calculations. Otherwise, we will use the implementation without
+‘einsum’. Our simple test suggests, for 1 million rays and 12
+triangles, ‘einsum’ mode performs at least two times faster than the
+mode without ‘einsum’.</p></li>
+<li><p><strong>tol</strong> – float, default 1e-9
+Tolerance for checking the determinant in the algorithm. If the
+determinant is smaller than the tolerance, then the ray would be
+assumed parallel to the plane of the triangle, hence no attempt
+would be made to determine the intersection point.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy.ndarray of intersections with shape (n_triangles, n_rays, 3).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/rst/e15190.utilities.ray_triangle_intersection.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.ray_triangle_intersection module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Fanurs.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

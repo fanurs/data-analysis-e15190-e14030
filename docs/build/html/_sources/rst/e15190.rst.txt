@@ -1,0 +1,32 @@
+e15190 package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   e15190.microball
+   e15190.neutron_wall
+   e15190.runlog
+   e15190.utilities
+
+Submodules
+----------
+
+e15190.spectra module
+---------------------
+
+.. automodule:: e15190.spectra
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: e15190
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.utilities.atomic_mass_evaluation module &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.atomic_mass_evaluation module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-e15190.utilities.atomic_mass_evaluation">
+<span id="e15190-utilities-atomic-mass-evaluation-module"></span><h1>e15190.utilities.atomic_mass_evaluation module<a class="headerlink" href="#module-e15190.utilities.atomic_mass_evaluation" title="Permalink to this headline">¶</a></h1>
+<p>This module interacts with the atomic mass data.
+By the time of writing this module, the latest available data is
+Atomic Mass Evaluation in 2016 (AME2016). When future evaluation
+is released, manual modification needs to be made by updating
+<cite>DataManager.ame_url</cite>, and possibly <cite>DataManager.read_in_data</cite>,
+if the format of the table has been changed.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.atomic_mass_evaluation.</span></span><span class="sig-name descname"><span class="pre">DataManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_read_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to interacts with the atomic masses.
+Many kinematic calculations require the knowledge of masses of atomic
+isotopes. This class allows user to automatically download the data
+sheet of Atomic Mass Evaluation to local machine, and perform some
+simple query tasks on the table.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager.auto_column_splitter">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">auto_column_splitter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager.auto_column_splitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function automatically separates the columns of <cite>.txt</cite> table.</p>
+<p>This function can separate the columns of <cite>.txt</cite> tables that use space
+characters as their delimiters.
+:param content: list of str</p>
+<blockquote>
+<div><p>A list of strings that correspond to the content of a <cite>.txt</cite> table.
+Each element in the list, which is a string, corresponds to each row
+of the table. These strings can be either ended with the newline
+character or not. The row of column names or headers should not
+be included.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a two-dimensional list of str</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>splitted_content</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">isotope_mass</span> <span class="kn">import</span> <span class="n">DataManager</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Amy  168.5cm&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob  181.9cm&quot;</span><span class="p">,</span> <span class="s2">&quot;Cici 157.3cm&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span><span class="o">.</span><span class="n">auto_column_splitter</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+<span class="go">[[&#39;Amy  &#39;, &#39;168.5cm&#39;], [&#39;Bob  &#39;, &#39;181.9cm&#39;], [&#39;Cici &#39;, &#39;157.3cm&#39;]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager.download">
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download AME data from the web.
+:param filepath: str <em>optional</em></p>
+<blockquote>
+<div><p>The local filepath that store the downloaded data. Default is
+<cite>None</cite>, which will then be set into class variable <cite>AME_LOCAL_PATH</cite>.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>url</strong> – str <em>optional</em>
+The url to the AME data. Default is <cite>None</cite>, which will then be
+set into class variable <cite>ame_url</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager.read_in_data">
+<span class="sig-name descname"><span class="pre">read_in_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager.read_in_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates class attribute <cite>self.df</cite> into formatted AME data.
+This function only reads from a local copy of AME data. Make sure the data
+has been downloaded from the web. Not all columns from AME data will be kept.
+The columns that will be returned are <cite>Z</cite>, <cite>A</cite>, <cite>symb</cite>, <cite>mass_excess</cite> and
+<cite>mass_excess_err</cite>. Other columns including isospin, binding energy (and its
+error) and mass in a.m.u (and its error) are discarded as they can all be
+calculated directly from mass excess.
+No unit conversion has been made. The AME provides mass excess in $mathrm{keV/c^2}$.
+Nonetheless, units have been stored as class attribute <cite>self.units</cite> as python
+dictionary using <cite>astropy.units</cite>.
+:param filepath: str <em>optional</em></p>
+<blockquote>
+<div><p>The local filepath that store the downloaded data. Default is
+<cite>None</cite>, which will then be set into class variable <cite>AME_LOCAL_PATH</cite>.</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.get_A_Z">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.atomic_mass_evaluation.</span></span><span class="sig-name descname"><span class="pre">get_A_Z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">notation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simple_tuple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.get_A_Z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts mass-number annotated isotope expression into A and Z.
+Examples:
+———-
+&gt;&gt;&gt; import isotope_mass as isom
+&gt;&gt;&gt; isom.get_A_Z(‘ca40’)
+(40, 20)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.mass">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.atomic_mass_evaluation.</span></span><span class="sig-name descname"><span class="pre">mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unitless</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_found_okay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_found_warning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get mass of isotope.</p>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/rst/e15190.utilities.atomic_mass_evaluation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.atomic_mass_evaluation module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Fanurs.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

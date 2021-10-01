@@ -1,0 +1,7 @@
+e15190.utilities.ipyhtml\_widgets module
+========================================
+
+.. automodule:: e15190.utilities.ipyhtml_widgets
+   :members:
+   :undoc-members:
+   :show-inheritance:

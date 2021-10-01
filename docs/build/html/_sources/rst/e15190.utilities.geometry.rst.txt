@@ -1,0 +1,7 @@
+e15190.utilities.geometry module
+================================
+
+.. automodule:: e15190.utilities.geometry
+   :members:
+   :undoc-members:
+   :show-inheritance:

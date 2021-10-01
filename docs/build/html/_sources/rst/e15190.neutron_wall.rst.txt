@@ -1,0 +1,37 @@
+e15190.neutron\_wall package
+============================
+
+Submodules
+----------
+
+e15190.neutron\_wall.geometry module
+------------------------------------
+
+.. automodule:: e15190.neutron_wall.geometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+e15190.neutron\_wall.position\_calibration module
+-------------------------------------------------
+
+.. automodule:: e15190.neutron_wall.position_calibration
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+e15190.neutron\_wall.pulse\_shape\_discrimination module
+--------------------------------------------------------
+
+.. automodule:: e15190.neutron_wall.pulse_shape_discrimination
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: e15190.neutron_wall
+   :members:
+   :undoc-members:
+   :show-inheritance:

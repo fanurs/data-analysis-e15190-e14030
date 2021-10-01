@@ -1,0 +1,7 @@
+e15190.utilities.fast\_histogram module
+=======================================
+
+.. automodule:: e15190.utilities.fast_histogram
+   :members:
+   :undoc-members:
+   :show-inheritance:

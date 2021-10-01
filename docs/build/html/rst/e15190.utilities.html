@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.utilities package &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="e15190-utilities-package">
+<h1>e15190.utilities package<a class="headerlink" href="#e15190-utilities-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-e15190.utilities.atomic_mass_evaluation">
+<span id="e15190-utilities-atomic-mass-evaluation-module"></span><h2>e15190.utilities.atomic_mass_evaluation module<a class="headerlink" href="#module-e15190.utilities.atomic_mass_evaluation" title="Permalink to this headline">¶</a></h2>
+<p>This module interacts with the atomic mass data.
+By the time of writing this module, the latest available data is
+Atomic Mass Evaluation in 2016 (AME2016). When future evaluation
+is released, manual modification needs to be made by updating
+<cite>DataManager.ame_url</cite>, and possibly <cite>DataManager.read_in_data</cite>,
+if the format of the table has been changed.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.atomic_mass_evaluation.</span></span><span class="sig-name descname"><span class="pre">DataManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_read_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to interacts with the atomic masses.
+Many kinematic calculations require the knowledge of masses of atomic
+isotopes. This class allows user to automatically download the data
+sheet of Atomic Mass Evaluation to local machine, and perform some
+simple query tasks on the table.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager.auto_column_splitter">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">auto_column_splitter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager.auto_column_splitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function automatically separates the columns of <cite>.txt</cite> table.</p>
+<p>This function can separate the columns of <cite>.txt</cite> tables that use space
+characters as their delimiters.
+:param content: list of str</p>
+<blockquote>
+<div><p>A list of strings that correspond to the content of a <cite>.txt</cite> table.
+Each element in the list, which is a string, corresponds to each row
+of the table. These strings can be either ended with the newline
+character or not. The row of column names or headers should not
+be included.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a two-dimensional list of str</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>splitted_content</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">isotope_mass</span> <span class="kn">import</span> <span class="n">DataManager</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Amy  168.5cm&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob  181.9cm&quot;</span><span class="p">,</span> <span class="s2">&quot;Cici 157.3cm&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span><span class="o">.</span><span class="n">auto_column_splitter</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+<span class="go">[[&#39;Amy  &#39;, &#39;168.5cm&#39;], [&#39;Bob  &#39;, &#39;181.9cm&#39;], [&#39;Cici &#39;, &#39;157.3cm&#39;]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager.download">
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download AME data from the web.
+:param filepath: str <em>optional</em></p>
+<blockquote>
+<div><p>The local filepath that store the downloaded data. Default is
+<cite>None</cite>, which will then be set into class variable <cite>AME_LOCAL_PATH</cite>.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>url</strong> – str <em>optional</em>
+The url to the AME data. Default is <cite>None</cite>, which will then be
+set into class variable <cite>ame_url</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.DataManager.read_in_data">
+<span class="sig-name descname"><span class="pre">read_in_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.DataManager.read_in_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates class attribute <cite>self.df</cite> into formatted AME data.
+This function only reads from a local copy of AME data. Make sure the data
+has been downloaded from the web. Not all columns from AME data will be kept.
+The columns that will be returned are <cite>Z</cite>, <cite>A</cite>, <cite>symb</cite>, <cite>mass_excess</cite> and
+<cite>mass_excess_err</cite>. Other columns including isospin, binding energy (and its
+error) and mass in a.m.u (and its error) are discarded as they can all be
+calculated directly from mass excess.
+No unit conversion has been made. The AME provides mass excess in $mathrm{keV/c^2}$.
+Nonetheless, units have been stored as class attribute <cite>self.units</cite> as python
+dictionary using <cite>astropy.units</cite>.
+:param filepath: str <em>optional</em></p>
+<blockquote>
+<div><p>The local filepath that store the downloaded data. Default is
+<cite>None</cite>, which will then be set into class variable <cite>AME_LOCAL_PATH</cite>.</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.get_A_Z">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.atomic_mass_evaluation.</span></span><span class="sig-name descname"><span class="pre">get_A_Z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">notation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simple_tuple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.get_A_Z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts mass-number annotated isotope expression into A and Z.
+Examples:
+———-
+&gt;&gt;&gt; import isotope_mass as isom
+&gt;&gt;&gt; isom.get_A_Z(‘ca40’)
+(40, 20)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.mass">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.atomic_mass_evaluation.</span></span><span class="sig-name descname"><span class="pre">mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unitless</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_found_okay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_found_warning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get mass of isotope.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.fast_histogram">
+<span id="e15190-utilities-fast-histogram-module"></span><h2>e15190.utilities.fast_histogram module<a class="headerlink" href="#module-e15190.utilities.fast_histogram" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-e15190.utilities.geometry">
+<span id="e15190-utilities-geometry-module"></span><h2>e15190.utilities.geometry module<a class="headerlink" href="#module-e15190.utilities.geometry" title="Permalink to this headline">¶</a></h2>
+<p>A submodule of functions and libraries that deal with primarily 2D and 3D geometry.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.CoordinateConversion">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">CoordinateConversion</span></span><a class="headerlink" href="#e15190.utilities.geometry.CoordinateConversion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.angle_between">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">angle_between</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directional</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_vector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.angle_between" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the angle between vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v1</strong> – 1D array-like or 2D numpy array of shape <cite>(n_vectors, n_dim)</cite>
+The first vector or vectors. The dimension of vectors must be
+consistent with <cite>v2</cite>. If <cite>v1</cite> is a 2D numpy array, the length must
+also be consistent with the length of <cite>v2</cite>.</p></li>
+<li><p><strong>v2</strong> – 1D array-like or 2D numpy array of shape <cite>(n_vectors, n_dim)</cite>
+The second vector or vectors. The dimension of vectors must be
+consistent with <cite>v1</cite>. If <cite>v2</cite> is a 2D numpy array, the length must
+also be consistent with the length of <cite>v1</cite>.</p></li>
+<li><p><strong>directional</strong> – bool
+Whether to return the directional angle. Only support for vectors of
+two-dimension, otherwise it will be ignored. If <cite>True</cite>, the angle
+will be in the range <cite>(-pi, pi]</cite>. If <cite>False</cite>, the angle will be in
+the range <cite>[0, pi]</cite>.</p></li>
+<li><p><strong>zero_vector</strong> – None, <cite>‘raise’</cite> or scalar
+To specify what to do when <cite>v1</cite> or <cite>v2</cite> contains zero vectors, i.e.
+vectors with zero norms. If <cite>None</cite>, nothing will be done. Whatever
+warnings or errors show up during the calculation will be shown
+unless otherwise being suppressed. If <cite>‘raise’</cite>, a <cite>RunTimeError</cite>
+will be raised. If a scalar, the value will be assigned as the
+angle. The last option is sometimes useful for later identifying
+zero vectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The angle between the two vectors in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.cartesian_to_spherical">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">cartesian_to_spherical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.cartesian_to_spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Cartesian cordinates to spherical coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> – tuple of scalars, tuple of 1D numpy arrays or a 2D numpy array
+If the input is a tuple of scalars or a tuple of 1D numpy arrays,
+they will be interpreted as x, y and z coordinates, respectively. If
+the input is a 2D numpy array, it will be interpreted as an array of
+row vectors <cite>(x, y, z)</cite>, i.e. it must have a shape of <cite>(n_vectors,
+3)</cite>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Spherical coordinates of the points; angles will be given in radians.
+The format will be the same as the input. Below are the possible output ranges for each coordinate:</p>
+<p>Radius: [0, inf)
+Polar : [0, pi]
+Azimuth: (-pi, pi]</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.deco_to_2darray">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">deco_to_2darray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.deco_to_2darray" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator that turn functions into accepting row vectors.</p>
+<p>If a function first map (x1, x2, …, xk) to (y1, y2, …, yk), then this
+decorator turns this function into mapping from X to Y, where both X and Y
+have the shape of <cite>(n_vectors, n_features)</cite>, or more explicitly, <cite>(k,
+n_features)</cite>, where <cite>n_features</cite> is simply the dimension of the vectors x1,
+x2, …, xk and y1, y2, …, yk.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.spherical_to_cartesian">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">spherical_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.spherical_to_cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert spherical coordinates to Cartesian coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> – <p>tuple of scalars, tuple of 1D numpy arrays or a 2D numpy array
+If the input is a tuple of scalars or a tuple of 1D numpy arrays,
+they will be interpreted as radius, polar angle and azimuthal angle,
+respectively. If the input is a 2D numpy array, it will be
+interpreted as an array of row vectors (radius, polar, azimuthal),
+i.e. it must have a shape of <cite>(n_vectors, 3)</cite>.</p>
+<p>Radius: The distance from the origin. Accepts any real numbers.
+Negative radius is simply interpreted as the opposite direction,
+e.g. <cite>(x, y, z) = (1, 2, 3)</cite> would become <cite>(-1, -2, -3)</cite>.</p>
+<p>Polar: The polar angle of the point in radians. Commonly denoted as
+theta in physics. Accepts any real numbers, but expect identical
+result for any theta with the same <cite>mod(theta, 2 * pi)</cite> value.</p>
+<p>Azimuth: The azimuthal angle of the point in radians. Commonly
+denoted as phi in physics. Accepts any real numbers, but expect
+identical result for any phi with the same <cite>mod(phi, 2 * pi)</cite> value.</p>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Cartesian coordinates of the points. The format will be the same as the
+input.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.ipyhtml_widgets">
+<span id="e15190-utilities-ipyhtml-widgets-module"></span><h2>e15190.utilities.ipyhtml_widgets module<a class="headerlink" href="#module-e15190.utilities.ipyhtml_widgets" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.ImageDisplayer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.ipyhtml_widgets.</span></span><span class="sig-name descname"><span class="pre">ImageDisplayer</span></span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.ImageDisplayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.ImageDisplayer.display">
+<span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'button'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height:</span> <span class="pre">300px;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slider_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_animation_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.ImageDisplayer.display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.ImageDisplayer.mpl_to_pil">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">mpl_to_pil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpl_fig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.ImageDisplayer.mpl_to_pil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.ImageDisplayer.mpl_to_str64">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">mpl_to_str64</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpl_fig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.ImageDisplayer.mpl_to_str64" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.ImageDisplayer.pil_to_str64">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">pil_to_str64</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pil_img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.ImageDisplayer.pil_to_str64" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.ImageDisplayer.render">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.ImageDisplayer.render" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.ImageDisplayer.write_to_file">
+<span class="sig-name descname"><span class="pre">write_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'button'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height:</span> <span class="pre">300px;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slider_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_animation_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.ImageDisplayer.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.display">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.ipyhtml_widgets.</span></span><span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'button'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height:</span> <span class="pre">300px;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slider_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_animation_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.ipyhtml_widgets.write_to_file">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.ipyhtml_widgets.</span></span><span class="sig-name descname"><span class="pre">write_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'button'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height:</span> <span class="pre">300px;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slider_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_animation_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ipyhtml_widgets.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.kinematics">
+<span id="e15190-utilities-kinematics-module"></span><h2>e15190.utilities.kinematics module<a class="headerlink" href="#module-e15190.utilities.kinematics" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.kinematics.AdditionalConstants">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.kinematics.</span></span><span class="sig-name descname"><span class="pre">AdditionalConstants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.kinematics.AdditionalConstants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.kinematics.BeamTargetReaction">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.kinematics.</span></span><span class="sig-name descname"><span class="pre">BeamTargetReaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beam_kinergy</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.kinematics.BeamTargetReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="e15190.utilities.kinematics.BeamTargetReaction.beam_com_rapidity">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">beam_com_rapidity</span></span><a class="headerlink" href="#e15190.utilities.kinematics.BeamTargetReaction.beam_com_rapidity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the (experimentally modified) rapidity of beam w.r.t. the C.O.M.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="e15190.utilities.kinematics.BeamTargetReaction.beam_lab_rapidity">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">beam_lab_rapidity</span></span><a class="headerlink" href="#e15190.utilities.kinematics.BeamTargetReaction.beam_lab_rapidity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the (experimentally modified) rapidity of beam w.r.t. the lab.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="e15190.utilities.kinematics.BeamTargetReaction.com_beta">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">com_beta</span></span><a class="headerlink" href="#e15190.utilities.kinematics.BeamTargetReaction.com_beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the beta (v/c) of C.O.M. of beam-target w.r.t. the lab.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.local_manager">
+<span id="e15190-utilities-local-manager-module"></span><h2>e15190.utilities.local_manager module<a class="headerlink" href="#module-e15190.utilities.local_manager" title="Permalink to this headline">¶</a></h2>
+<p>This is a module that manages all local files, i.e. files that are not being committed to GitHub.</p>
+<p>Local files are not being committed to GitHub because they may contain contents that are user-dependent.
+Here is a list of non-exhaustive examples:
+- Local paths or directories
+- Local libraries or environments
+- Sensitive information like passwords that should never be committed to git
+- Source codes or data that are export control or intellectual properties of other parties
+- Experimental scripts that are often modified</p>
+<p>While users can, of course, maintain as many local files as they want, some local files are essential to use the modules.
+These local files often have their specific formats, which this module is written to check them as well.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.local_manager.LocalPathsManager">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.local_manager.</span></span><span class="sig-name descname"><span class="pre">LocalPathsManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.local_manager.LocalPathsManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.local_manager.LocalPathsManager.check">
+<span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.local_manager.LocalPathsManager.check" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.local_manager.LocalPathsManager.create_template">
+<span class="sig-name descname"><span class="pre">create_template</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.local_manager.LocalPathsManager.create_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.local_manager.check_local_paths_json">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.local_manager.</span></span><span class="sig-name descname"><span class="pre">check_local_paths_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.local_manager.check_local_paths_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.local_manager.get_local_path">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.local_manager.</span></span><span class="sig-name descname"><span class="pre">get_local_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.local_manager.get_local_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.ray_triangle_intersection">
+<span id="e15190-utilities-ray-triangle-intersection-module"></span><h2>e15190.utilities.ray_triangle_intersection module<a class="headerlink" href="#module-e15190.utilities.ray_triangle_intersection" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.TriangleMesh">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.ray_triangle_intersection.</span></span><span class="sig-name descname"><span class="pre">TriangleMesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tri_indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.TriangleMesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.TriangleMesh.get_triangles">
+<span class="sig-name descname"><span class="pre">get_triangles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.TriangleMesh.get_triangles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.TriangleMesh.plotly_trace">
+<span class="sig-name descname"><span class="pre">plotly_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.TriangleMesh.plotly_trace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.emit_isotropic_rays">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.ray_triangle_intersection.</span></span><span class="sig-name descname"><span class="pre">emit_isotropic_rays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polar_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">3.141592653589793]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-</span> <span class="pre">3.141592653589793,</span> <span class="pre">3.141592653589793]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cartesian'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.emit_isotropic_rays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return rays with random directions (isotropic emission).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_rays</strong> – int
+Number of rays to be emitted.</p></li>
+<li><p><strong>polar_range</strong> – 2-tuple or 2-list, default [0, np.pi]
+The range of polar angles in radians.</p></li>
+<li><p><strong>azimuth_range</strong> – 2-tuple or 2-list, default [-np.pi, np.pi]
+The range of azimuth angles in radians.</p></li>
+<li><p><strong>random_seed</strong> – int, default None
+Random seed for the random number generator. If <cite>None</cite>, then the
+randomization is non-reproducible.</p></li>
+<li><p><strong>frame</strong> – ‘cartesian’ or ‘spherical’, default ‘cartesian’
+If ‘cartesian’, the rays are returned as rows of <cite>(x, y, z)</cite>; if
+‘spherical’, the rays are returned as rows of <cite>(1, theta, phi)</cite>, in
+radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy.ndarray of rays with shape (n_rays, 3).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.ray_triangle_intersection.moller_trumbore">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.ray_triangle_intersection.</span></span><span class="sig-name descname"><span class="pre">moller_trumbore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ray_origin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ray_vectors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triangles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'einsum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.ray_triangle_intersection.moller_trumbore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of Moller-Trumbore ray-triangle intersection algorithm
+To read more about the mathematical derivation, visit
+<a class="reference external" href="https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection">https://www.scratchapixel.comhttps://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ray_origin</strong> – array of shape (3, )
+This implementation only allows all rays to have one common origin.</p></li>
+<li><p><strong>ray_vectors</strong> – array of shape (n_rays, 3)
+The ray vectors are only used to tell the directions. No
+normalization is needed.</p></li>
+<li><p><strong>triangles</strong> – array of shape (n_triangles, 3, 3)
+An array of 3 x 3 arrays. Each 3 x 3 array consists of three
+vertices that specify the triangle. For example, the y-coordinate of
+the first vertex in the fifth triangle would be
+<cite>triangles[4][0][1]</cite>.</p></li>
+<li><p><strong>mode</strong> – str, default <cite>‘einsum’</cite>
+To select different implementations of the algorithm. In ‘einsum’
+mode, the <cite>numpy.einsum()</cite> function is heavily used to optimize the
+calculations. Otherwise, we will use the implementation without
+‘einsum’. Our simple test suggests, for 1 million rays and 12
+triangles, ‘einsum’ mode performs at least two times faster than the
+mode without ‘einsum’.</p></li>
+<li><p><strong>tol</strong> – float, default 1e-9
+Tolerance for checking the determinant in the algorithm. If the
+determinant is smaller than the tolerance, then the ray would be
+assumed parallel to the plane of the triangle, hence no attempt
+would be made to determine the intersection point.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy.ndarray of intersections with shape (n_triangles, n_rays, 3).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.root6">
+<span id="e15190-utilities-root6-module"></span><h2>e15190.utilities.root6 module<a class="headerlink" href="#module-e15190.utilities.root6" title="Permalink to this headline">¶</a></h2>
+<p>A list of convenient functions to interact with PyROOT6.</p>
+<p>A version of ROOT 6.20 or above is assumed.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.root6.HistogramConversion">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.root6.</span></span><span class="sig-name descname"><span class="pre">HistogramConversion</span></span><a class="headerlink" href="#e15190.utilities.root6.HistogramConversion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.root6.HistogramConversion.histo_to_dframe">
+<span class="sig-name descname"><span class="pre">histo_to_dframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">histo</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.root6.HistogramConversion.histo_to_dframe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.root6.RandomName">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.root6.</span></span><span class="sig-name descname"><span class="pre">RandomName</span></span><a class="headerlink" href="#e15190.utilities.root6.RandomName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.root6.RandomName.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.root6.RandomName.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.styles">
+<span id="e15190-utilities-styles-module"></span><h2>e15190.utilities.styles module<a class="headerlink" href="#module-e15190.utilities.styles" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.styles.set_matplotlib_style">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.styles.</span></span><span class="sig-name descname"><span class="pre">set_matplotlib_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.styles.set_matplotlib_style" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.tables">
+<span id="e15190-utilities-tables-module"></span><h2>e15190.utilities.tables module<a class="headerlink" href="#module-e15190.utilities.tables" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.tables.to_fwf">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.tables.</span></span><span class="sig-name descname"><span class="pre">to_fwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">tabulate_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.tables.to_fwf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write Pandas Dataframe into fixed-width file (FWF).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.Dataframe object</em>) – The dataframe to be written to file.</p></li>
+<li><p><strong>path</strong> (<em>str</em><em> or </em><em>pathlib.Path object</em>) – The path to be written into fixed-width file.</p></li>
+<li><p><strong>drop_header</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, table header will be dropped; if <cite>False</cite>, <cite>df.columns</cite> will
+be used as header.</p></li>
+<li><p><strong>drop_index</strong> (<em>bool</em><em>, </em><em>default True</em>) – If <cite>True</cite>, the index will not be included; if <cite>False</cite>, the index will be
+written to file as one of the columns.</p></li>
+<li><p><strong>comment</strong> (<em>str</em><em> or </em><em>None</em>) – If None, no comment will be written to file. Otherwise, the comment will
+be written to the beginning of the file, in lines before the table.</p></li>
+<li><p><strong>tabulate_kwargs</strong> – Keyword arguments for the tabulate function. See more at
+<a class="reference external" href="https://pypi.org/project/tabulate/">https://pypi.org/project/tabulate/</a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities.timer">
+<span id="e15190-utilities-timer-module"></span><h2>e15190.utilities.timer module<a class="headerlink" href="#module-e15190.utilities.timer" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.timer.VerboseTimer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.timer.</span></span><span class="sig-name descname"><span class="pre">VerboseTimer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auto_print</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.VerboseTimer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.timer.VerboseTimer.pause">
+<span class="sig-name descname"><span class="pre">pause</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.VerboseTimer.pause" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.timer.VerboseTimer.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.VerboseTimer.print" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.timer.VerboseTimer.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.VerboseTimer.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.timer.VerboseTimer.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.VerboseTimer.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.timer.VerboseTimer.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.VerboseTimer.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.timer.pause">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.timer.</span></span><span class="sig-name descname"><span class="pre">pause</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pause the timer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>show</strong> – bool, optional
+Whether to print the elapsed time accummulated at the time of
+pausing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.timer.reset">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.timer.</span></span><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the timer.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.timer.start">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.timer.</span></span><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the timer.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.timer.stop">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.timer.</span></span><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.timer.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the timer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – Prefix to print before the elapsed time.</p></li>
+<li><p><strong>suffix</strong> (<em>str</em><em>, </em><em>optional</em>) – Suffix to print after the elapsed time.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print the elapsed time.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Elapsed time in seconds.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-e15190.utilities">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-e15190.utilities" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">e15190.utilities package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.atomic_mass_evaluation">e15190.utilities.atomic_mass_evaluation module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.fast_histogram">e15190.utilities.fast_histogram module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.geometry">e15190.utilities.geometry module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.ipyhtml_widgets">e15190.utilities.ipyhtml_widgets module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.kinematics">e15190.utilities.kinematics module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.local_manager">e15190.utilities.local_manager module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.ray_triangle_intersection">e15190.utilities.ray_triangle_intersection module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.root6">e15190.utilities.root6 module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.styles">e15190.utilities.styles module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.tables">e15190.utilities.tables module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities.timer">e15190.utilities.timer module</a></li>
+<li><a class="reference internal" href="#module-e15190.utilities">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/rst/e15190.utilities.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Fanurs.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>
