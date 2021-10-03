@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.utilities.geometry &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.geometry</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-e15190.utilities.geometry">
+<span id="e15190-utilities-geometry"></span><h1>e15190.utilities.geometry<a class="headerlink" href="#module-e15190.utilities.geometry" title="Permalink to this headline">¶</a></h1>
+<p>A submodule that deals with 2D and 3D geometry.</p>
+<p>Surprisingly, by the time of this writing, there does not seem to be any
+libraries that can do several common geometrical manipulations well, in the
+sense that they are pythonic, vectorized, and match the convention in physics.</p>
+<p>Hence, this submodule is written.</p>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.geometry.angle_between.html#e15190.utilities.geometry.angle_between" title="e15190.utilities.geometry.angle_between"><code class="xref py py-obj docutils literal notranslate"><span class="pre">angle_between</span></code></a>(v1, v2[, directional, zero_vector])</p></td>
+<td><p>Compute the angle between vectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.utilities.geometry.cartesian_to_spherical.html#e15190.utilities.geometry.cartesian_to_spherical" title="e15190.utilities.geometry.cartesian_to_spherical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cartesian_to_spherical</span></code></a>(*args)</p></td>
+<td><p>Convert Cartesian cordinates to spherical coordinates.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.geometry.deco_to_2darray.html#e15190.utilities.geometry.deco_to_2darray" title="e15190.utilities.geometry.deco_to_2darray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deco_to_2darray</span></code></a>(func)</p></td>
+<td><p>A decorator that turn functions into accepting row vectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.utilities.geometry.spherical_to_cartesian.html#e15190.utilities.geometry.spherical_to_cartesian" title="e15190.utilities.geometry.spherical_to_cartesian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spherical_to_cartesian</span></code></a>(*args)</p></td>
+<td><p>Convert spherical coordinates to Cartesian coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.geometry.CoordinateConversion.html#e15190.utilities.geometry.CoordinateConversion" title="e15190.utilities.geometry.CoordinateConversion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CoordinateConversion</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.deco_to_2darray">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">deco_to_2darray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.deco_to_2darray" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator that turn functions into accepting row vectors.</p>
+<p>The argument <cite>func</cite> is assumed to be a function that does the following mapping:</p>
+<div class="math notranslate nohighlight">
+\[f: \mathbb{R}^k \rightarrow \mathbb{R}^k \ ,
+(x_1, x_2, ..., x_k) \mapsto (y_1, y_2, ..., y_k)\]</div>
+<p>This decorator will turn the function into accepting 2D array of shape
+<cite>(n_vectors, k)</cite>. The result is equivalent to looping over the rows of the
+array and calling the undecorated function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.spherical_to_cartesian">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">spherical_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.spherical_to_cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert spherical coordinates to Cartesian coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>3-tuple of scalars</em><em>, </em><em>3-tuple of 1D numpy arrays</em><em> or </em><em>a 2D numpy array</em>) – <p>If the input is a 3-tuple of scalars or a 3-tuple of 1D numpy arrays,
+they will be interpreted as <span class="math notranslate nohighlight">\((r, \theta, \phi)\)</span>.</p>
+<p>If the input is a 2D numpy array of shape <cite>(n_vectors, 3)</cite>, it will be
+interpreted as an array of row vectors <span class="math notranslate nohighlight">\((r, \theta, \phi)\)</span>.</p>
+<p><span class="math notranslate nohighlight">\(r\)</span> is the distance from the origin. Accepts any real numbers.
+Negative radius is simply interpreted as the opposite direction, e.g.
+<span class="math notranslate nohighlight">\((1, 2, 3)\)</span> becomes <span class="math notranslate nohighlight">\((-1, -2, -3)\)</span>.</p>
+<p><span class="math notranslate nohighlight">\(\theta\)</span> is the polar angle of the point in radians. Accepts any
+real numbers, but expect identical result for any theta with the same
+<span class="math notranslate nohighlight">\(\mathrm{mod}(\theta, 2\pi)\)</span> value.</p>
+<p><span class="math notranslate nohighlight">\(\phi\)</span> is the azimuthal angle of the point in radians. Accepts
+any real numbers, but expect identical result for any phi with the same
+<span class="math notranslate nohighlight">\(\mathrm{mod}(\phi, 2\pi)\)</span> value.</p>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cartesian_coordinates</strong> – Cartesian coordinates of the inputs.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>same as <code class="docutils literal notranslate"><span class="pre">args</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.cartesian_to_spherical">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">cartesian_to_spherical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.cartesian_to_spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Cartesian cordinates to spherical coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>tuple of scalars</em><em>, </em><em>tuple of 1D numpy arrays</em><em> or </em><em>a 2D numpy array</em>) – <p>If the input is a tuple of scalars or a tuple of 1D numpy arrays,
+they will be interpreted as <span class="math notranslate nohighlight">\((x, y, z)\)</span>.</p>
+<p>If the input is a 2D numpy array of shape <cite>(n_vectors, 3)</cite>, it will be
+interpreted as an array of row vectors <span class="math notranslate nohighlight">\((x, y, z)\)</span>.</p>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>spherical_coordinates</strong> – The returned ranges are <span class="math notranslate nohighlight">\(r \in [0, \infty)\)</span> for radius,
+<span class="math notranslate nohighlight">\(\theta \in [0, \pi]\)</span> for polar angle and <span class="math notranslate nohighlight">\(\phi \in (-\pi,
+\pi]\)</span> for azimuthal angle.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>same as <code class="docutils literal notranslate"><span class="pre">args</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.angle_between">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">angle_between</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directional</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_vector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.angle_between" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the angle between vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v1</strong> (1D array-like or 2D numpy array of shape <cite>(n_vectors, n_dim)</cite>) – The first vector or vectors. The dimension of vectors must be consistent
+with <code class="docutils literal notranslate"><span class="pre">v2</span></code>. If <code class="docutils literal notranslate"><span class="pre">v1</span></code> is a 2D numpy array, the length must also be
+consistent with the length of <code class="docutils literal notranslate"><span class="pre">v2</span></code>.</p></li>
+<li><p><strong>v2</strong> (1D array-like or 2D numpy array of shape <cite>(n_vectors, n_dim)</cite>) – The second vector or vectors. The dimension of vectors must be
+consistent with <code class="docutils literal notranslate"><span class="pre">v1</span></code>. If <code class="docutils literal notranslate"><span class="pre">v2</span></code> is a 2D numpy array, the length must also
+be consistent with the length of <code class="docutils literal notranslate"><span class="pre">v1</span></code>.</p></li>
+<li><p><strong>directional</strong> (<em>bool</em>) – Whether to return the directional angle. Only support for vectors of
+two-dimension, otherwise it will be ignored. If <cite>True</cite>, the angle will
+be in the range <span class="math notranslate nohighlight">\((-\pi, \pi]\)</span>. If <cite>False</cite>, the angle will be in
+the range <span class="math notranslate nohighlight">\([0, \pi]\)</span>.</p></li>
+<li><p><strong>zero_vector</strong> (<em>None</em><em>, </em><em>'raise'</em><em> or </em><em>scalar</em>) – To specify what to do when <code class="docutils literal notranslate"><span class="pre">v1</span></code> or <code class="docutils literal notranslate"><span class="pre">v2</span></code> contains zero vectors, i.e.
+vectors with zero norms. If <cite>None</cite>, nothing will be done. Whatever
+warnings or errors show up during the calculation will be shown unless
+otherwise being suppressed. If ‘raise’, a <code class="docutils literal notranslate"><span class="pre">RunTimeError</span></code> will be
+raised. If a scalar, the value will be assigned as the angle. The last
+option is sometimes useful for later identifying zero vectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>angles</strong> – The angle(s) between the two vectors in radians.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float or 1D array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.geometry</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

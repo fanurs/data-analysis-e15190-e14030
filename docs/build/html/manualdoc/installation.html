@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Installation (detailed version) &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation (detailed version)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="toctree-wrapper compound">
+</div>
+<div class="section" id="id1">
+<h1>Installation (detailed version)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="git-clone">
+<h2>1. Git clone<a class="headerlink" href="#git-clone" title="Permalink to this headline">¶</a></h2>
+<p>Go to the directory where you want to install this repository and type</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@server:~$</span> git clone https://github.com/Fanurs/data-analysis-e15190-e14030.git
+</pre></div>
+</div>
+<p>You should now see a directory named <code class="docutils literal notranslate"><span class="pre">data-analysis-e15190-e14030</span></code>. We shall use <code class="docutils literal notranslate"><span class="pre">$PROJECT_DIR</span></code> to denote it from now on.</p>
+</div>
+<div class="section" id="install-conda">
+<h2>2. Install conda<a class="headerlink" href="#install-conda" title="Permalink to this headline">¶</a></h2>
+<p>This repository uses conda environment. Conda is a cross-platform package management system and environment management system. It was initially created to manage Python libraries, but now it can be used to install libraries (and compilers) for C++, Fortran, Java, Javascripts, etc. So this is an ideal tool especially when working on a remote server which you don’t have administrator privilege. In fact, we are going to install some complicated softwares like ROOT, which takes only one command. If you do not have conda installed yet, you may try one of the following two options:</p>
+<ul class="simple">
+<li><p>Download Anaconda or Miniconda (recommended because light-weighted) by yourself. See <a class="reference external" href="https://docs.anaconda.com/anaconda/install/linux/">https://docs.anaconda.com/anaconda/install/linux/</a> or <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">https://docs.conda.io/en/latest/miniconda.html</a> for more instructions, or check out the script at <code class="docutils literal notranslate"><span class="pre">$PROJECT_DIR/local/autoinstall-Miniconda-3.x.sh</span></code>. You should <em>not</em> install conda inside this repository. Install it to somewhere else with sufficient disk space (~3 GB) (I used <code class="docutils literal notranslate"><span class="pre">/projects/hira</span></code>). We are using Python 3.8 for this project.</p></li>
+<li><p>Use conda pre-installed on Fishtank/HPCC. You can view them by typing <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">avail</span></code> on the terminal. Please choose the latest version; at the time of writing, the latest version can be loaded with <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span> <span class="pre">anaconda/python3.7</span></code>. While this option is easier than to install conda by yourself, you run the risk that something may break when the server administrators decide to modify the installation in the future.</p></li>
+</ul>
+<p>In the rest of this writing, I will use <code class="docutils literal notranslate"><span class="pre">$CONDA_DIR</span></code> to denote the directory where you have installed conda.</p>
+</div>
+<div class="section" id="customize-condarc-optional">
+<h2>3. Customize <code class="docutils literal notranslate"><span class="pre">~/.condarc</span></code> (optional)<a class="headerlink" href="#customize-condarc-optional" title="Permalink to this headline">¶</a></h2>
+<p>This step is definitely not mandatory, but I find a few settings are very useful to have, so you might as well want to just add them in since the very beginning. First, create a file <code class="docutils literal notranslate"><span class="pre">~/.condarc</span></code> if you don’t already have it. Open it with your favorite text editor. Here, I provide just three settings that I believe should be the most useful ones for one to get started.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">env_prompt: &#39;($(basename) {default_env})) &#39;</span>
+<span class="go">channels:</span>
+<span class="go">   - defaults</span>
+<span class="go">   - conda-forge</span>
+<span class="go">pkgs_dirs:</span>
+<span class="go">   - /this/is/just/an/example/mnt/directorywithatleast10GB/.conda/pkgs</span>
+</pre></div>
+</div>
+<p>If this is your first time using conda, you probably don’t know what these mean yet. Just copy and paste what I have here to get started. The only thing you need to modify is, of course, the directory for <code class="docutils literal notranslate"><span class="pre">pkgs_dirs</span></code>. This is a directory where later conda will put all the downloaded <code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code>, <code class="docutils literal notranslate"><span class="pre">.zip</span></code> files and so on. Usually you don’t need to interact with this directory manually, so a not-so-popular place with sufficient storage (~10 GB) would be ideal.</p>
+<p>See <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html">https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html</a> for more <code class="docutils literal notranslate"><span class="pre">.condarc</span></code> options.</p>
+</div>
+<div class="section" id="activate-base-conda-environment">
+<h2>4. Activate base conda environment<a class="headerlink" href="#activate-base-conda-environment" title="Permalink to this headline">¶</a></h2>
+<p>This can be done by entering</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@server:~$</span> <span class="nb">source</span> <span class="s2">&quot;</span><span class="nv">$CONDA_DIR</span><span class="s2">/bin/activate&quot;</span>
+</pre></div>
+</div>
+<p>Type <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">python</span></code> to check if you are using the python inside this conda directory. Something like <code class="docutils literal notranslate"><span class="pre">$CONDA_DIR/bin/python</span></code> should show up. You may want to save this command to your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> or <code class="docutils literal notranslate"><span class="pre">.bash_profile</span></code> for convenience. See more at <a class="reference external" href="https://linuxize.com/post/bashrc-vs-bash-profile/">https://linuxize.com/post/bashrc-vs-bash-profile/</a>.</p>
+</div>
+<div class="section" id="building-conda-environment-for-this-repository">
+<h2>5. Building conda environment for this repository<a class="headerlink" href="#building-conda-environment-for-this-repository" title="Permalink to this headline">¶</a></h2>
+<p>You are ready to install this repository. This step is very time-consuming (~hours), especially if this is your first time building any conda environment. Starting from the second time, conda will start looking for some cached installations (<code class="docutils literal notranslate"><span class="pre">pkgs_dirs</span></code> in your <code class="docutils literal notranslate"><span class="pre">~/.condarc</span></code>). So make sure you have a very stable internet connection, or even better, use a [screen session](<a class="reference external" href="https://linuxize.com/post/how-to-use-linux-screen/">https://linuxize.com/post/how-to-use-linux-screen/</a>) (strongly encouraged).</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@server:~$</span> <span class="nb">cd</span> data-analysis-e15190-e14030
+<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@server:data-analysis-e15190-e14030$</span> python build.py
+</pre></div>
+</div>
+<p>This script will first create a local conda environment at <code class="docutils literal notranslate"><span class="pre">$PROJECT_DIR/env_e15190/</span></code>, and install all the packages specified in <code class="docutils literal notranslate"><span class="pre">$PROJECT_DIR/environment.yml</span></code>. It will also add all the local packages like <code class="docutils literal notranslate"><span class="pre">$PROJECT_DIR/e15190</span></code> as site packages, i.e. once you have loaded this conda environment, you can simply write <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">e15190</span></code> in your Python script without causing <code class="docutils literal notranslate"><span class="pre">ImportNotFoundError</span></code>.</p>
+</div>
+<div class="section" id="done">
+<h2>6. Done<a class="headerlink" href="#done" title="Permalink to this headline">¶</a></h2>
+<p>That’s everything. Next time, you just have to activate the conda environment by typing something like</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@server:data-analysis-e15190-e14030$</span> conda activate ./env_e15190
+<span class="gp gp-VirtualEnv">(env_e15190)</span> <span class="gp">user@server:data-analysis-e15190-e14030$</span>
+</pre></div>
+</div>
+<p>and start working.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation (detailed version)</a><ul>
+<li><a class="reference internal" href="#git-clone">1. Git clone</a></li>
+<li><a class="reference internal" href="#install-conda">2. Install conda</a></li>
+<li><a class="reference internal" href="#customize-condarc-optional">3. Customize <code class="docutils literal notranslate"><span class="pre">~/.condarc</span></code> (optional)</a></li>
+<li><a class="reference internal" href="#activate-base-conda-environment">4. Activate base conda environment</a></li>
+<li><a class="reference internal" href="#building-conda-environment-for-this-repository">5. Building conda environment for this repository</a></li>
+<li><a class="reference internal" href="#done">6. Done</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation (detailed version)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

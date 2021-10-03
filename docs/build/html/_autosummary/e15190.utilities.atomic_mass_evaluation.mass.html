@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.utilities.atomic_mass_evaluation.mass &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.atomic_mass_evaluation.mass</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="e15190-utilities-atomic-mass-evaluation-mass">
+<h1>e15190.utilities.atomic_mass_evaluation.mass<a class="headerlink" href="#e15190-utilities-atomic-mass-evaluation-mass" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.atomic_mass_evaluation.mass">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.atomic_mass_evaluation.</span></span><span class="sig-name descname"><span class="pre">mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unitless</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_found_okay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_found_warning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.atomic_mass_evaluation.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get mass of isotope.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>argv</strong> (<em>str</em><em> or </em><em>tuple</em><em> or </em><em>dict</em>) – If <cite>str</cite>, it should be an expression of isotope, e.g. ‘Ca40’; if
+<cite>tuple</cite>, it should be <code class="docutils literal notranslate"><span class="pre">(A,</span> <span class="pre">Z)</span></code>; if <cite>dict</cite>, it should have keys <code class="docutils literal notranslate"><span class="pre">A</span></code>
+and <code class="docutils literal notranslate"><span class="pre">Z</span></code>.</p></li>
+<li><p><strong>unitless</strong> (<em>bool</em><em>, </em><em>default True</em>) – If <cite>True</cite>, returns the mass floating point in <span class="math notranslate nohighlight">\(\mathrm{MeV}/c^2\)</span>;
+if <cite>False</cite>, returns the mass with units.</p></li>
+<li><p><strong>not_found_okay</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, returns zero mass when the isotope is not found; if <cite>False</cite>,
+raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when the isotope is not found.</p></li>
+<li><p><strong>not_found_warning</strong> (<em>bool</em><em>, </em><em>default True</em>) – If <cite>True</cite>, prints a warning when the isotope is not found; if <cite>False</cite>,
+nothing is printed. This parameter is ignored if <cite>not_found_okay</cite> is
+<cite>False</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mass</strong> – The mass of the isotope.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float or <code class="docutils literal notranslate"><span class="pre">astropy.units.Quantity</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.atomic_mass_evaluation.mass</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.neutron_wall.geometry.Wall &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.geometry.Wall</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="e15190-neutron-wall-geometry-wall">
+<h1>e15190.neutron_wall.geometry.Wall<a class="headerlink" href="#e15190-neutron-wall-geometry-wall" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.geometry.</span></span><span class="sig-name descname"><span class="pre">Wall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contain_pyrex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh_from_inventor_readings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.__init__" title="e15190.neutron_wall.geometry.Wall.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(AB[, contain_pyrex, ...])</p></td>
+<td><p>Construct a neutron wall, A or B.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.read_from_inventor_readings" title="e15190.neutron_wall.geometry.Wall.read_from_inventor_readings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_inventor_readings</span></code></a>(filepath)</p></td>
+<td><p>Reads in Inventor measurements and returns <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.save_pca_to_database" title="e15190.neutron_wall.geometry.Wall.save_pca_to_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_pca_to_database</span></code></a>(AB, filepath, bars)</p></td>
+<td><p>Save the principal components of the bars to database.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.save_vertices_to_database" title="e15190.neutron_wall.geometry.Wall.save_vertices_to_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_vertices_to_database</span></code></a>(AB, filepath, bars)</p></td>
+<td><p>Saves the vertices of the bars to database.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.AB" title="e15190.neutron_wall.geometry.Wall.AB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AB</span></code></a></p></td>
+<td><p>Neutron wall name in uppercase.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.ab" title="e15190.neutron_wall.geometry.Wall.ab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ab</span></code></a></p></td>
+<td><p>Neutron wall name in lowercase.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.database_dir" title="e15190.neutron_wall.geometry.Wall.database_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">database_dir</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PROJECT_DIR</span> <span class="pre">/</span> <span class="pre">'database/neutron_wall/geometry'</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_inventor_readings" title="e15190.neutron_wall.geometry.Wall.path_inventor_readings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_inventor_readings</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">self.database_dir</span> <span class="pre">/</span> <span class="pre">f'inventor_readings_NW{self.AB}.txt'</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_vertices" title="e15190.neutron_wall.geometry.Wall.path_vertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_vertices</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">self.database_dir</span> <span class="pre">/</span> <span class="pre">f'NW{self.AB}_vertices.dat'</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_pca" title="e15190.neutron_wall.geometry.Wall.path_pca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_pca</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">self.database_dir</span> <span class="pre">/</span> <span class="pre">f'NW{self.AB}_pca.dat'</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.database" title="e15190.neutron_wall.geometry.Wall.database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">database</span></code></a></p></td>
+<td><p>Dataframe of vertices from all bars</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.bars" title="e15190.neutron_wall.geometry.Wall.bars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bars</span></code></a></p></td>
+<td><p>A collection of <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contain_pyrex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh_from_inventor_readings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a neutron wall, A or B.</p>
+<p>A neutron wall is a collection of bars, <code class="docutils literal notranslate"><span class="pre">self.bars</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AB</strong> (<em>'A'</em><em> or </em><em>'B'</em>) – The wall to construct. Currently only ‘B’ is actively maintained and
+tested.</p></li>
+<li><p><strong>contain_pyrex</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether the bars contain pyrex.</p></li>
+<li><p><strong>refresh_from_inventor_readings</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, the geometry will be loaded from the inventor readings;
+if <cite>False</cite>, the geometry will be loaded from the existing database,
+stored in <code class="docutils literal notranslate"><span class="pre">*.dat</span></code> files.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.AB">
+<span class="sig-name descname"><span class="pre">AB</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.AB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Neutron wall name in uppercase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>‘A’ or ‘B’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.ab">
+<span class="sig-name descname"><span class="pre">ab</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.ab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Neutron wall name in lowercase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>‘a’ or ‘b’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.database_dir">
+<span class="sig-name descname"><span class="pre">database_dir</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.database_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">PROJECT_DIR</span> <span class="pre">/</span> <span class="pre">'database/neutron_wall/geometry'</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.path_inventor_readings">
+<span class="sig-name descname"><span class="pre">path_inventor_readings</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.path_inventor_readings" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">self.database_dir</span> <span class="pre">/</span> <span class="pre">f'inventor_readings_NW{self.AB}.txt'</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.path_vertices">
+<span class="sig-name descname"><span class="pre">path_vertices</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.path_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">self.database_dir</span> <span class="pre">/</span> <span class="pre">f'NW{self.AB}_vertices.dat'</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.path_pca">
+<span class="sig-name descname"><span class="pre">path_pca</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.path_pca" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">self.database_dir</span> <span class="pre">/</span> <span class="pre">f'NW{self.AB}_pca.dat'</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.database">
+<span class="sig-name descname"><span class="pre">database</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dataframe of vertices from all bars</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.bars">
+<span class="sig-name descname"><span class="pre">bars</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.bars" title="Permalink to this definition">¶</a></dt>
+<dd><p>A collection of <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p>
+<p>Keys are the bar numbers. The bottommost is bar 0, the topmost is bar
+24. In the experiment, bar 0 was not used because it was shadowed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.read_from_inventor_readings">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">read_from_inventor_readings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.read_from_inventor_readings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in Inventor measurements and returns <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – The path to the file containing the Inventor measurements, e.g.
+<a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_inventor_readings" title="e15190.neutron_wall.geometry.Wall.path_inventor_readings"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.path_inventor_readings</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>bars</strong> – A list of <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects, sorted from bottom to top.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.save_vertices_to_database">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">save_vertices_to_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bars</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.save_vertices_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the vertices of the bars to database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AB</strong> (<em>'A'</em><em> or </em><em>'B'</em>) – Neutron wall A or B.</p></li>
+<li><p><strong>filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – Path to the database file, e.g. <a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_vertices" title="e15190.neutron_wall.geometry.Wall.path_vertices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.path_vertices</span></code></a>.</p></li>
+<li><p><strong>bars</strong> (list of <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects) – Sorted from bottom to top. The bottommost bar will be numbered 0;
+the topmost bar will be numbered 24.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.save_pca_to_database">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">save_pca_to_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bars</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.save_pca_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the principal components of the bars to database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AB</strong> (<em>str</em>) – Neutron wall A or B.</p></li>
+<li><p><strong>filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – Path to the database file, e.g. <a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_pca" title="e15190.neutron_wall.geometry.Wall.path_pca"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.path_pca</span></code></a>.</p></li>
+<li><p><strong>bars</strong> (<em>list of Bar objects</em>) – Sorted from bottom to top. The bottommost bar will be numbered 0;
+the topmost bar will be numbered 24.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.geometry.Wall</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.utilities.geometry.CoordinateConversion &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.geometry.CoordinateConversion</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="e15190-utilities-geometry-coordinateconversion">
+<h1>e15190.utilities.geometry.CoordinateConversion<a class="headerlink" href="#e15190-utilities-geometry-coordinateconversion" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.CoordinateConversion">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">CoordinateConversion</span></span><a class="headerlink" href="#e15190.utilities.geometry.CoordinateConversion" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.CoordinateConversion.__init__" title="e15190.utilities.geometry.CoordinateConversion.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.CoordinateConversion.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.CoordinateConversion.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.CoordinateConversion._spherical_to_cartesian">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_spherical_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.CoordinateConversion._spherical_to_cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert spherical coordinates to Cartesian coordinates.</p>
+<p>This a private method that contains the actual mathematics of the
+conversion. It is meant to be used by other wrapper functions that
+accommondate various input formats and output formats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>radius</strong> (<em>scalar</em><em> or </em><em>1D numpy array</em>) – The distance from the origin. Accepts any real numbers. Negative
+radius is simply interpreted as the opposite direction, e.g. (x, y,
+z) = (1, 2, 3) would become (-1, -2, -3).</p></li>
+<li><p><strong>polar</strong> (<em>scalar</em><em> or </em><em>1D numpy array</em>) – The polar angle of the point in radians. Commonly denoted as theta
+in physics. Accepts any real numbers, but expect identical result
+for any theta with the same <span class="math notranslate nohighlight">\(\mathrm{mod}(\theta, 2\pi)\)</span> value.</p></li>
+<li><p><strong>azimuth</strong> (<em>scalar</em><em> or </em><em>1D numpy array</em>) – The azimuthal angle of the point in radians. Commonly denoted as phi
+in physics. Accepts any real numbers, but expect identical result
+for any phi with the same <span class="math notranslate nohighlight">\(\mathrm{mod}(\phi, 2\pi)\)</span> value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>x</strong> (<em>scalar or 1D numpy array</em>) – The x-coordinate of the point in Cartesian coordinates.</p></li>
+<li><p><strong>y</strong> (<em>scalar or 1D numpy array</em>) – The y-coordinate of the point in Cartesian coordinates.</p></li>
+<li><p><strong>z</strong> (<em>scalar or 1D numpy array</em>) – The z-coordinate of the point in Cartesian coordinates.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.CoordinateConversion._cartesian_to_spherical">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_cartesian_to_spherical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.CoordinateConversion._cartesian_to_spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Cartesian coordinates to spherical coordinates.</p>
+<p>This a private method that contains the actual mathematics of the
+conversion. It is meant to be used by other wrapper functions that
+accommondate various input formats and output formats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>scalar</em><em> or </em><em>1D numpy array</em>) – The x-coordinate of the point in Cartesian coordinates.</p></li>
+<li><p><strong>y</strong> (<em>scalar</em><em> or </em><em>1D numpy array</em>) – The y-coordinate of the point in Cartesian coordinates.</p></li>
+<li><p><strong>z</strong> (<em>scalar 1D numpy array</em>) – The z-coordinate of the point in Cartesian coordinates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>radius</strong> (<em>scalar or 1D numpy array</em>) – The radius of the point in spherical coordinates. Has a range of
+<span class="math notranslate nohighlight">\([0, \infty)\)</span>.</p></li>
+<li><p><strong>polar</strong> (<em>scalar or 1D numpy array</em>) – The polar angle of the point in radians. Commonly denoted as theta
+in physics. Has a range of <span class="math notranslate nohighlight">\([0, \pi)\)</span>.</p></li>
+<li><p><strong>azimuth</strong> (<em>scalar or 1D numpy array</em>) – The azimuthal angle of the point in radians. Commonly denoted as phi
+in physics. Has a range of <span class="math notranslate nohighlight">\([-\pi, \pi)\)</span>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.geometry.CoordinateConversion</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>
