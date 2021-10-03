@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath(str(PROJECT_DIR / 'e15190')))
 # -- Project information -----------------------------------------------------
 
 project = 'Data Analysis for E15190-E14030'
-copyright = '2021, Fanurs'
+copyright = '2018-2021, MSU/FRIB HiRA group'
 author = 'Fanurs, et al.'
 
 # The full version, including alpha/beta/rc tags
@@ -31,9 +31,13 @@ author = 'Fanurs, et al.'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    # 'sphinx.ext.viewcode',
 ]
+autosummary_generate = True
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,9 +53,25 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'classic'
+html_theme = 'sphinxdoc'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# -- Customization -----------------------------------------------------------
+
+# To include docstrings from public methods and special methods
+# autoclass_content = 'both'
+autodoc_default_options = {
+    'members': True,
+    # 'undoc-members': True,
+    'private-members': True,
+}
+
+# To preserve the order of the methods
+autodoc_member_order = 'bysource'
+
+# To disable "Show source" links to the *.rst files
+html_show_sourcelink = False
