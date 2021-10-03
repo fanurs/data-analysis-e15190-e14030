@@ -1,7 +1,0 @@
-e15190.utilities.atomic\_mass\_evaluation module
-================================================
-
-.. automodule:: e15190.utilities.atomic_mass_evaluation
-   :members:
-   :undoc-members:
-   :show-inheritance:

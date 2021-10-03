@@ -1,7 +1,0 @@
-e15190.utilities.tables module
-==============================
-
-.. automodule:: e15190.utilities.tables
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,7 +1,0 @@
-e15190.utilities.local\_manager module
-======================================
-
-.. automodule:: e15190.utilities.local_manager
-   :members:
-   :undoc-members:
-   :show-inheritance:

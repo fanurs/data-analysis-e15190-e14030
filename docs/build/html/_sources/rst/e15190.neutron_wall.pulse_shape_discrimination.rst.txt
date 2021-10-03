@@ -1,7 +1,0 @@
-e15190.neutron\_wall.pulse\_shape\_discrimination module
-========================================================
-
-.. automodule:: e15190.neutron_wall.pulse_shape_discrimination
-   :members:
-   :undoc-members:
-   :show-inheritance:

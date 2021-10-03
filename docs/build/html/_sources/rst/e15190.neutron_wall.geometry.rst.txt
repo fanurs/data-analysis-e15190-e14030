@@ -1,7 +1,0 @@
-e15190.neutron\_wall.geometry module
-====================================
-
-.. automodule:: e15190.neutron_wall.geometry
-   :members:
-   :undoc-members:
-   :show-inheritance:

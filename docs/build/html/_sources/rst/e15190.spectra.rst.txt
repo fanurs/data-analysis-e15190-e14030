@@ -1,7 +1,0 @@
-e15190.spectra module
-=====================
-
-.. automodule:: e15190.spectra
-   :members:
-   :undoc-members:
-   :show-inheritance:

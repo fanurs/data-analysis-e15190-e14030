@@ -1,7 +1,0 @@
-e15190.utilities.kinematics module
-==================================
-
-.. automodule:: e15190.utilities.kinematics
-   :members:
-   :undoc-members:
-   :show-inheritance:

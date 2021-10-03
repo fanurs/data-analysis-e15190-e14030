@@ -1,7 +1,0 @@
-e15190.utilities.root6 module
-=============================
-
-.. automodule:: e15190.utilities.root6
-   :members:
-   :undoc-members:
-   :show-inheritance:

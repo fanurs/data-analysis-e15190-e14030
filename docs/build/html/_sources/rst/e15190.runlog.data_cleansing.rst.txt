@@ -1,7 +1,0 @@
-e15190.runlog.data\_cleansing module
-====================================
-
-.. automodule:: e15190.runlog.data_cleansing
-   :members:
-   :undoc-members:
-   :show-inheritance:
