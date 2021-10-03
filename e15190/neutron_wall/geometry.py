@@ -21,36 +21,61 @@ class Bar:
     def __init__(self, vertices, contain_pyrex=True, check_pca_orthogonal=True):
         """Construct a Neutron Wall bar, either from Wall A or Wall B.
 
-        Parameters:
-            vertices : ndarray of shape (8, 3)
-                Exactly eight (x, y, z) lab coordinates measured in centimeter
-                (cm). As long as all eight vertices are distincit, i.e. can
-                properly define a cuboid, the order of vertices does not matter
-                because PCA will be applied to automatically identify the 1st,
-                2nd and 3rd principal axes of the bar. These vertices are always
-                assumed to have included the Pyrex thickness
-            contain_pyrex : bool, default True
-                The input `vertices` are always assumed to have included the
-                Pyrex thickness. If this function is supplied with the raw
-                readings from the Inventor files or database, then no extra care
-                is needed as those measurements always include the Pyrex
-                thickness. If `True`, the Pyrex will not be removed; if `False`,
-                the Pyrex will be removed, leaving only the scintillation
-                material.
-            check_pca_orthogonal : boo, default True
-                If `True`, an Exception is raised whenever the PCA matrix is not
-                orthogonal; if `False`, no check would be done.
+        Currently only Wall B is actively maintained and tested.
 
-                PCA is used to extract the principal axes of the bar.
-                Mathematically, we would expect the PCA matrix to be orthogonal,
-                but in actual implementation, the matrix is often not exactly
-                orthogonal due to floating-point errors. Hence, we may want to
-                check if the PCA matric we compute is "nearly orthogonal".
+        This class only deals with individual bar. The neutron wall object is
+        implemented in :py:class:`Wall`.
+
+        Parameters
+        ----------
+        vertices : ndarray of shape (8, 3)        
+            Exactly eight (x, y, z) lab coordinates measured in centimeter (cm).
+            As long as all eight vertices are distincit, i.e. can properly
+            define a cuboid, the order of vertices does not matter because PCA
+            will be applied to automatically identify the 1st, 2nd and 3rd
+            principal axes of the bar. These vertices are always assumed to have
+            included the Pyrex thickness
+        contain_pyrex : bool, default True
+            The input `vertices` are always assumed to have included the Pyrex
+            thickness. If this function is supplied with the raw readings from
+            the Inventor files or database, then no extra care is needed as
+            those measurements always include the Pyrex thickness. If `True`,
+            the Pyrex will not be removed; if `False`, the Pyrex will be
+            removed, leaving only the scintillation material.
+        check_pca_orthogonal : bool, default True
+            If `True`, an Exception is raised whenever the PCA matrix is not
+            orthogonal; if `False`, no check would be done.
+
+            PCA is used to extract the principal axes of the bar.
+            Mathematically, we would expect the PCA matrix to be orthogonal, but
+            in actual implementation, the matrix is often not exactly orthogonal
+            due to floating-point errors. Hence, we may want to check if the PCA
+            matric we compute is "nearly orthogonal".
         """
         self.contain_pyrex = True # always starts with True
+        """bool : Status of Pyrex thickness"""
+
         self.pyrex_thickness = 2.54 / 8 # cm
+        """float : The thickness of the Pyrex (unit cm)
+        
+        Should be 0.125 inches or 0.3175 cm.
+        """
+
         self.vertices = np.array(vertices)
+        """dict : The vertices of the bar in lab frame (unit cm)
+
+        A length-8 dictionary of the form ``{(i, j, k): (x, y, z)}``
+        """
+
+        self.loc_vertices = None
+        """dict : The vertices of the bar in local frame (unit cm)
+
+        A length-8 dictionary of the form ``{(i, j, k): (x', y', z')}``
+        """
+
         self.pca = PCA(n_components=3, svd_solver='full')
+        """``sklearn.decomposition.PCA`` : The PCA of the bar vertices in lab frame"""
+
         self.pca.fit(self.vertices)
 
         # 1st principal defines local-x, should be opposite to lab-x
@@ -98,6 +123,21 @@ class Bar:
             pass
     
     def dimension(self, index=None):
+        """Returns the dimension(s) of the bar.
+        
+        Parameters
+        ----------
+        index : int, default None
+            The index of the direction. If `None`, all three dimensions will be
+            returned.  Indices 1, 2 and 3 correspond to the 1st, 2nd and 3rd
+            principal axes. For NW bar, this would be length, height, and
+            (longitudinal) thickness.
+        
+        Returns
+        -------
+        dimension : float or 3-tuple of floats
+            The dimension(s) of the bar.
+        """
         if index is None:
             return tuple(self.dimension(index=i) for i in range(3))
 
@@ -115,17 +155,39 @@ class Bar:
     
     @property
     def length(self):
+        """Length of the bar.
+
+        Should be around 76 inches without Pyrex.
+        """
         return self.dimension(index=0)
     
     @property
     def height(self):
+        """Height of the bar.
+
+        Should be around 3.0 inches without Pyrex.
+        """
         return self.dimension(index=1)
 
     @property
     def thickness(self):
+        """Longitudinal thickness of the bar.
+
+        Should be around 2.5 inches without Pyrex.
+        """
         return self.dimension(index=2)
     
     def modify_pyrex(self, mode):
+        """To add or remove Pyrex thickness.
+
+        Parameters
+        ----------
+        mode : 'add' or 'remove'
+            If 'add', the Pyrex thickness will be added to the bar; if 'remove',
+            the Pyrex thickness will be removed from the bar.
+
+            An Exception will be raised if bar is already in the desired state.
+        """
         if mode == 'remove':
             scalar = -1
         elif mode == 'add':
@@ -145,17 +207,37 @@ class Bar:
         self.contain_pyrex = (not self.contain_pyrex)
 
     def remove_pyrex(self):
+        """Remove Pyrex thickness from the bar."""
         if not self.contain_pyrex:
             raise Exception('Pyrex has already been removed')
         self.modify_pyrex('remove')
     
     def add_pyrex(self):
+        """Add Pyrex thickness to the bar."""
         if self.contain_pyrex:
             raise Exception('Pyrex has already been added')
         self.modify_pyrex('add')
 
     @staticmethod
     def _deco_numpy_ndim(func):
+        """Decorator for preserving numpy array's dimensionality.
+
+        Some functions only accepts 2D arrays, i.e. rows of 1D arrays. To apply
+        this kind of functions on 1D arrays, we may use this decoratord. The
+        decorated functions can take in either a 2D array or a 1D array. If the
+        input is a 2D array, the output will be a 2D array; if the input is a 1D
+        array, the output will be kept as a 1D array.
+
+        Parameters
+        ----------
+        func : function
+            The function to decorate.
+
+        Returns
+        -------
+        func : function
+            The decorated function.
+        """
         def inner(x, *args, **kwargs):
             x = np.array(x)
             ndim = x.ndim
@@ -166,26 +248,64 @@ class Bar:
         return inner
 
     def to_local_coordinates(self, lab_coordinates):
+        """Converts coordinates from lab frame to local frame.
+
+        Always assume Cartesian coordinates in both frames. The lab frame is
+        centered at the beam-target point, with its z-axis pointing along the
+        beam direction and y-axis pointing upward. The local frame is centered
+        at the bar's center, with its x-axis, y-axis, and z-axis pointing along
+        the bar's 1st, 2nd, and 3rd principal axes.
+
+        Parameters
+        ----------
+        lab_coordinates : (N, 3) or (3, ) array_like
+            The lab coordinates :math:`(x, y, z)` to be converted.
+
+        Returns
+        -------
+        local_coordinates : (N, 3) or (3, ) array_like
+            The local coordinates :math:`(x', y', z')`.
+        """
         return self._deco_numpy_ndim(self.pca.transform)(lab_coordinates)
 
     def to_lab_coordinates(self, local_coordinates):
+        """Converts coordinates from local frame to lab frame.
+
+        Always assume Cartesian coordinates in both frames. The lab frame is
+        centered at the beam-target point, with its z-axis pointing along the
+        beam direction and y-axis pointing upward. The local frame is centered
+        at the bar's center, with its x-axis, y-axis, and z-axis pointing along
+        the bar's 1st, 2nd, and 3rd principal axes.
+
+        Parameters
+        ----------
+        local_coordinates : (N, 3) or (3, ) array_like
+            The local coordinates :math:`(x', y', z')` to be converted.
+
+        Returns
+        -------
+        lab_coordinates : (N, 3) or (3, ) array_like
+            The lab coordinates :math:`(x, y, z)`.
+        """
         return self._deco_numpy_ndim(self.pca.inverse_transform)(local_coordinates)
 
     def is_inside(self, coordinates, frame='local', tol=5e-4):
         """Check if the given coordinates are inside the bar.
 
         Parameters
-            coordinates : 3-tuple or list of 3-tuples
-                The coordinates to be checked. Only support Cartesian
-                coordinates.
-            frame : 'local' or 'lab', default 'local'
-                The frame of the coordinates.
-            tol : float, default 5e-4
-                The tolerance of the boundary check in the unit of centimeters.
+        ----------
+        coordinates : 3-tuple or list of 3-tuples
+            The coordinates to be checked. Only support Cartesian
+            coordinates.
+        frame : 'local' or 'lab', default 'local'
+            The frame of the coordinates.
+        tol : float, default 5e-4
+            The tolerance of the boundary check, in the unit of centimeter.
         
-        Returns:
-            bool or an array of bool
-                `True` if the coordinates are inside the bar, otherwise `False`.
+        Returns
+        -------
+        inside : bool or an array of bool
+            `True` if the coordinates are inside the bar, otherwise `False`.
         """
         # convert into 2d numpy array of shape (n_points, 3)
         coordinates = np.array(coordinates, dtype=float)
@@ -223,30 +343,30 @@ class Bar:
         the bar. Experimentally, we can only determine the local x coordinate
         for each hit.
 
-        Parameters:
-            local_x : float or list of floats
-                The local x coordinate(s) of the point(s) in centimeters.
-            return_frame : 'lab' or 'local', default 'lab'
-                The frame of the returned point(s) in Cartesian coordinates.
-            local_ynorm : float or 2-tuple of floats, default [-0.5, 0.5]
-                The range of randomization in the local y coordinate. If float,
-                no randomization is performed. Center is at `0.0`; the top
-                surface is `+0.5`; the bottom surface is `-0.5`. Values outside
-                this range will still be calculated, but those points will be
-                outside the bar.
-            local_znorm : float or 2-tuple of floats, default [-0.5, 0.5]
-                The range of randomization in the local z coordinate. If float,
-                no randomization is performed. Center is at `0.0`; the front
-                surface is `+0.5`; the back surface is `-0.5`. Values outside
-                this range will still be calculated, but those points will be
-                outside the bar.
-            random_seed : int, default None
-                The random seed to be used. If None, randomization is
-                non-reproducible.
+        Parameters
+        ----------
+        local_x : float or list of floats
+            The local x coordinate(s) of the point(s) in centimeters.
+        return_frame : 'lab' or 'local', default 'lab'
+            The frame of the returned point(s) in Cartesian coordinates.
+        local_ynorm : float or 2-tuple of floats, default [-0.5, 0.5]
+            The range of randomization in the local y coordinate. If float, no
+            randomization is performed. Center is at `0.0`; the top surface is
+            `+0.5`; the bottom surface is `-0.5`. Values outside this range will
+            still be calculated, but those points will be outside the bar.
+        local_znorm : float or 2-tuple of floats, default [-0.5, 0.5]
+            The range of randomization in the local z coordinate. If float, no
+            randomization is performed. Center is at `0.0`; the front surface is
+            `+0.5`; the back surface is `-0.5`. Values outside this range will
+            still be calculated, but those points will be outside the bar.
+        random_seed : int, default None
+            The random seed to be used. If None, randomization is
+            non-reproducible.
         
-        Returns:
-            3-tuple or list of 3-tuples
-                The randomized point(s) in Cartesian coordinates.
+        Returns
+        -------
+        randomized_coordinates : 3-tuple or list of 3-tuples
+            The randomized point(s) in Cartesian coordinates.
         """
         rng = np.random.default_rng(random_seed)
         n_pts = len(local_x)
@@ -268,6 +388,13 @@ class Bar:
             return self.to_lab_coordinates(local_result)
 
     def construct_plotly_mesh3d(self):
+        """Update bar's attribute ``self.triangle_mesh``.
+
+        Construct a
+        :py:class:`TriangleMesh <e15190.utilities.ray_triangle_intersection.TriangleMesh>`
+        object, i.e. a triangular mesh for the geometry of the bar, and save as
+        ``self.triangle_mesh``.
+        """
         key_index = {key: index for index, key in enumerate(self.vertices)}
         tri_indices = []
         for xyz, sign in itr.product(range(3), [-1, +1]):
@@ -308,32 +435,36 @@ class Bar:
         angle later on.
 
         Parameters
-            n_rays : int, default 10
-                Number of rays to be emitted. Not all of them are guaranteed to
-                interact.
-            random_seed : int, default None
-                Random seed to be used for random number generation. If None, a
-                time-based seed will be used, i.e. non-reproducible.
-            polar_range : 2-tuple of floats or None, default None
-                The polar range in radians. If None, the algorithm will use the
-                minimal range determined by the bar vertices. This allows more
-                efficient simulation.
-            azimuth_range : 2-tuple of floats or None, default None
-                The azimuth range in radians. If None, the algorithm will use
-                the minimal range determined by the bar vertices. This allows
-                more efficient simulation.
-            save_result : bool, default True
-                Whether to save the result to this object.
+        ----------
+        n_rays : int, default 10
+            Number of rays to be emitted. Not all of them are guaranteed to
+            interact.
+        random_seed : int, default None
+            Random seed to be used for random number generation. If None, a
+            time-based seed will be used, i.e. non-reproducible.
+        polar_range : 2-tuple of floats or None, default None
+            The polar range in radians. If None, the algorithm will use the
+            minimal range determined by the bar vertices. This allows more
+            efficient simulation.
+        azimuth_range : 2-tuple of floats or None, default None
+            The azimuth range in radians. If None, the algorithm will use the
+            minimal range determined by the bar vertices. This allows more
+            efficient simulation.
+        save_result : bool, default True
+            Whether to save the result to this object as ``self.simulation_result``.
         
         Returns
+        -------
+        simulation_result : dict
             A dictionary with the following keys and array shapes:
-                * origin : shape (3, )
-                * azimuth_range : shape (2, )
-                * polar_range : shape (2, )
-                * intersections : shape (12, n_rays, 3)
+                * ``origin`` : shape (3, )
+                * ``azimuth_range`` : shape (2, )
+                * ``polar_range`` : shape (2, )
+                * ``intersections`` : shape (12, ``n_rays``, 3)
             The first component of intersections has a size of 12, which comes
             from the 12 triangles that made up the neutron wall bar (we are
-            using triangular mesh). Other functions, `self.get_hit_positions()`
+            using triangular mesh). Other functions like
+            :py:func:`get_hit_positions <get_hit_positions>`
             can be used to further simplify the intersection points.
         """
         if 'triangle_mesh' not in self.__dict__:
@@ -394,38 +525,40 @@ class Bar:
     ):
         """Return the hit positions of the simulation.
 
-        This function should be called after `self.simulation_result` is filled,
-        e.g. by `self.simple_simulation()`.
+        This function should be called after ``self.simulation_result`` is
+        updated, e.g. by calling
+        :py:func:`simple_simulation <simple_simulation>`.
 
         Parameters
-            hit_t: scalar or callable or 'uniform', default 'uniform'
-                If scalar, its value should be within [0, 1], with 0 being at
-                the incident point at the surface, 1 being at the exit point,
-                and the rest being somewhere in between. If callable, it should
-                take in an integer `n_rays`, and return an array of size
-                `n_rays` that collect the `hit_t` values in the range of [0, 1].
-                If 'uniform', the `hit_t` values will be uniformly distributed
-                over [0, 1].
-            frame: 'local' or 'lab', default 'local'
-                The coordinate frame of the returned hit positions.
-            coordinate: 'cartesian' or 'spherical', default 'cartesian'
-                The coordinate system of the returned hit positions.
-            simulation_result: dict, default None
-                The simulation result to be used. If None, the function uses
-                `self.simulation_result`.
-            random_seed: int, default None
-                The random seed used to generate the `hit_t` values. If None, a
-                time-based seed will be used, i.e. non-reproducible.
-            tol: float, default 1e-9
-                The tolerance used to filter out hit points that are too close
-                to the origin, i.e. there were no intersections. The default
-                simulation setting is such that if there were no intersections,
-                the hit position will be the origin. Here, we simply put in a
-                non-zero tolerance to account for any floating point errors.
+        ----------
+        hit_t : scalar or callable or 'uniform', default 'uniform'
+            If scalar, its value should be within [0, 1], with 0 being at the
+            incident point at the surface, 1 being at the exit point, and the
+            rest being somewhere in between. If callable, it should take in an
+            integer ``n_rays``, and return an array of size ``n_rays`` that
+            collect the ``hit_t`` values in the range of [0, 1].  If 'uniform',
+            the ``hit_t`` values will be uniformly distributed over [0, 1].
+        frame : 'local' or 'lab', default 'local'
+            The coordinate frame of the returned hit positions.
+        coordinate : 'cartesian' or 'spherical', default 'cartesian'
+            The coordinate system of the returned hit positions.
+        simulation_result : dict, default None
+            The simulation result to be used. If None, the function uses
+            ``self.simulation_result``.
+        random_seed : int, default None
+            The random seed used to generate the ``hit_t`` values. If None, a
+            time-based seed will be used, i.e. non-reproducible.
+        tol : float, default 1e-9
+            The tolerance used to filter out hit points that are too close to
+            the origin, i.e. there were no intersections. The default simulation
+            setting is such that if there were no intersections, the hit
+            position will be the origin. Here, we simply put in a non-zero
+            tolerance to account for any floating point errors.
         
         Returns
-            hit_positions: ndarray, shape (n_rays, 3)
-                The hit positions of the simulation.
+        -------
+        hit_positions : ndarray, shape (n_rays, 3)
+            The hit positions of the simulation.
         """
         if simulation_result is None:
             sim_res = self.simulation_result # shorthand
@@ -477,6 +610,28 @@ class Bar:
         return_error=False,
         verbose=False,
     ):
+        """Calculate the total solid angle of the bar by Monte Carlo simulation.
+
+        Parameters
+        ----------
+        n_rays : int, default 1_000_000
+            The number of rays to simulate.
+        random_seed : int, default None
+            The random seed of the Monte Carlo simulation. If None, a time-based
+            seed will be used, i.e. non-reproducible.
+        return_error : bool, default False
+            Whether to return the error (uncertainty) of the calculation.
+        verbose : bool, default False
+            Whether to print out the progress of the calculation.
+        
+        Returns
+        -------
+        total_solid_angle : float
+            The total solid angle of the bar in steradians.
+        error : float, optional
+            The uncertainty of the calculation. Only returned if
+            ``return_error`` is True.
+        """
         # get the solid angle of minimal region
         sim_result = self.simple_simulation(save_result=False, random_seed=random_seed)
         region_solid_angle = np.ptp(sim_result['azimuth_range'])
@@ -509,12 +664,25 @@ class Bar:
     
     @functools.lru_cache(maxsize=5)
     def get_theta_phi_alphashape(self, n_loc_x=250, alpha=10.0):
+        """Calculate the alphashape of the bar in (theta, phi) coordinates.
+
+        Parameters
+        ----------
+        n_loc_x : int, default 250
+            The number of local x-coordinates to use.
+        alpha : float, default 10.0
+            The alphashape parameter. The larger the value, the greater the
+            curvature of the alphashape can be. When alpha is zero, the
+            alphashape reduces into a convex hull; when alpha is too large, the
+            alphashape could be "overfitted" to data points.
+        
+        Returns
+        -------
+        alpha_shape_xy : ndarray, shape (n, 2)
+            Vertices that define the alphashape in (theta, phi) coordinates.
+        """
         loc_x = np.linspace(-0.5 * self.length, 0.5 * self.length, n_loc_x)
         coords = np.vstack([
-            # self.randomize_from_local_x(loc_x, local_ynorm=0.0, local_znorm=0.5),
-            # self.randomize_from_local_x(loc_x, local_ynorm=0.0, local_znorm=-0.5),
-            # self.randomize_from_local_x(loc_x, local_ynorm=0.5, local_znorm=0.0),
-            # self.randomize_from_local_x(loc_x, local_ynorm=-0.5, local_znorm=0.0),
             self.randomize_from_local_x(loc_x, local_ynorm=0.5, local_znorm=0.5),
             self.randomize_from_local_x(loc_x, local_ynorm=-0.5, local_znorm=0.5),
             self.randomize_from_local_x(loc_x, local_ynorm=0.5, local_znorm=-0.5),
@@ -526,6 +694,24 @@ class Bar:
     
     @staticmethod
     def _split_theta_phi_alphashape_to_upper_and_lower(ashape):
+        """Split the alphashape into upper and lower parts.
+    
+        After splitting, both parts should form a function of theta. This is a
+        function written mainly to help calculating the azimuthal width
+        :math:`\delta\phi` as a function of theta, which then is used to give
+        the geometry efficiency.
+
+        Parameters
+        ----------
+        ashape : ndarray, shape (n, 2)
+            Vertices that define the alphashape in (theta, phi) coordinates.
+        
+        Returns 
+        -------
+        split_ashape : dict
+            The upper and lower parts of the alphashape. The keys are 'upper'
+            and 'lower'.
+        """
         i_min = np.argmin(ashape[:, 0])
         i_max = np.argmax(ashape[:, 0])
         i_min, i_max = min(i_min, i_max), max(i_min, i_max)
@@ -539,6 +725,21 @@ class Bar:
         }
     
     def get_total_solid_angle_alphashape(self, return_error=False):
+        """Calculate the total solid angle of the bar using the alphashape.
+
+        Parameters
+        ----------
+        return_error : bool, default False
+            Whether to return the error (uncertainty) of the calculation.
+        
+        Returns
+        -------
+        total_solid_angle : float
+            The total solid angle of the bar in steradians.
+        error : float, optional
+            The uncertainty of the calculation. Only returned if
+            ``return_error`` is True.
+        """
         ashape = self.get_theta_phi_alphashape()
         delta_phi = self.get_geometry_efficiency_alphashape()
 
@@ -560,14 +761,20 @@ class Bar:
     ):
         """Return the total solid angle of the bar.
 
+        A wrapper function for the different methods of calculating the total
+        solid angle.
+
         Parameters
-            method : 'alphashape' or 'monte_carlo'
-                The method to use to calculate the total solid angle.
-            kwargs : dict()
-                Keyword arguments to pass to the method.
+        ----------
+        method : 'alphashape' or 'monte_carlo'
+            The method to use to calculate the total solid angle.
+        kwargs : dict()
+            Keyword arguments to pass to the method.
         
         Returns
-            Total solid angle in steradians (sr).
+        -------
+        total_solid_angle : float
+            The total solid angle of the bar in steradians.
         """
         method = method.lower()
         method = ''.join(c for c in method if c.isalpha())
@@ -579,6 +786,16 @@ class Bar:
             raise ValueError(f'Unknown method: {method}')
 
     def get_geometry_efficiency_alphashape(self):
+        """Calculate the geometry efficiency of the bar using the alphashape.
+
+        The geometry efficiency is defined as the effective azimuthal coverage ratio, i.e.         :math:`\delta\phi/(2\pi)`, as a function of theta.
+
+        Returns
+        -------
+        delta_phi : callable
+            A function that takes theta as an argument and returns the geometry
+            efficiency.
+        """
         ashape = self.get_theta_phi_alphashape()
         ashape = self._split_theta_phi_alphashape_to_upper_and_lower(ashape)
 
@@ -601,6 +818,29 @@ class Bar:
         cartesian_coordinates=('x', 'y'),
         cmap='jet',
     ):
+        """Draw the hit pattern of the bar in 2D.
+
+        Parameters
+        ----------
+        hits : ndarray, shape (n, 3)
+            The hits to draw.
+        ax : matplotlib.axes.Axes
+            The axes to draw the hits on.
+        frame : 'lab' or 'local'
+            The frame of reference to use for the hits.
+        coordinate : 'spherical' or 'cartesian'
+            The coordinate system to use for the hits.
+        cartesian_coordinates : tuple of str
+            The Cartesian coordinates to use for the hits. If ``coordinate`` is
+            not 'cartesian', this argument has no effect.
+        cmap : str or matplotlib.colors.Colormap
+            The colormap to use for plotting the hits in 2D histogram.
+        
+        Returns
+        -------
+        hist : 2D ndarray
+            The histogram counts of the hits.
+        """
         if isinstance(cmap, str):
             cmap = copy.copy(plt.get_cmap(cmap))
         else:
@@ -643,15 +883,51 @@ class Bar:
         return hist
 
 class Wall:
-    database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
 
     def __init__(self, AB, contain_pyrex=True, refresh_from_inventor_readings=False):
-        # initialize class parameters
+        """Construct a neutron wall, A or B.
+
+        A neutron wall is a collection of bars, ``self.bars``.
+
+        Parameters
+        ----------
+        AB : 'A' or 'B'
+            The wall to construct. Currently only 'B' is actively maintained and
+            tested.
+        contain_pyrex : bool, default True
+            Whether the bars contain pyrex.
+        refresh_from_inventor_readings : bool, default False
+            If `True`, the geometry will be loaded from the inventor readings;
+            if `False`, the geometry will be loaded from the existing database,
+            stored in ``*.dat`` files.
+        """
         self.AB = AB.upper()
+        """'A' or 'B' : Neutron wall name in uppercase."""
+
         self.ab = self.AB.lower()
+        """'a' or 'b' : Neutron wall name in lowercase."""
+
+        self.database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
+        """``pathlib.Path`` : ``PROJECT_DIR / 'database/neutron_wall/geometry'``"""
+
         self.path_inventor_readings = self.database_dir / f'inventor_readings_NW{self.AB}.txt'
+        """``pathlib.Path`` : ``self.database_dir / f'inventor_readings_NW{self.AB}.txt'``"""
+
         self.path_vertices = self.database_dir / f'NW{self.AB}_vertices.dat'
+        """``pathlib.Path`` : ``self.database_dir / f'NW{self.AB}_vertices.dat'``"""
+
         self.path_pca = self.database_dir / f'NW{self.AB}_pca.dat'
+        """``pathlib.Path`` : ``self.database_dir / f'NW{self.AB}_pca.dat'``"""
+
+        self.database = None
+        """``pandas.DataFrame`` : Dataframe of vertices from all bars"""
+
+        self.bars = None
+        """dict : A collection of :py:class:`Bar` objects.
+        
+        Keys are the bar numbers. The bottommost is bar 0, the topmost is bar
+        24. In the experiment, bar 0 was not used because it was shadowed.
+        """
 
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
@@ -674,6 +950,19 @@ class Wall:
     
     @staticmethod
     def read_from_inventor_readings(filepath):
+        """Reads in Inventor measurements and returns :py:class:`Bar` objects.
+
+        Parameters
+        ----------
+        filepath : str or pathlib.Path
+            The path to the file containing the Inventor measurements, e.g.
+            :py:attr:`self.path_inventor_readings <path_inventor_readings>`.
+        
+        Returns
+        -------
+        bars : list
+            A list of :py:class:`Bar` objects, sorted from bottom to top.
+        """
         with open(filepath, 'r') as file:
             lines = file.readlines()
         
@@ -714,15 +1003,18 @@ class Wall:
     
     @staticmethod
     def save_vertices_to_database(AB, filepath, bars):
-        """
+        """Saves the vertices of the bars to database.
+
         Parameters
-            AB : 'A' or 'B'
-                Neutron wall A or B.
-            filepath : str or pathlib.Path
-                Path to the database file.
-            bars : list of Bar objects
-                Sorted from bottom to top. The bottommost bar is numbered 0; the
-                topmost bar is numbered 24.
+        ----------
+        AB : 'A' or 'B'
+            Neutron wall A or B.
+        filepath : str or pathlib.Path
+            Path to the database file, e.g. :py:attr:`self.path_vertices
+            <path_vertices>`.
+        bars : list of :py:class:`Bar` objects
+            Sorted from bottom to top. The bottommost bar will be numbered 0;
+            the topmost bar will be numbered 24.
         """
         # collect all vertices from all bars and save into a dataframe
         df = []
@@ -752,15 +1044,17 @@ class Wall:
 
     @staticmethod
     def save_pca_to_database(AB, filepath, bars):
-        """
+        """Save the principal components of the bars to database.
+
         Parameters
-            AB : str
-                Neutron wall A or B.
-            filepath : str or pathlib.Path
-                Path to the database file.
-            bars : list of Bar objects
-                Sorted from bottom to top. The bottommost bar is numbered 0; the
-                topmost bar is numbered 24.
+        ----------
+        AB : str
+            Neutron wall A or B.
+        filepath : str or pathlib.Path
+            Path to the database file, e.g. :py:attr:`self.path_pca <path_pca>`.
+        bars : list of Bar objects
+            Sorted from bottom to top. The bottommost bar will be numbered 0;
+            the topmost bar will be numbered 24.
         """
         # collect all PCA components and means from all bars and save into a dataframe
         df = []

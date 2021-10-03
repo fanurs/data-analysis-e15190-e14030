@@ -1,9 +1,10 @@
 """This module interacts with the atomic mass data.
-By the time of writing this module, the latest available data is
-Atomic Mass Evaluation in 2016 (AME2016). When future evaluation
-is released, manual modification needs to be made by updating
-`DataManager.ame_url`, and possibly `DataManager.read_in_data`,
-if the format of the table has been changed.
+
+By the time of writing this module, the latest available data is Atomic Mass
+Evaluation in 2016 (AME2016). When future evaluation is released, manual
+modification needs to be made by updating :py:attr:`DataManager.ame_url`, and
+possibly :py:func:`DataManager.read_in_data`, if the format of the table has
+been changed.
 """
 import collections
 import pathlib
@@ -26,20 +27,27 @@ class DataManager:
     simple query tasks on the table.
     """
     def __init__(self, force_download=False, auto_read_in=True):
-        """This creates a `DataManager` object.
-        A local copy has to be present before any query task can be made.
-        Hence this initializer downloads the data if local copy is not
-        present yet, or the user has decided to turn on the `force_download`
-        option.
-        Parameters:
-            force_download : bool *optional*
-                If `True`, a new local copy will always be downloaded from
-                the website (see class variable `ame_url`). If `False`, the
-                program only downloads the data when no local copy is found.
-                Default is `False`.
+        """
+
+        A local copy has to be present before any query task can be made. Hence
+        this initializer downloads the data if local copy is not present yet, or
+        the user has decided to turn on the ``force_download`` option.
+
+        Parameters
+        ----------
+        bool : force_download, default False
+            If `True`, a new local copy will always be downloaded from the
+            :py:attr:`ame_url`. If `False`, the program only downloads the data
+            when no local copy is found.
+        bool : auto_read_in, default True
+            If `True`, the data will be read in. If `False`, user has to
+            manually call :py:func:`DataManager.read_in_data`.
         """
         self.ame_url = 'https://www-nds.iaea.org/amdc/ame2016/mass16.txt'
-        self.ame_loc_path = pathlib.Path(f'{PROJECT_DIR}/database/utilities/mass16.txt')
+        """str : ``https://www-nds.iaea.org/amdc/ame2016/mass16.txt``"""
+
+        self.ame_loc_path = PROJECT_DIR / 'database/utilities/mass16.txt'
+        """``pathlib.Path`` : ``PROJECT_DIR / 'database/utilities/mass16.txt'``"""
 
         # download from web if local copy is not found
         file_exists = self.ame_loc_path.is_file()
@@ -48,28 +56,38 @@ class DataManager:
             self.download()
 
         # other class attributes to be updated
-        self.df = None # a `pandas.DataFrame for storing AME data
+        self.df = None
+        """``pandas.DataFrame`` : Dataframe for storing AME data"""
+
         self.units = None # units for every column in self.df
+        """dict : Specifying units for every column in :py:attr:`self.df`"""
+
         self.Z_to_symb = None
+        """dict : Dictionary mapping atomic number to chemical symbol"""
+
         self.symb_to_Z = None
+        """dict : Dictionary mapping chemical symbol to atomic number"""
 
         if auto_read_in:
             self.read_in_data()
 
     def download(self, filepath=None, url=None):
         """Download AME data from the web.
-        Parameters:
-            filepath : str *optional*
-                The local filepath that store the downloaded data. Default is
-                `None`, which will then be set into class variable `AME_LOCAL_PATH`.
-            url : str *optional*
-                The url to the AME data. Default is `None`, which will then be
-                set into class variable `ame_url`.
+        
+        Parameters
+        ----------
+        filepath : str or pathlib.Path, default None
+            The local filepath that store the downloaded data. Default is
+            `None`, which will then be set into :py:attr:`self.ame_loc_path`.
+        url : str or pathlib.Path, default None
+            The url to the AME data. Default is `None`, which will then be set
+            into :py:attr:`self.ame_url`.
         """
         if filepath is None: filepath = self.ame_loc_path
         if url is None: url = self.ame_url
 
-        # to pretend as a web browser; for some reason, DataManager.ame_url cannot be accessed otherwise
+        # to pretend as a web browser
+        # for some reason, DataManager.ame_url cannot be accessed otherwise
         headers = {'User-Agent': 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'}
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as webpage:
@@ -83,19 +101,22 @@ class DataManager:
 
     def read_in_data(self, filepath=None):
         """Updates class attribute `self.df` into formatted AME data.
-        This function only reads from a local copy of AME data. Make sure the data
-        has been downloaded from the web. Not all columns from AME data will be kept.
-        The columns that will be returned are `Z`, `A`, `symb`, `mass_excess` and
-        `mass_excess_err`. Other columns including isospin, binding energy (and its
-        error) and mass in a.m.u (and its error) are discarded as they can all be
-        calculated directly from mass excess.
-        No unit conversion has been made. The AME provides mass excess in $\mathrm{keV/c^2}$.
-        Nonetheless, units have been stored as class attribute `self.units` as python
-        dictionary using `astropy.units`.
+
+        This function only reads from a local copy of AME data. Make sure the
+        data has been downloaded from the web. Not all columns from AME data
+        will be kept. The columns that will be returned are `Z`, `A`, `symb`,
+        `mass_excess` and `mass_excess_err`. Other columns including isospin,
+        binding energy (and its error) and mass in a.m.u (and its error) are
+        discarded as they can all be calculated directly from mass excess.
+
+        No unit conversion has been made. The AME provides mass excess in
+        :math:`\mathrm{keV}/c^2`.  Nonetheless, units have been stored as
+        :py:attr:`self.units`.
+
         Parameters:
-            filepath : str *optional*
-                The local filepath that store the downloaded data. Default is
-                `None`, which will then be set into class variable `AME_LOCAL_PATH`.
+        filepath : str or pathlib.Path, default None
+            The local filepath that store the downloaded data. Default is
+            `None`, which will then be set into :py:attr:`self.ame_loc_path`.
         """
         if filepath is None: filepath = self.ame_loc_path
 
@@ -162,24 +183,29 @@ class DataManager:
 
     @staticmethod
     def auto_column_splitter(content):
-        """This function automatically separates the columns of `.txt` table.
+        """This function automatically separates the columns of an ASCII table.
     
         This function can separate the columns of `.txt` tables that use space
         characters as their delimiters.
-        Parameters:
-            content : list of str
-                A list of strings that correspond to the content of a `.txt` table.
-                Each element in the list, which is a string, corresponds to each row
-                of the table. These strings can be either ended with the newline
-                character or not. The row of column names or headers should not
-                be included.
-        Returns:
-            splitted_content : a two-dimensional list of str
-        Examples:
+
+        Parameters
         ----------
-        >>> from isotope_mass import DataManager
-        >>> dm = DataManager()
-        >>> content = ["Amy  168.5cm", "Bob  181.9cm", "Cici 157.3cm"]
+        content : list of str
+            A list of strings that correspond to the content of the ASCII table.
+            Each element in the list, which is a string, corresponds to each row
+            of the table. These strings can be either ended with the newline
+            character or not. The row of column names or headers should not be
+            included.
+
+        Returns
+        -------
+        splitted_content : 2D list of str
+
+        Examples
+        --------
+        >>> from e15190.utilities import atomic_mass_evaluation as ame
+        >>> dm = ame.DataManager()
+        >>> content = ['Amy  168.5cm', 'Bob  181.9cm', 'Cici 157.3cm']
         >>> dm.auto_column_splitter(content)
         [['Amy  ', '168.5cm'], ['Bob  ', '181.9cm'], ['Cici ', '157.3cm']]
         """
@@ -210,15 +236,23 @@ class DataManager:
         
         return splitted_content
 
-# attributes to be initialized in __init__.py
 _data_manager = DataManager()
 
 def get_A_Z(notation, simple_tuple=False):
     """Converts mass-number annotated isotope expression into A and Z.
-    Examples:
+
+    Parameters
     ----------
-    >>> import isotope_mass as isom
-    >>> isom.get_A_Z('ca40')
+    notation : str
+        A string that represents an isotope, e.g. 'Ca40' and 'U235'.
+    simple_tuple : bool, default False
+        If `True`, returns a simple tuple ``(A, Z)``; if `False`, returns a named
+        tuple.
+
+    Examples
+    --------
+    >>> from e15190.utilities import atomic_mass_evaluation as ame
+    >>> ame.get_A_Z('ca40')
     (40, 20)
     """
     global _data_manager
@@ -254,6 +288,28 @@ def get_A_Z(notation, simple_tuple=False):
 
 def mass(argv, unitless=True, not_found_okay=False, not_found_warning=True):
     """Get mass of isotope.
+
+    Parameters
+    ----------
+    argv : str or tuple or dict
+        If `str`, it should be an expression of isotope, e.g. 'Ca40'; if
+        `tuple`, it should be ``(A, Z)``; if `dict`, it should have keys ``A``
+        and ``Z``.
+    unitless : bool, default True
+        If `True`, returns the mass floating point in :math:`\mathrm{MeV}/c^2`;
+        if `False`, returns the mass with units.
+    not_found_okay : bool, default False
+        If `True`, returns zero mass when the isotope is not found; if `False`,
+        raises a ``ValueError`` when the isotope is not found.
+    not_found_warning : bool, default True
+        If `True`, prints a warning when the isotope is not found; if `False`,
+        nothing is printed. This parameter is ignored if `not_found_okay` is
+        `False`.
+
+    Returns
+    -------
+    mass : float or ``astropy.units.Quantity``
+        The mass of the isotope.
     """
     global _data_manager
     df = _data_manager.df

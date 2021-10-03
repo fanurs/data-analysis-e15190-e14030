@@ -12,20 +12,20 @@ def to_fwf(
 
     Parameters
     ----------
-    df : pandas.Dataframe object
+    df : pandas.Dataframe
         The dataframe to be written to file.
-    path : str or pathlib.Path object
+    path : str or pathlib.Path
         The path to be written into fixed-width file.
     drop_header : bool, default False
-        If `True`, table header will be dropped; if `False`, `df.columns` will
-        be used as header.
+        If `True`, table header will be dropped; if `False`, dataframe's columns
+        will be used as header.
     drop_index : bool, default True
         If `True`, the index will not be included; if `False`, the index will be
         written to file as one of the columns.
     comment : str or None
         If None, no comment will be written to file. Otherwise, the comment will
         be written to the beginning of the file, in lines before the table.
-    tabulate_kwargs
+    **tabulate_kwargs
         Keyword arguments for the tabulate function. See more at
         https://pypi.org/project/tabulate/
     """

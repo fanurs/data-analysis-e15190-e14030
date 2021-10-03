@@ -1,27 +1,38 @@
-"""This is a module that manages all local files, i.e. files that are not being committed to GitHub.
+"""This is a module that manages all local files.
 
-Local files are not being committed to GitHub because they may contain contents that are user-dependent.
-Here is a list of non-exhaustive examples:
+Local files are not being committed to GitHub because they may contain contents
+that are user-dependent or confidential. Here is a list of non-exhaustive examples:
+
 - Local paths or directories
 - Local libraries or environments
-- Sensitive information like passwords that should never be committed to git
-- Source codes or data that are export control or intellectual properties of other parties
-- Experimental scripts that are often modified
+- Sensitive information like passwords that should *never* be committed to git
+- Source codes or data that are export controlled or intellectual properties of other parties
+- Experimental scripts that are frequently modified and not ready for release
 
-While users can, of course, maintain as many local files as they want, some local files are essential to use the modules.
-These local files often have their specific formats, which this module is written to check them as well.
+This module is written to checked and manage a few of these local files that are
+crucial to running repository.
 """
 import json
 import pathlib
 
-from .. import PROJECT_DIR
+from e15190 import PROJECT_DIR
 
 class LocalPathsManager:
-    def __init__(self, check=True):
-        self.LOCAL_PATHS_JSON_PATH = pathlib.Path(PROJECT_DIR, 'database', 'local_paths.json')
+    def __init__(self, check=False):
+        self.LOCAL_PATHS_JSON_PATH = PROJECT_DIR / 'database/local_paths.json'
+        """``pathlib.Path`` : ``PROJECT_DIR / 'database/local_paths.json``"""
+
         self.required_keys = {
             'daniele_root_files_dir': str,
         }
+        """dict : Essential keys and their types.
+
+        Keys that must be present in the :py:attr:`LOCAL_PATHS_JSON_PATH` file.
+        ::
+            {
+                'daniele_root_files_dir': str,
+            }
+        """
 
         if not self.LOCAL_PATHS_JSON_PATH.is_file():
             self.create_template()

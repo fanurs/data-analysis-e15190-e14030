@@ -1,4 +1,10 @@
-"""A submodule of functions and libraries that deal with primarily 2D and 3D geometry.
+"""A submodule that deals with 2D and 3D geometry.
+
+Surprisingly, by the time of this writing, there does not seem to be any
+libraries that can do several common geometrical manipulations well, in the
+sense that they are pythonic, vectorized, and match the convention in physics.
+
+Hence, this submodule is written.
 """
 import numpy as np
 
@@ -11,27 +17,29 @@ class CoordinateConversion:
         conversion. It is meant to be used by other wrapper functions that
         accommondate various input formats and output formats.
 
-        Parameters:
-            radius : scalar or 1D numpy array
-                The distance from the origin. Accepts any real numbers. Negative
-                radius is simply interpreted as the opposite direction, e.g.
-                (x, y, z) = (1, 2, 3) would become (-1, -2, -3).
-            polar : scalar or 1D numpy array
-                The polar angle of the point in radians. Commonly denoted as
-                theta in physics. Accepts any real numbers, but expect identical
-                result for any theta with the same mod(theta, 2 * pi) value.
-            azimuth : scalar or 1D numpy array
-                The azimuthal angle of the point in radians. Commonly denoted as
-                phi in physics. Accepts any real numbers, but expect identical
-                result for any phi with the same mod(phi, 2 * pi) value.
+        Parameters
+        ----------
+        radius : scalar or 1D numpy array
+            The distance from the origin. Accepts any real numbers. Negative
+            radius is simply interpreted as the opposite direction, e.g. (x, y,
+            z) = (1, 2, 3) would become (-1, -2, -3).
+        polar : scalar or 1D numpy array
+            The polar angle of the point in radians. Commonly denoted as theta
+            in physics. Accepts any real numbers, but expect identical result
+            for any theta with the same :math:`\mathrm{mod}(\\theta, 2\pi)` value.
+        azimuth : scalar or 1D numpy array
+            The azimuthal angle of the point in radians. Commonly denoted as phi
+            in physics. Accepts any real numbers, but expect identical result
+            for any phi with the same :math:`\mathrm{mod}(\phi, 2\pi)` value.
 
-        Returns:
-            x : scalar or 1D numpy array
-                The x-coordinate of the point in Cartesian coordinates.
-            y : scalar or 1D numpy array
-                The y-coordinate of the point in Cartesian coordinates.
-            z : scalar or 1D numpy array
-                The z-coordinate of the point in Cartesian coordinates.    
+        Returns
+        -------
+        x : scalar or 1D numpy array
+            The x-coordinate of the point in Cartesian coordinates.
+        y : scalar or 1D numpy array
+            The y-coordinate of the point in Cartesian coordinates.
+        z : scalar or 1D numpy array
+            The z-coordinate of the point in Cartesian coordinates.    
         """
         x = radius * np.sin(polar) * np.cos(azimuth)
         y = radius * np.sin(polar) * np.sin(azimuth)
@@ -46,24 +54,26 @@ class CoordinateConversion:
         conversion. It is meant to be used by other wrapper functions that
         accommondate various input formats and output formats.
 
-        Parameters:
-            x : scalar or 1D numpy array
-                The x-coordinate of the point in Cartesian coordinates.
-            y : scalar or 1D numpy array
-                The y-coordinate of the point in Cartesian coordinates.
-            z : scalar 1D numpy array
-                The z-coordinate of the point in Cartesian coordinates.
+        Parameters
+        ----------
+        x : scalar or 1D numpy array
+            The x-coordinate of the point in Cartesian coordinates.
+        y : scalar or 1D numpy array
+            The y-coordinate of the point in Cartesian coordinates.
+        z : scalar 1D numpy array
+            The z-coordinate of the point in Cartesian coordinates.
 
-        Returns:
-            radius : scalar or 1D numpy array
-                The radius of the point in spherical coordinates. Has a range of
-                [0, inf).
-            polar : scalar or 1D numpy array
-                The polar angle of the point in radians. Commonly denoted as
-                theta in physics. Has a range of [0, pi].
-            azimuth : scalar or 1D numpy array
-                The azimuthal angle of the point in radians. Commonly denoted as
-                phi in physics. Has a range of (-pi, pi].
+        Returns
+        -------
+        radius : scalar or 1D numpy array
+            The radius of the point in spherical coordinates. Has a range of
+            :math:`[0, \infty)`.
+        polar : scalar or 1D numpy array
+            The polar angle of the point in radians. Commonly denoted as theta
+            in physics. Has a range of :math:`[0, \pi)`.
+        azimuth : scalar or 1D numpy array
+            The azimuthal angle of the point in radians. Commonly denoted as phi
+            in physics. Has a range of :math:`[-\pi, \pi)`.
         """
         # A trick to avoid "-0.00", which will lead to very different results
         # when fed into np.arctan2() in some edge cases:
@@ -83,11 +93,15 @@ class CoordinateConversion:
 def deco_to_2darray(func):
     """A decorator that turn functions into accepting row vectors.
 
-    If a function first map (x1, x2, ..., xk) to (y1, y2, ..., yk), then this
-    decorator turns this function into mapping from X to Y, where both X and Y
-    have the shape of `(n_vectors, n_features)`, or more explicitly, `(k,
-    n_features)`, where `n_features` is simply the dimension of the vectors x1,
-    x2, ..., xk and y1, y2, ..., yk.
+    The argument `func` is assumed to be a function that does the following mapping:
+
+    .. math::
+        f: \\mathbb{R}^k \\rightarrow \\mathbb{R}^k \ , 
+        (x_1, x_2, ..., x_k) \mapsto (y_1, y_2, ..., y_k)
+
+    This decorator will turn the function into accepting 2D array of shape
+    `(n_vectors, k)`. The result is equivalent to looping over the rows of the
+    array and calling the undecorated function.
     """
     def inner(vecs):
         return np.vstack(func(*vecs.T)).T
@@ -96,29 +110,31 @@ def deco_to_2darray(func):
 def spherical_to_cartesian(*args):
     """Convert spherical coordinates to Cartesian coordinates.
 
-    Parameters:
-        args : tuple of scalars, tuple of 1D numpy arrays or a 2D numpy array
-            If the input is a tuple of scalars or a tuple of 1D numpy arrays,
-            they will be interpreted as radius, polar angle and azimuthal angle,
-            respectively. If the input is a 2D numpy array, it will be
-            interpreted as an array of row vectors (radius, polar, azimuthal),
-            i.e. it must have a shape of `(n_vectors, 3)`.
-            
-            Radius: The distance from the origin. Accepts any real numbers.
-            Negative radius is simply interpreted as the opposite direction,
-            e.g. `(x, y, z) = (1, 2, 3)` would become `(-1, -2, -3)`.
-            
-            Polar: The polar angle of the point in radians. Commonly denoted as
-            theta in physics. Accepts any real numbers, but expect identical
-            result for any theta with the same `mod(theta, 2 * pi)` value.
-            
-            Azimuth: The azimuthal angle of the point in radians. Commonly
-            denoted as phi in physics. Accepts any real numbers, but expect
-            identical result for any phi with the same `mod(phi, 2 * pi)` value.
+    Parameters
+    ----------
+    args : 3-tuple of scalars, 3-tuple of 1D numpy arrays or a 2D numpy array
+        If the input is a 3-tuple of scalars or a 3-tuple of 1D numpy arrays,
+        they will be interpreted as :math:`(r, \\theta, \phi)`.
 
-    Returns:
-        Cartesian coordinates of the points. The format will be the same as the
-        input.
+        If the input is a 2D numpy array of shape `(n_vectors, 3)`, it will be
+        interpreted as an array of row vectors :math:`(r, \\theta, \phi)`.
+               
+        :math:`r` is the distance from the origin. Accepts any real numbers.
+        Negative radius is simply interpreted as the opposite direction, e.g.
+        :math:`(1, 2, 3)` becomes :math:`(-1, -2, -3)`.
+        
+        :math:`\\theta` is the polar angle of the point in radians. Accepts any
+        real numbers, but expect identical result for any theta with the same
+        :math:`\mathrm{mod}(\\theta, 2\pi)` value.
+        
+        :math:`\phi` is the azimuthal angle of the point in radians. Accepts
+        any real numbers, but expect identical result for any phi with the same
+        :math:`\mathrm{mod}(\phi, 2\pi)` value.
+
+    Returns
+    -------
+    cartesian_coordinates : same as ``args``
+        Cartesian coordinates of the inputs.
     """
     func = CoordinateConversion._spherical_to_cartesian
     if len(args) > 1:
@@ -129,21 +145,21 @@ def spherical_to_cartesian(*args):
 def cartesian_to_spherical(*args):
     """Convert Cartesian cordinates to spherical coordinates.
 
-    Parameters:
-        args : tuple of scalars, tuple of 1D numpy arrays or a 2D numpy array
-            If the input is a tuple of scalars or a tuple of 1D numpy arrays,
-            they will be interpreted as x, y and z coordinates, respectively. If
-            the input is a 2D numpy array, it will be interpreted as an array of
-            row vectors `(x, y, z)`, i.e. it must have a shape of `(n_vectors,
-            3)`.
-
-    Returns:
-        Spherical coordinates of the points; angles will be given in radians.
-        The format will be the same as the input. Below are the possible output ranges for each coordinate:
-
-        Radius: [0, inf)
-        Polar : [0, pi]
-        Azimuth: (-pi, pi]
+    Parameters
+    ----------
+    args : tuple of scalars, tuple of 1D numpy arrays or a 2D numpy array
+        If the input is a tuple of scalars or a tuple of 1D numpy arrays,
+        they will be interpreted as :math:`(x, y, z)`.
+        
+        If the input is a 2D numpy array of shape `(n_vectors, 3)`, it will be
+        interpreted as an array of row vectors :math:`(x, y, z)`.
+        
+    Returns
+    -------
+    spherical_coordinates : same as ``args``
+        The returned ranges are :math:`r \in [0, \infty)` for radius,
+        :math:`\\theta \in [0, \pi]` for polar angle and :math:`\phi \in (-\pi,
+        \pi]` for azimuthal angle.
     """
     func = CoordinateConversion._cartesian_to_spherical
     if len(args) > 1:
@@ -154,31 +170,33 @@ def cartesian_to_spherical(*args):
 def angle_between(v1, v2, directional=False, zero_vector=None):
     """Compute the angle between vectors.
 
-    Parameters:
-        v1 : 1D array-like or 2D numpy array of shape `(n_vectors, n_dim)`
-            The first vector or vectors. The dimension of vectors must be
-            consistent with `v2`. If `v1` is a 2D numpy array, the length must
-            also be consistent with the length of `v2`.
-        v2 : 1D array-like or 2D numpy array of shape `(n_vectors, n_dim)`
-            The second vector or vectors. The dimension of vectors must be
-            consistent with `v1`. If `v2` is a 2D numpy array, the length must
-            also be consistent with the length of `v1`.
-        directional : bool
-            Whether to return the directional angle. Only support for vectors of
-            two-dimension, otherwise it will be ignored. If `True`, the angle
-            will be in the range `(-pi, pi]`. If `False`, the angle will be in
-            the range `[0, pi]`.
-        zero_vector : None, `'raise'` or scalar
-            To specify what to do when `v1` or `v2` contains zero vectors, i.e.
-            vectors with zero norms. If `None`, nothing will be done. Whatever
-            warnings or errors show up during the calculation will be shown
-            unless otherwise being suppressed. If `'raise'`, a `RunTimeError`
-            will be raised. If a scalar, the value will be assigned as the
-            angle. The last option is sometimes useful for later identifying
-            zero vectors.
+    Parameters
+    ----------
+    v1 : 1D array-like or 2D numpy array of shape `(n_vectors, n_dim)`
+        The first vector or vectors. The dimension of vectors must be consistent
+        with ``v2``. If ``v1`` is a 2D numpy array, the length must also be
+        consistent with the length of ``v2``.
+    v2 : 1D array-like or 2D numpy array of shape `(n_vectors, n_dim)`
+        The second vector or vectors. The dimension of vectors must be
+        consistent with ``v1``. If ``v2`` is a 2D numpy array, the length must also
+        be consistent with the length of ``v1``.
+    directional : bool
+        Whether to return the directional angle. Only support for vectors of
+        two-dimension, otherwise it will be ignored. If `True`, the angle will
+        be in the range :math:`(-\pi, \pi]`. If `False`, the angle will be in
+        the range :math:`[0, \pi]`.
+    zero_vector : None, 'raise' or scalar
+        To specify what to do when ``v1`` or ``v2`` contains zero vectors, i.e.
+        vectors with zero norms. If `None`, nothing will be done. Whatever
+        warnings or errors show up during the calculation will be shown unless
+        otherwise being suppressed. If 'raise', a ``RunTimeError`` will be
+        raised. If a scalar, the value will be assigned as the angle. The last
+        option is sometimes useful for later identifying zero vectors.
 
-    Returns:
-        The angle between the two vectors in radians.
+    Returns
+    -------
+    angles : float or 1D array-like
+        The angle(s) between the two vectors in radians.
     """
     v1, v2 = np.array(v1), np.array(v2)
 
