@@ -1,12 +1,13 @@
 # Data Analysis: E15190-E14030
-**Useful external links**
+**Useful links**
+- [Documentation](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html)
 - [Experiment homepage](https://groups.nscl.msu.edu/hira/15190-14030/index.htm)
 - [Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list)
 - [Overview of experimental runs](https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html)
 
 **Background**
 
-This repository primarily focuses on neutron wall analysis. Instead of starting from the raw event files (binary files from the DAQ), we treat the "unpacked" ROOT files generated using [Daniele's analysis framework](https://github.com/nscl-hira/E15190-Unified-Analysis-Framework) (actually we use Kuan's version, which is not on GitHub) as inputs, and from there we write our own analysis codes. In the case where calibration parameters are not good enough or some minor mistakes were found in the framework, we always try *not* to modify the framework. Instead, we would like to "freeze" the framework, and correct for any imperfection or errors in the output ROOT files within this repository. Unless there is something that framework does not preserve in the ROOT files, e.g. missing events, then only we will go back and try to debug the framework.
+This repository primarily focuses on neutron wall analysis. Instead of starting from the raw event files (binary files from the DAQ), we treat the "unpacked" ROOT files generated using [Daniele's analysis framework](https://github.com/nscl-hira/E15190-Unified-Analysis-Framework) (currently using branch `zhu`) as inputs, and from there we write our own analysis codes. In the case where calibration parameters are not good enough or some minor mistakes were found in the framework, we always try *not* to modify the framework. Instead, we would like to "freeze" the framework, and correct for any imperfection or errors in the output ROOT files within this repository. Unless there is something that framework does not preserve in the ROOT files, e.g. missing events, then only we will go back and try to debug the framework (currently WMU is working on this).
 
 This decision was made after considering the fact that all major authors of the framework had left the group. It is simply safer and more efficient to keep it as "legacy code", and build on top of the ROOT files it generated. Fortunately, most of the calibrations have already been done. While some are found to be off later on, most are already good enough for a simple "first-order" analysis.
 
@@ -16,7 +17,7 @@ This decision was made after considering the fact that all major authors of the 
 1. [Unit tests](#3-unit-tests)
 
 ## 1. Installation
-If you are not familiar with conda, more detailed instructions can be found at [`doc/installation.md`](doc/installation.md).
+If you are not familiar with conda, more detailed instructions can be found at [Installation (detailed version)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/manualdoc/installation.html).
 1. Git clone the repository:
 ```console
 git clone https://github.com/Fanurs/data-analysis-e15190-e14030.git
@@ -49,7 +50,7 @@ This repository is written mainly in Python 3.8 and C++20 (`-std=c++2a` in GCC 9
 - [**`build.py`**](build.py): Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.
 
 ## 3. Unit tests
-We are using the [`pytest`](https://docs.pytest.org/) framework. To test everything, simply activate the conda environment, go do the project directory and type:
+We are using the [`pytest`](https://docs.pytest.org/) framework. To test everything, simply activate the conda environment, go to the project directory and type:
 ```console
 pytest
 ```
