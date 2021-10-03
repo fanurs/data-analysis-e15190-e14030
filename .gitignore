@@ -17,6 +17,8 @@ wmu_mysql_database.h5
 
 # documentation builds
 docs/build/doctrees/*
+docs/build/html/_sources/*
+docs/source/_autosummary/*
 
 # local files
 .vscode/
