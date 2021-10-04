@@ -469,7 +469,6 @@ class Bar:
         """
         if 'triangle_mesh' not in self.__dict__:
             self.construct_plotly_mesh3d()
-        rng = np.random.default_rng(random_seed)
         origin = np.array([0.0] * 3)
 
         # identify the minimal region in space to emit rays
@@ -499,6 +498,7 @@ class Bar:
         rays = rti.emit_isotropic_rays(
             n_rays,
             polar_range=polar_range, azimuth_range=azimuth_range,
+            random_seed=random_seed,
         )
         triangles = self.triangle_mesh.get_triangles()
         intersections = rti.moller_trumbore(origin, rays, triangles)

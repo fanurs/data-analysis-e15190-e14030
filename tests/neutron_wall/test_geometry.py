@@ -12,29 +12,33 @@ import pandas as pd
 from e15190.neutron_wall import geometry as nwgeom
 from e15190.utilities import geometry as geom
 
+@pytest.fixture()
+def nw_wall():
+    return {AB: nwgeom.Wall(AB) for AB in 'AB'}
+
 class TestWall:
-    def test_read_from_inventor_readings(self):
-        wall = nwgeom.Wall
+    def test_read_from_inventor_readings(self, nw_wall):
         for AB in ('A', 'B'):
-            bars = wall.read_from_inventor_readings(wall.database_dir / f'inventor_readings_NW{AB}.txt')
+            wall = nw_wall[AB]
+            bars = wall.read_from_inventor_readings(wall.path_inventor_readings)
             assert len(bars) == 25
             for bar in bars:
                 assert isinstance(bar, nwgeom.Bar)
 
-    def test_save_vertices_to_database(self):
-        wall = nwgeom.Wall
+    def test_save_vertices_to_database(self, nw_wall):
         for AB in ('A', 'B'):
-            bars = wall.read_from_inventor_readings(wall.database_dir / f'inventor_readings_NW{AB}.txt')
+            wall = nw_wall[AB]
+            bars = wall.read_from_inventor_readings(wall.path_inventor_readings)
             tmp_path = tempfile.NamedTemporaryFile(suffix='.dat').name
             wall.save_vertices_to_database('B', tmp_path, bars)
             df = pd.read_csv(tmp_path, delim_whitespace=True, comment='#')
             assert tuple(df.columns) == ('nwb-bar', 'dir_x', 'dir_y', 'dir_z', 'x', 'y', 'z')
             assert len(df) == 25 * 8 # n_bars * n_vertices
     
-    def test_save_pca_to_database(self):
-        wall = nwgeom.Wall
+    def test_save_pca_to_database(self, nw_wall):
         for AB in ('A', 'B'):
-            bars = wall.read_from_inventor_readings(wall.database_dir / f'inventor_readings_NW{AB}.txt')
+            wall = nw_wall[AB]
+            bars = wall.read_from_inventor_readings(wall.path_inventor_readings)
             tmp_path = tempfile.NamedTemporaryFile(suffix='.dat').name
             wall.save_pca_to_database('B', tmp_path, bars)
             df = pd.read_csv(tmp_path, delim_whitespace=True, comment='#')
