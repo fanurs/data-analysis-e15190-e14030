@@ -149,11 +149,12 @@ class Wall:
         # construct bar objects from vertices and sort
         bar_objects = []
         bar_objects = [Bar(vertices) for vertices in bars_vertices]
-        bar_objects = sorted(bar_objects, key=lambda bar: bar.pca.mean_[0]) # sort from left to right
+        bar_objects = sorted(bar_objects, key=lambda bar: bar.pca.mean_[0], reverse=True)
 
         # collect all vertices from all bars and save into a dataframe
         df= []
         for bar_num, bar_obj in enumerate(bar_objects):
+            bar_num = bar_num + 1
             for sign, vertex in bar_obj.vertices.items():
                 df.append([bar_num, *sign, *vertex])
                 
