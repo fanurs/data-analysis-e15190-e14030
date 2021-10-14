@@ -13,6 +13,7 @@ import itertools as itr
 from alphashape import alphashape
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import scipy.integrate
 import scipy.interpolate
 from sklearn.decomposition import PCA
@@ -710,8 +711,8 @@ class RectangularBar:
         else:
             return solid_angle
     
-    # @functools.lru_cache(maxsize=5)
-    def get_theta_phi_alphashape(self, delta=1.0, alpha=10.0):
+    @functools.lru_cache(maxsize=5)
+    def get_theta_phi_alphashape(self, delta=1.0, alpha=10.0, cut=None):
         """Calculate the alphashape of the bar in (theta, phi) coordinates.
 
         Parameters
@@ -756,10 +757,13 @@ class RectangularBar:
 
         corner0 = self.loc_vertices[(-1, -1, -1)]
         corner1 = self.loc_vertices[(1, 1, 1)]
-        coord_x = w[:, 0] * corner0[0] + (1 - w[:, 0]) * corner1[0]
-        coord_y = w[:, 1] * corner0[1] + (1 - w[:, 1]) * corner1[1]
-        coord_z = w[:, 2] * corner0[2] + (1 - w[:, 2]) * corner1[2]
-        coords = np.vstack([coord_x, coord_y, coord_z]).T
+        coords = pd.DataFrame({
+            'x': w[:, 0] * corner0[0] + (1 - w[:, 0]) * corner1[0],
+            'y': w[:, 1] * corner0[1] + (1 - w[:, 1]) * corner1[1],
+            'z': w[:, 2] * corner0[2] + (1 - w[:, 2]) * corner1[2],
+        })
+        if cut is not None:
+            coords = coords.query(cut)
         coords = self.to_lab_coordinates(coords)
 
         coords = cartesian_to_spherical(coords)
@@ -859,10 +863,12 @@ class RectangularBar:
         else:
             raise ValueError(f'Unknown method: {method}')
 
-    def get_geometry_efficiency_alphashape(self):
+    def get_geometry_efficiency_alphashape(self, cut=None):
         """Calculate the geometry efficiency of the bar using the alphashape.
 
-        The geometry efficiency is defined as the effective azimuthal coverage ratio, i.e.         :math:`\delta\phi/(2\pi)`, as a function of theta.
+        The geometry efficiency is defined as the effective azimuthal coverage
+        ratio, i.e.
+        :math:`\delta\phi/(2\pi)`, as a function of theta.
 
         Returns
         -------
@@ -870,7 +876,17 @@ class RectangularBar:
             A function that takes theta as an argument and returns the geometry
             efficiency.
         """
-        ashape = self.get_theta_phi_alphashape()
+        if isinstance(cut, list):
+            geom_eff = [
+                self.get_geometry_efficiency_alphashape(cut=single_cut)
+                for single_cut in cut
+            ]
+            def result(theta):
+                nonlocal geom_eff
+                return np.sum([single_geom_eff(theta) for single_geom_eff in geom_eff], axis=0)
+            return result
+
+        ashape = self.get_theta_phi_alphashape(cut=cut)
         ashape = self._split_theta_phi_alphashape_to_upper_and_lower(ashape)
 
         # find the delta-phi as a function of theta using interpolation
