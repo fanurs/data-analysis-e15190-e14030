@@ -1,5 +1,5 @@
 Some interactive plots that may be useful:
-- [Overview of position calibration parameters](https://groups.nscl.msu.edu/hira/fanurs/progress/20210801.html)
+- [:chart_with_upwards_trend: Plotly: NWB position calibration parameters](https://groups.nscl.msu.edu/hira/fanurs/progress/20211014.html)
 
 ## Structure of [`calib_params.json`](https://github.com/Fanurs/data-analysis-e15190-e14030/blob/main/database/neutron_wall/position_calibration/calib_params.json)
 This is the file that always gives the latest position calibration parameters. The first-level keys are bar numbers, ranging from 1 to 24 for NWB. Each entry (each bar) contains multiple run ranges as well as the corresponding calibration parameters. A _hypothetical example_ that contains only bar-26 and bar-27 is given below:
