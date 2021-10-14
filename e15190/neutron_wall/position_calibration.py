@@ -14,41 +14,57 @@ import numpy as np
 import pandas as pd
 import ruptures as rpt
 from scipy import optimize, stats
+from shapely.geometry import Polygon
 from sklearn import neighbors
 import uproot
 
 from e15190 import PROJECT_DIR
+from e15190.neutron_wall import geometry as nw_geom
+from e15190.veto_wall import geometry as vw_geom
 from e15190.runlog import query
+from e15190.utilities import geometry as geom
+from e15190.utilities import fast_histogram as fh
 from e15190.utilities import local_manager, tables
+from e15190.utilities import ray_triangle_intersection as rti
 
-DATABASE_DIR = pathlib.Path(PROJECT_DIR, 'database', 'neutron_wall', 'position_calibration')
-CACHE_DIR = pathlib.Path(DATABASE_DIR, 'cache')
+DATABASE_DIR = PROJECT_DIR / 'database/neutron_wall/position_calibration'
+CACHE_DIR = DATABASE_DIR / 'cache'
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
-CALIB_PARAMS_DIR = pathlib.Path(DATABASE_DIR, 'calib_params')
+CALIB_PARAMS_DIR = DATABASE_DIR / 'calib_params'
 CALIB_PARAMS_DIR.mkdir(parents=True, exist_ok=True)
-GALLERY_DIR = pathlib.Path(DATABASE_DIR, 'gallery')
+GALLERY_DIR = DATABASE_DIR / 'gallery'
 GALLERY_DIR.mkdir(parents=True, exist_ok=True)
 
 class NWBPositionCalibrator:
-    def __init__(self, max_workers=12, verbose=False, stdout_path=None):
+    def __init__(
+        self,
+        max_workers=8,
+        verbose=False,
+        stdout_path=None,
+        recalculate_vw_shadows=False,
+    ):
         self.verbose = verbose
         self.stdout_path = stdout_path
         self.AB = 'B'
         self.ab = self.AB.lower()
         self.decompression_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
         self.interpretation_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+        self.cmap = copy.copy(plt.cm.viridis_r)
+        self.cmap.set_under('white')
 
         # read in the expected positions of Veto Wall shadows
-        path = pathlib.Path(DATABASE_DIR, f'VW_shadows_on_NW{self.AB}.csv')
-        vw_shadow = pd.read_csv(path)
-        vw_shadow.set_index('vw_bar', drop=True, inplace=True)
-        self.vw_shadow = {bar: vw_shadow.loc[bar][f'nw{self.ab}_x'] for bar in vw_shadow.index}
+        path = DATABASE_DIR / f'VW_shadows_on_NW{self.AB}.csv'
+        if recalculate_vw_shadows:
+            df = self.get_veto_wall_shadows()
+            tables.to_fwf(df, path)
+        self.vw_shadow = pd.read_csv(path, delim_whitespace=True)
+        self.vw_shadow.set_index(['nw_bar', 'vw_bar'], inplace=True, drop=False)
 
         # hyperparameters
         self.threshold_light_GM = 5.0 # MeVee
-        self.nw_bars = list(range(1, 25))
-        self.vw_bars = list(range(3, 22))
-        self.nw_edges = [-93.2285, 99.8115] # cm
+        self.nw_bars = list(range(1, 24 + 1))
+        self.vw_bars = list(range(4, 21 + 1)) # 3 and 22 have partial shadows, hence dropped
+        self.nw_edges = [-93.2285, 99.8115] # cm; for rough calibration only
         self.nw_length = self.nw_edges[1] - self.nw_edges[0]
 
         # holders to be filled with data
@@ -60,8 +76,110 @@ class NWBPositionCalibrator:
         self._rough_to_pos_calib_params = None
         self.gaus_params = None
         self.outlier_vw_bars = None
+    
+    def get_veto_wall_shadows(self):
+        df = []
+        nwall = nw_geom.Wall(self.AB, contain_pyrex=False)
+        vwall = vw_geom.Wall()
 
-    def read_run(self, run, verbose=None, use_cache=False, save_cache=True, raise_not_found=True):
+        vw_polygons = {
+            b: Polygon(bar.get_theta_phi_alphashape())
+            for b, bar in vwall.bars.items()
+        }
+        for nb, nw_bar in nwall.bars.items():
+            nw_polygon = Polygon(nw_bar.get_theta_phi_alphashape())
+            for vb, vw_bar in vwall.bars.items():
+                vw_polygon = vw_polygons[vb]
+                centroid = nw_polygon.intersection(vw_polygon).centroid
+                if centroid.is_empty:
+                    continue
+
+                rays = np.tile([1.0, centroid.x, centroid.y], (1, 1))
+                rays = geom.spherical_to_cartesian(rays)
+                nw_bar.construct_plotly_mesh3d()
+                triangles = nw_bar.triangle_mesh.get_triangles()
+                origin = np.array([0.0, 0.0, 0.0])
+                intersections = rti.moller_trumbore(origin, rays, triangles)
+                hit = nw_bar.get_hit_positions(
+                    hit_t=0.5,
+                    simulation_result=dict(
+                        origin=origin,
+                        intersections=intersections,
+                    )
+                )[0]
+
+                df.append([nb, vb, hit[0]])
+        df = pd.DataFrame(df, columns=['nw_bar', 'vw_bar', f'nw{self.ab}_x'])
+
+        df = df.query(f'vw_bar != {df.vw_bar.min()} & vw_bar != {df.vw_bar.max()}')
+        df.reset_index(drop=True, inplace=True)
+        return df
+    
+    def draw_expected_veto_wall_shadows(self, ax):
+        nwall = nw_geom.Wall(self.AB, contain_pyrex=False)
+        nw_func = lambda x, a, b: a / x + b # an empirical functional for NW bar in spherical coordinates 
+        for b, bar in nwall.bars.items():
+            if b == 0: continue # this bar is not used in the experiment
+
+            # get the alphashape of the bar in lab (theta, phi)
+            ashape = np.degrees(bar.get_theta_phi_alphashape(delta=20.0))
+
+            # fit a line that empirically represents the longest axis of the bar
+            hits = bar.randomize_from_local_x(
+                np.linspace(-0.5 * bar.length, 0.5 * bar.length, 100),
+                local_ynorm=0, local_znorm=0,
+            )
+            hits = geom.cartesian_to_spherical(hits) # turns into a curve in spherical coordinates
+            par, _ = optimize.curve_fit(nw_func, np.degrees(hits[:, 1]), np.degrees(hits[:, 2]))
+            func = lambda x, par=par: nw_func(x, *par)
+
+            # draw and annotate
+            kw_patch = dict(fill=True, alpha=0.5, edgecolor='navy', linewidth=0.5)
+            kw_line = dict(linestyle='dashed', linewidth=0.5)
+            kw_annot = dict(va='center', ha='center', fontsize=8, zorder=100)
+            x_plt = np.linspace(20, 60, 100) # degree
+            if b % 2 == 0:
+                ax.add_patch(mpl.patches.Polygon(ashape, facecolor='cyan', **kw_patch))
+                ax.plot(x_plt, func(x_plt), color='cyan', **kw_line)
+                ax.annotate(str(b), xy=(24.0, func(24.0)), color='blue', **kw_annot)
+            else:
+                ax.add_patch(mpl.patches.Polygon(ashape, facecolor='pink', **kw_patch))
+                ax.plot(x_plt, func(x_plt), color='pink', **kw_line)
+                ax.annotate(str(b), xy=(22.0, func(22.0)), color='red', **kw_annot)
+
+        vwall = vw_geom.Wall()
+        for b, bar in vwall.bars.items():
+            ashape = np.degrees(bar.get_theta_phi_alphashape(delta=5.0))
+
+            # draw and annotate
+            kw_bar = dict(linewidth=0.5, zorder=20)
+            kw_annot = dict(ha='left', fontsize=8, zorder=100)
+            if b % 2 == 0:
+                ax.plot(ashape[:, 0], ashape[:, 1], color='gray', **kw_bar)
+                ax.annotate(
+                    str(b).rjust(2),
+                    xy=(ashape[np.argmax(ashape[:, 1]), 0] + 0.2, ashape[:, 1].max()),
+                    va='bottom',
+                    color='black',
+                    **kw_annot,
+                )
+            else:
+                ax.plot(ashape[:, 0], ashape[:, 1], color='lightgreen', **kw_bar)
+                ax.annotate(
+                    str(b).rjust(2),
+                    xy=(ashape[np.argmax(ashape[:, 1]), 0] + 0.2, ashape[:, 1].min()),
+                    va='top',
+                    color='green',
+                    **kw_annot,
+                )
+        
+        # design
+        ax.set_xlim(20, 60)
+        ax.set_ylim(-40, 40)
+        ax.set_xlabel(r'$\theta$ (deg)')
+        ax.set_ylabel(r'$\phi$ (deg)')
+
+    def read_run(self, run, verbose=None, use_cache=True, save_cache=True, raise_not_found=True):
         if verbose is None:
             verbose = self.verbose
 
@@ -277,9 +395,12 @@ class NWBPositionCalibrator:
                 calib_x[vw_bar] = self.gaus_params[(nw_bar, vw_bar)][1]
 
             # done collecting all calibration points for this NW bar
-            common_vw_bars = sorted(set(calib_x).intersection(set(self.vw_shadow)))
+            common_vw_bars = sorted(set(calib_x).intersection(set(self.vw_shadow.vw_bar)))
             x = {vw_bar: calib_x[vw_bar] for vw_bar in common_vw_bars} # rough_pos from Gaussian fits
-            y = {vw_bar: self.vw_shadow[vw_bar] for vw_bar in common_vw_bars} # expected pos from simulation
+            y = { # expected position from the simulation
+                vw_bar: self.vw_shadow.loc[(nw_i, vw_bar)][f'nw{self.ab}_x']
+                for vw_bar in common_vw_bars
+            }
 
             # first simple filter to remove calibration points that have very different rough_pos (> 5.0 cm)
             bad_vw_bars1 = [vw_bar for vw_bar in common_vw_bars if abs(x[vw_bar] - y[vw_bar]) > 5.0]
@@ -330,7 +451,7 @@ class NWBPositionCalibrator:
         if verbose:
             print(f'Done saving calibration parameters to "{str(path)}"...', flush=True)
 
-    def save_to_gallery(self, verbose=None, show_plot=False):
+    def save_to_gallery(self, verbose=None, show_plot=False, save_plot=True):
         if verbose is None:
             verbose = self.verbose
 
@@ -415,10 +536,11 @@ class NWBPositionCalibrator:
             print('Done plotting.', flush=True)
 
         # save figure as image file
-        path = pathlib.Path(GALLERY_DIR, f'run-{self.run:04d}.png')
-        fig.savefig(path, dpi=500, bbox_inches='tight')
-        if verbose:
-            print(f'Saved figure to "{str(path)}".', flush=True)
+        path = GALLERY_DIR / f'run-{self.run:04d}.png'
+        if save_plot:
+            fig.savefig(path, dpi=500, bbox_inches='tight')
+            if verbose:
+                print(f'Saved figure to "{str(path)}".', flush=True)
 
         # show or close plot
         if show_plot:
@@ -439,10 +561,16 @@ class NWBPositionCalibrator:
             color = 'dimgray'
             vw_bars = sorted(set(np.vstack(list(gaus_params.keys()))[:, 1]))
             axt = ax.twiny()
+            xticks = []
+            Polynomial = np.polynomial.Polynomial
             for vw_bar in vw_bars:
-                ax.axvline(self.vw_shadow[vw_bar], color=color, linewidth=0.8, linestyle='dashed')
+                subdf = self.vw_shadow.query(f'vw_bar == {vw_bar}')
+                line = Polynomial.fit(subdf['nw_bar'], subdf[f'nw{self.ab}_x'], 1)
+                y_plt = np.linspace(-0.5, 25.5, 3)
+                ax.plot(line(y_plt), y_plt, color=color, linewidth=0.8, linestyle='dashed')
+                xticks.append(line(25.5))
             axt.set_xlim(-150, 150)
-            axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in vw_bars])
+            axt.set_xticks(xticks)
             axt.set_xticklabels(vw_bars)
             axt.set_xticks([], minor=True)
             axt.tick_params(axis='x', which='both', colors=color)
@@ -484,7 +612,7 @@ class NWBPositionCalibrator:
             for vw_bar in self.vw_bars:
                 gparam = self.gaus_params[(nw_bar, vw_bar)] # in rough pos
                 intercept, slope = self._rough_to_pos_calib_params[nw_bar]
-                vw_pos = self.vw_shadow[vw_bar]
+                vw_pos = self.vw_shadow.loc[(nw_bar, vw_bar)][f'nw{self.ab}_x']
                 residual = vw_pos - (intercept + slope * gparam[1])
                 scaled_residual = residual_scalar * residual
                 data.append([vw_bar, vw_pos, scaled_residual])
@@ -526,20 +654,31 @@ class NWBPositionCalibrator:
                     zorder=100,
                 )
         
-        # grid lines
+        # nw grid lines (horizontal)
         for nw_bar in self.nw_bars:
             ax.axhline(nw_bar, linewidth=0.3, linestyle='dashed', color=nw_grid_color)
+
+        # vw grid lines (vertical)
+        Polynomial = np.polynomial.Polynomial
+        xticks = dict()
         for vw_bar in self.vw_bars:
-            ax.axvline(self.vw_shadow[vw_bar], linewidth=0.3, linestyle='dashed', color=vw_grid_color)
+            subdf = self.vw_shadow.query(f'vw_bar == {vw_bar}')
+            if len(subdf) == 0: continue
+            line = Polynomial.fit(subdf['nw_bar'], subdf[f'nw{self.ab}_x'], 1)
+            y_plt = np.linspace(-0.5, 25.5, 3)
+            ax.plot(line(y_plt), y_plt, color=vw_grid_color, linewidth=0.3, linestyle='dashed')
+            xticks[vw_bar] = line(25.5)
         
-        # vw ticks on even bars
+        # vw ticks on mod 5 bars
         axt = ax.twiny()
-        axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in self.vw_bars if vw_bar % 5 == 0])
-        axt.set_xticklabels([vw_bar for vw_bar in self.vw_bars if vw_bar % 5 == 0])
-        axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in self.vw_bars], minor=True)
+        axt.set_xticks([xt for b, xt in xticks.items() if b % 5 == 0])
+        axt.set_xticklabels([str(b) for b in xticks if b % 5 == 0])
+        axt.set_xticks(list(xticks.values()), minor=True)
         axt.tick_params(axis='x', which='both', colors=vw_grid_color)
         axt.spines['top'].set_color(vw_grid_color)
         axt.set_xlim(-150, 150)
+        ax.set_xlim(-150, 150)
+        ax.set_ylim(-0.5, 25.5)
     
     def _draw_gaus_fits(self, ax, gaus_params):
         colors = {
@@ -579,11 +718,13 @@ class NWBPositionCalibrator:
 
                 # plot the distribution around VW shadow as histogram
                 hrange = [int(np.floor(fit_range[0])), int(np.ceil(fit_range[1]))]
-                y, x = np.histogram(df['pos'], range=hrange, bins=hrange[1] - hrange[0])
+                y = fh.histo1d(df['pos'], range=hrange, bins=hrange[1] - hrange[0])
+                x = np.linspace(*hrange, hrange[1] - hrange[0] + 1) # edges
                 y = np.repeat(y, 2)
                 x = np.hstack([x[0], np.repeat(x[1:-1], 2), x[-1]])
-                ax.plot(
-                    x, y / y.max() + nw_bar - 0.5,
+                y_max = y.max()
+                ax.plot( # to draw like a histogram of style 'step'
+                    x, y / y_max + nw_bar - 0.5,
                     color=outlier_color if vw_bar in outliers else colors[ctheme]['hist'][vw_i % 2],
                     linewidth=0.3 if vw_bar in outliers else 0.4,
                     zorder=100,
@@ -599,20 +740,29 @@ class NWBPositionCalibrator:
                     zorder=100,
                 )
 
-        # grid lines
+        # nw grid lines (horizontal)
         for nw_bar in self.nw_bars:
             ax.axhline(nw_bar - 0.5, linewidth=0.3, linestyle='dashed', color=nw_grid_color)
+
+        # vw grid lines (vertical)
+        Polynomial = np.polynomial.Polynomial
+        xticks = []
         for vw_bar in vw_bars:
-            ax.axvline(self.vw_shadow[vw_bar], linewidth=0.3, linestyle='dashed', color=vw_grid_color)
+            subdf = self.vw_shadow.query(f'vw_bar == {vw_bar}')
+            if len(subdf) == 0: continue
+            line = Polynomial.fit(subdf['nw_bar'], subdf[f'nw{self.ab}_x'], 1)
+            y_plt = np.linspace(-0.5, 25.5, 3)
+            ax.plot(line(y_plt), y_plt, color=vw_grid_color, linewidth=0.3, linestyle='dashed')
+            xticks.append(line(25.5))
         
         # vw ticks
         axt = ax.twiny()
-        axt.set_xticks([self.vw_shadow[vw_bar] for vw_bar in vw_bars])
+        axt.set_xlim(-150, 150)
+        axt.set_xticks(xticks)
         axt.set_xticklabels(vw_bars)
         axt.set_xticks([], minor=True)
         axt.tick_params(axis='x', which='both', colors=vw_grid_color)
         axt.spines['top'].set_color(vw_grid_color)
-        axt.set_xlim(-150, 150)
 
 class NWBCalibrationReader:
     def __init__(self, force_find_breakpoints=False):
