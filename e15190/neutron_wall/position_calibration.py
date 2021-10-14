@@ -764,13 +764,13 @@ class NWBPositionCalibrator:
         axt.tick_params(axis='x', which='both', colors=vw_grid_color)
         axt.spines['top'].set_color(vw_grid_color)
 
-class NWBCalibrationReader:
-    def __init__(self, force_find_breakpoints=False):
-        self.AB = 'B'
+class NWCalibrationReader:
+    def __init__(self, AB, force_find_breakpoints=False):
+        self.AB = AB
         self.ab = self.AB.lower()
 
-        self.json_path = pathlib.Path(CALIB_PARAMS_DIR, 'calib_params.json')
-        self.dat_path = pathlib.Path(CALIB_PARAMS_DIR, 'calib_params.dat')
+        self.json_path = DATABASE_DIR / 'calib_params.json'
+        self.dat_path = DATABASE_DIR / 'calib_params.dat'
 
         if not self.json_path.is_file() or force_find_breakpoints:
             self.find_calibration_breakpoints(save_to_database=True)

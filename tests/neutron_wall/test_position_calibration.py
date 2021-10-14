@@ -15,8 +15,8 @@ class TestNWBPositionCalibrator:
             assert -100.0 < params[0] < 100.0
             assert 6.0 < params[1] < 8.5
 
-class TestNWBCalibrationReader:
-    reader = position_calibration.NWBCalibrationReader()
+class TestNWCalibrationReader:
+    reader = position_calibration.NWCalibrationReader('B')
 
     def test_existing_runs(self):
         existing_runs = list(range(4134, 2870 + 1)) + list(range(4007, 4661 + 1))
