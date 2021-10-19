@@ -45,18 +45,14 @@ public:
     Json database;
     std::map<std::pair<int, std::string>, double> run_param;
 
-//New Work
     std::filesystem::path pca_reldir = "database/neutron_wall/geometry";
     std::string dat_filename = "NWB_pca.dat";
     std::filesystem::path pca_path;
-    std::map<std::pair<int, std::string>, double>L;//center of the NW bar
-    std::map<std::pair<int, std::string>, double>X;//NW's principal components w.r.t L
-    std::map<std::pair<int, std::string>, double>Y;
-    std::map<std::pair<int, std::string>, double>Z;
+    std::map<std::pair<int, std::string>, double> L; // center of the NW bar
+    std::map<std::pair<int, std::string>, double> X; // NW's principal components w.r.t L
+    std::map<std::pair<int, std::string>, double> Y;
+    std::map<std::pair<int, std::string>, double> Z;
    
-
-
-
     NWBPositionCalibParamReader();
     ~NWBPositionCalibParamReader();
 
@@ -72,13 +68,10 @@ public:
     void set_index(const std::string& index_name="bar");
     double get(int bar, const std::string& par);
 
- 
-
-//New Work
-  double getL(int bar, const std::string& par);
-  double getX(int bar, const std::string& par);
-  double getY(int bar, const std::string& par);
-  double getZ(int bar, const std::string& par);
+    double getL(int bar, const std::string& par);
+    double getX(int bar, const std::string& par);
+    double getY(int bar, const std::string& par);
+    double getZ(int bar, const std::string& par);
 };
 
 class NWPulseShapeDiscriminationParamReader : public ParamReader<int> {
