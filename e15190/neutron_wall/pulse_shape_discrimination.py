@@ -17,7 +17,7 @@ from sklearn.preprocessing import StandardScaler
 import uproot 
 
 from e15190 import PROJECT_DIR
-from e15190.neutron_wall.position_calibration import NWBCalibrationReader
+from e15190.neutron_wall.position_calibration import NWCalibrationReader
 from e15190.utilities import fast_histogram as fh
 from e15190.utilities import styles
 styles.set_matplotlib_style(mpl)
@@ -105,7 +105,7 @@ class PulseShapeDiscriminator:
         df.columns = list(branches.keys())
 
         # apply position calibration
-        calib_reader = NWBCalibrationReader()
+        calib_reader = NWCalibrationReader()
         df[f'NW{self.AB}_pos'] = self.get_position(
             df[[f'NW{self.AB}_bar', f'NW{self.AB}_time_L', f'NW{self.AB}_time_R']],
             calib_reader(run),
