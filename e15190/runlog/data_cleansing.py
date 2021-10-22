@@ -1,19 +1,18 @@
-import itertools as itr
 import pathlib
 
 import numpy as np
 import pandas as pd
 
-from .. import PROJECT_DIR
-from . import MYSQL_DOWNLOAD_PATH, ELOG_DOWNLOAD_PATH
-from ..utilities import tables
+from e15190 import PROJECT_DIR
+from e15190.runlog.downloader import MYSQL_DOWNLOAD_PATH, ELOG_DOWNLOAD_PATH
+from e15190.utilities import tables
 
 """After data cleansing, all tables are being saved into TXT files and HDF files.
 TXT files allow quick inspection without HDF viewer.
 HDF files are suitable for data analysis as they preserve data types like datetimes, floats, etc.
 """
 
-CLEANSED_DIR = pathlib.Path(PROJECT_DIR, 'database/runlog/cleansed')
+CLEANSED_DIR = PROJECT_DIR / 'database/runlog/cleansed'
 CLEANSED_DIR.mkdir(parents=True, exist_ok=True)
 
 class ElogCleanser:
