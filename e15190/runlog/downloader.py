@@ -24,12 +24,12 @@ class MySqlDownloader:
     downloaded as pandas dataframes, and stored in an HDF files. This allows
     quicker access to the data and more complicated analysis.
     """
-    def __init__(self, auto_connect=True, key_path=None):
+    def __init__(self, auto_connect=False, key_path=None):
         """Constructor for :py:class:`MySqlDownloader`.
 
         Parameters
         ----------
-        auto_connect : bool, default True
+        auto_connect : bool, default False
             Whether to automatically connect to the MySQL database. Login
             credentials are needed to connect to the database.
         key_path : str, default None
@@ -42,6 +42,13 @@ class MySqlDownloader:
         """
         if auto_connect:
             self.connect(key_path=key_path)
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        if 'connection' in self.__dict__:
+            self.disconnect()
 
     @staticmethod
     def decorate(func_that_returns_tuples_of_tuples):
@@ -73,6 +80,11 @@ class MySqlDownloader:
 
     def connect(self, key_path=None, verbose=True):
         """Establish connection to the MySQL database.
+
+        Upon successful connection, ``self.connection`` is set to the connection
+        object and ``self.cursor`` is set to the cursor object. Fetch functions
+        of ``self.cursor`` are decorated to return lists of lists, including
+        ``fetchall``, ``fetchone`` and ``fetchmany``.
         
         Parameters
         ----------
@@ -94,7 +106,7 @@ class MySqlDownloader:
         FileNotFoundError
             If the key file is not found.
         """
-        key_path = KEY_PATH if key_path is None else key_path
+        key_path = KEY_PATH if key_path is None else pathlib.Path(key_path)
         if not key_path.is_file():
             raise FileNotFoundError(inspect.cleandoc(
                 f'''Key is not found at
@@ -123,6 +135,7 @@ class MySqlDownloader:
         if verbose:
             print('Connection to MySQL database at WMU has been established.', flush=True)
         
+        # decorate fetch functions so that they return lists of lists
         self.cursor.fetchall = MySqlDownloader.decorate(self.cursor.fetchall)
         self.cursor.fetchmany = MySqlDownloader.decorate(self.cursor.fetchmany)
         self.cursor.fetchone = MySqlDownloader.decorate(self.cursor.fetchone)
@@ -137,7 +150,7 @@ class MySqlDownloader:
         self,
         download_path=None,
         table_names=None,
-        auto_disconnect=True,
+        auto_disconnect=False,
         verbose=True):
         """Convert tables into pandas dataframes and save into an HDF file
 
@@ -146,7 +159,7 @@ class MySqlDownloader:
         download_path : str, default None
             File path to the HDF file. If ``None``, the file is saved at
             ``$PROJECT_DIR/database/runlog/downloads/mysql_database.h5``.
-        auto_disconnect : bool, default True
+        auto_disconnect : bool, default False
             Whether to automatically disconnect from the MySQL database after
             all tables have been downloaded.
         table_names : list of str, default None
@@ -206,7 +219,13 @@ class ElogDownloader:
         """
         pass
 
-    def download(self, download_path=None, verbose=True):
+    def download(
+        self,
+        download_path=None,
+        verbose=True,
+        timeout=3,
+        read_nbytes=None,
+    ):
         """Downloads the runlog from the webpage.
 
         Parameters
@@ -216,11 +235,17 @@ class ElogDownloader:
             ``$PROJECT_DIR/database/runlog/downloads/elog.html``.
         verbose : bool, default True
             Whether to print the progress of downloading.
+        timeout : int, default 3
+            Timeout in seconds for the request.
+        read_nbytes : int, default None
+            Number of bytes to read from the webpage. If ``None``, the entire
+            webpage is read, decoded, and saved. This is useful for testing.
         """
         download_path = ELOG_DOWNLOAD_PATH if download_path is None else pathlib.Path(download_path)
         if verbose:
             print(f'Attempting to download web content from\n"{ELOG_URL}"... ', end='', flush=True)
-        web_content = urllib.request.urlopen(ELOG_URL).read()
+        web_request = urllib.request.urlopen(ELOG_URL, timeout=timeout)
+        web_content = web_request.read(read_nbytes)
         ELOG_DOWNLOAD_PATH.parent.mkdir(parents=True, exist_ok=True)
         with open(download_path, 'wb') as file:
             file.write(web_content)
