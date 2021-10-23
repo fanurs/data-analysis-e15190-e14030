@@ -11,9 +11,20 @@ pymysql.install_as_MySQLdb() # WMU uses MySQL
 from e15190 import PROJECT_DIR
 
 MYSQL_DOWNLOAD_PATH = PROJECT_DIR / 'database/runlog/downloads/mysql_database.h5'
+"""Local path where MySQL database is downloaded to as HDF5 file."""
+
 ELOG_DOWNLOAD_PATH = PROJECT_DIR / 'database/runlog/downloads/elog.html'
+"""Local path where ELOG is downloaded to as HTML file."""
+
 KEY_PATH = PROJECT_DIR / 'database/key_for_all.pub'
+"""Local path where secret key is stored.
+
+This key is used to decrypt the credentials needed to connect to the MySQL. It
+should not be committed to the repository.
+"""
+
 ELOG_URL = 'http://neutronstar.physics.wmich.edu/runlog/index.php?op=list'
+"""The URL of the e-log, hosted at Western Michigan University (WMU)."""
 
 class MySqlDownloader:
     """This class downloads the MySQL database from WMU.
@@ -23,8 +34,14 @@ class MySqlDownloader:
     from WMU and store it locally at NSCL/FRIB's server. All tables are
     downloaded as pandas dataframes, and stored in an HDF files. This allows
     quicker access to the data and more complicated analysis.
+
+    It is encouraged to use the ``with`` statement when interacting with this
+    class. Here is an example:
+    >>> from e15190.runlog import downloader
+    >>> with downloader.MySqlDownloader(auto_connect=True) as dl:
+    >>>     df = dl.get_table('runtarget')
     """
-    def __init__(self, auto_connect=False, key_path=None):
+    def __init__(self, auto_connect=False, key_path=None, verbose=True):
         """Constructor for :py:class:`MySqlDownloader`.
 
         Parameters
@@ -39,7 +56,29 @@ class MySqlDownloader:
             !! This key should never be committed to the repository. !!
             
             Ask the owner of this repository for the key.
+        verbose : bool, default True
+            Whether to print the progress of connecting to the MySQL database.
+            This setting has less priority than individual class functions, i.e.
+            if other functions have explicitly set a verbose value, then this
+            global setting will be ignored.
         """
+        self.connection = None
+        """``pymysql.Connection`` object.
+
+        See more at
+        https://pymysql.readthedocs.io/en/latest/modules/connections.html
+        """
+
+        self.cursor = None
+        """``pymysql.Cursor`` object.
+
+        See more at
+        https://pymysql.readthedocs.io/en/latest/modules/cursors.html
+        """
+
+        self.verbose = verbose
+        """The global verbose setting. Default is ``True``."""
+
         if auto_connect:
             self.connect(key_path=key_path)
     
@@ -47,8 +86,9 @@ class MySqlDownloader:
         return self
     
     def __exit__(self, exc_type, exc_value, traceback):
-        if 'connection' in self.__dict__:
-            self.disconnect()
+        """Disconnect from the MySQL database upon exiting the context.
+        """
+        self.disconnect()
 
     @staticmethod
     def decorate(func_that_returns_tuples_of_tuples):
@@ -78,7 +118,7 @@ class MySqlDownloader:
             return arr
         return inner
 
-    def connect(self, key_path=None, verbose=True):
+    def connect(self, key_path=None, verbose=None):
         """Establish connection to the MySQL database.
 
         Upon successful connection, ``self.connection`` is set to the connection
@@ -98,14 +138,17 @@ class MySqlDownloader:
             !! This key should never be committed to the repository. !!
 
             Ask the owner of this repository for the key.
-        verbose : bool, default True
+        verbose : bool, default None
             Whether to print the progress of connecting to the MySQL database.
+            If ``None``, the global setting is used.
 
         Raises
         ------
         FileNotFoundError
             If the key file is not found.
         """
+        verbose = self.verbose if verbose is None else verbose
+
         key_path = KEY_PATH if key_path is None else pathlib.Path(key_path)
         if not key_path.is_file():
             raise FileNotFoundError(inspect.cleandoc(
@@ -142,10 +185,38 @@ class MySqlDownloader:
 
     def get_all_table_names(self):
         """Returns all table names in the MySQL database.
+
+        Returns
+        -------
+        table_names : list
+            List of all table names in the MySQL database.
         """
         self.cursor.execute('SHOW TABLES')
         return self.cursor.fetchall()
     
+    def get_table(self, table_name):
+        """Returns the table as a pandas dataframe.
+
+        Parameters
+        ----------
+        table_name : str
+            Name of the table to be downloaded.
+
+        Returns
+        -------
+        table : pandas.DataFrame
+            Table as a pandas dataframe.
+        
+        Raises
+        ------
+        ValueError
+            If the table is not found.
+        """
+        all_table_names = self.get_all_table_names()
+        if table_name not in all_table_names:
+            raise ValueError(f'Table "{table_name}" is not found in the database.')
+        return pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
+
     def download(
         self,
         download_path=None,
@@ -166,8 +237,11 @@ class MySqlDownloader:
             List of table names to download. If ``None``, all tables are
             downloaded.
         verbose : bool, default True
-            Whether to print the progress of downloading.
+            Whether to print the progress of downloading. If ``None``, the
+            global setting is used.
         """
+        verbose = self.verbose if verbose is None else verbose
+
         print('Attempting to download run log from WMU MySQL database...')
         self.cursor.execute('SHOW TABLES')
         table_names = self.cursor.fetchall() if table_names is None else table_names
@@ -201,17 +275,25 @@ class MySqlDownloader:
         if auto_disconnect:
             self.disconnect()
 
-    def disconnect(self, verbose=True):
+    def disconnect(self, verbose=None):
         """Disconnect from the MySQL database.
 
         Parameters
         ----------
-        verbose : bool, default True
-            Whether to print the progress of disconnecting.
+        verbose : bool, default None
+            Whether to print the progress of disconnecting. If ``None``, the
+            global setting is used.
         """
-        self.connection.close()
-        if verbose:
-            print('Connection to MySQL database at WMU has been closed.')
+        verbose = self.verbose if verbose is None else verbose
+        if self.connection is not None:
+            self.connection.close()
+            self.connection = None
+            self.cursor = None
+            if verbose:
+                print('Connection to MySQL database at WMU has been closed.')
+        else:
+            if verbose:
+                print('No connection found. Nothing to disconnect.')
 
 class ElogDownloader:
     def __init__(self):
