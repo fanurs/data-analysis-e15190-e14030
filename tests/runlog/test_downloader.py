@@ -51,7 +51,7 @@ class TestMySqlDownloader:
         with contextlib.redirect_stdout(sio):
             with downloader.MySqlDownloader(auto_connect=False) as dl:
                 pass
-        assert sio.getvalue() == ''
+        assert 'no connection' in sio.getvalue().lower()
 
         sio = io.StringIO()
         with contextlib.redirect_stdout(sio):
@@ -99,6 +99,13 @@ class TestMySqlDownloader:
                     'users',
                     'vendors',
                 ])
+    
+    def test_get_table(self):
+        with downloader.MySqlDownloader(auto_connect=True, verbose=False) as dl:
+            df = dl.get_table('runtarget')
+            assert isinstance(df, pd.DataFrame)
+            assert list(df['tid']) == list(range(1, 8 + 1))
+        return df
     
     def test_download(self):
         sio = io.StringIO()
