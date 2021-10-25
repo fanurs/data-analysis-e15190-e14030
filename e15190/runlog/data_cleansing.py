@@ -7,25 +7,61 @@ from e15190 import PROJECT_DIR
 from e15190.runlog.downloader import MYSQL_DOWNLOAD_PATH, ELOG_DOWNLOAD_PATH
 from e15190.utilities import tables
 
-"""After data cleansing, all tables are being saved into TXT files and HDF files.
-TXT files allow quick inspection without HDF viewer.
-HDF files are suitable for data analysis as they preserve data types like datetimes, floats, etc.
-"""
-
 CLEANSED_DIR = PROJECT_DIR / 'database/runlog/cleansed'
 CLEANSED_DIR.mkdir(parents=True, exist_ok=True)
 
 class ElogCleanser:
-    """This is a class of methods to perform data cleansing on the table downloaded from ELOG webpage at WMU.
-    """
-    def __init__(self):
-        self.runs = None
-        self.events = None
-        self.runs_final = None
-        self.events_final = None
+    def __init__(self, elog_path=None):
+        """To cleanse the ELOG downloaded from the web.
 
-    def cleanse(self, verbose=True):
-        with open(ELOG_DOWNLOAD_PATH, 'r') as file:
+        The ELOG is hosted at
+        http://neutronstar.physics.wmich.edu/runlog/index.php?op=list
+        It is basically a large table that contains the following columns:
+            - RUN
+            - Begin time
+            - End time
+            - Elapse
+            - DAQ
+            - Type
+            - Target
+            - Beam
+            - Shadow bars
+            - Trigger rate
+            - Comments
+        Each row is either an experimental run or an event.
+        
+        The purpose of this class is to ensure all columns have been converted
+        into some suitable data types. Some simple removal of entries (rows) is
+        also done here.
+
+        Parameters
+        ----------
+        elog_path : str, default None
+            The path to the local ELOG html file. If ``None``, the default path
+            is used, i.e. ``$PROJECT_DIR/database/runlog/downloads/elog.html``.
+        """
+        self.elog_path = ELOG_DOWNLOAD_PATH if elog_path is None else pathlib.Path(elog_path)
+
+        self.runs = None
+        """Dataframe of experimental runs"""
+
+        self.events = None
+        """Dataframe of events"""
+
+        self.runs_final = None
+        """Dataframe of experimental runs after filtering"""
+
+        self.events_final = None
+        """To do: Dataframe of events after filtering"""
+
+    def cleanse(self):
+        """Cleanse the elog.
+
+        This function updates the ``self.runs`` and ``self.events`` dataframes.
+        Most entries are being preserved, i.e. minimal filtering is done except
+        for those that are labeled as "junk" or simply corrupted.
+        """
+        with open(self.elog_path, 'r') as file:
             self.runs = pd.read_html(file)[4]
 
         # re-labeling
@@ -42,26 +78,70 @@ class ElogCleanser:
         # data cleansing
         self._cleanse_runs()
         self._cleanse_events()
+    
+    def save_cleansed_elog(
+        self,
+        output_dir=None,
+        df_runs=None,
+        df_events=None,
+        elog_runs_csv_name='elog_runs',
+        elog_events_csv_name='elog_events',
+        verbose=True,
+    ):
+        """Save experimental runs and events after data cleansing.
 
-        # save to files
-        path = pathlib.Path(CLEANSED_DIR, 'elog_runlog.h5')
-        with pd.HDFStore(path, 'w') as file:
-            file.append('runs', self.runs)
-            file.append('events', self.events)
-        if verbose:
-            print(f'Cleansed runs and events saved to "{path}"')
+        Both ``self.runs`` and ``self.events`` are being saved into separate CSV
+        files.
 
-        path = pathlib.Path(CLEANSED_DIR, 'elog_runs.csv')
-        self.runs.to_csv(path, index=False)
-        if verbose:
-            print(f'Cleansed runs also saved to "{path}"')
+        Parameters
+        ----------
+        output_dir : str or pathlib.Path, default None
+            The directory to save the files. If ``None``, the default path is
+            used, i.e. ``$PROJECT_DIR/database/runlog/cleansed``.
+        df_runs : pd.DataFrame, default None
+            Experimental runs to save. If None, the default is to use
+            ``self.runs``.
+        df_events : pd.DataFrame, default None
+            Events to save. If None, the default is to use ``self.events``.
+        elog_runs_csv_name : str, default 'elog_runs'
+            The name of the CSV file for experimental runs without the extension;
+            the extension ``.csv`` will be appended automatically.
+        elog_events_csv_name : str, default 'elog_events'
+            The name of the CSV file for events without the extension; the
+            extension ``.csv`` will be appended automatically.
+        verbose : bool, default True
+            Whether to print the progress.
+        """
+        output_dir = CLEANSED_DIR if output_dir is None else pathlib.Path(output_dir)
+        df_runs = self.runs if df_runs is None else df_runs
+        df_events = self.events if df_events is None else df_events
 
-        path = pathlib.Path(CLEANSED_DIR, 'elog_events.csv')
-        self.events.to_csv(path, index=False)
+        path = output_dir / (elog_runs_csv_name + '.csv')
+        self._save_as_csv(df_runs, path)
         if verbose:
-            print(f'Cleansed events also saved to "{path}"')
+            print(f'Cleansed runs dataframe has been saved to "{path}"')
+
+        path = output_dir / (elog_events_csv_name + '.csv')
+        self._save_as_csv(df_events, path)
+        if verbose:
+            print(f'Cleansed events has been saved to "{path}"')
 
     def _cleanse_runs(self):
+        """Cleanse the entries (rows) of experimental runs.
+
+        This function updates the ``self.runs`` dataframe and go through the
+        following steps:
+            - Remove entries whose "Type" are labeled as "junk".
+            - Convert all runs into integers.
+            - Convert all times into datetimes, this includes "Begin time" and "End time".
+            - Convert elapse time into timedelta, this includes "Elapse".
+            - Standardize the "Target" into one of "Ni58", "Ni64", "Sn112", "Sn124" or "CH2".
+            - Turn all "nan" in "Type", "Target", "Beam" and "Shadow bars" into empty strings.
+            - Convert "Trigger rate" into float.
+            - Convert "Comments" into "none" if it is "nan".
+            - Use singular form for all column names, e.g. "Shadow bars" -> "Shadow bar".
+            - Convert all column names to lowercase, and replace spaces with underscores.
+        """
         # drop entries with type value 'junk'
         self.runs = self.runs[~self.runs['Type'].str.contains('junk', case=False)]
 
@@ -107,12 +187,41 @@ class ElogCleanser:
         self.runs.columns = [col.lower().replace(' ', '_') for col in self.runs.columns]
 
     def _cleanse_events(self):
+        """Cleanse the entries (rows) of events.
+
+        This function updates the ``self.events`` dataframe which has columns
+        "run", "time", "entry" and "comment".
+        """
+        # "End time" is actually entry
         self.events['Entry'] = self.events['End time']
+
+        # replace "nan" with "none"
         self.events.replace({'Comments': '(?i)nan'}, 'none', regex=True, inplace=True)
+
+        # select columns that are relevant for events
         self.events = self.events[['RUN', 'Begin time', 'Entry', 'Comments']]
+
+        # use only lowercase for column names and replace spaces with underscores
         self.events.columns = ['run', 'time', 'entry', 'comment']
 
-    def finalize(self, verbose=True):
+    def filtered_runs(self):
+        """Updates and returns filtered experimental runs.
+
+        This function filters the experimental runs and keeps only the
+        meaningful entries. The filters are:
+            - run in [2000, 3000) or [4000, 5000)
+            - elapse time > 5 minutes
+            - daq == "Merged"
+            - type == "data"
+            - target is one of "Ni58", "Ni64", "Sn112" or "Sn124"
+            - beam is one of "Ca40 56 MeV/u", "Ca40 140 MeV/u", "Ca48 56 MeV/u" or "Ca48 140 MeV/u"
+            - trigger rate > 1000.0 / sec
+        
+        Returns
+        -------
+        runs_final : pd.DataFrame
+            Filtered experimental runs.
+        """
         # get a copy of elog to filter for valid runs
         path = pathlib.Path(CLEANSED_DIR, 'elog_runlog.h5')
         if self.runs is None:
@@ -136,17 +245,86 @@ class ElogCleanser:
         # drop redundant columns
         self.runs_final.drop(columns=['daq', 'type'], inplace=True)
 
-        # save to files
-        path = pathlib.Path(PROJECT_DIR, 'database/runlog', 'elog_final.h5')
-        with pd.HDFStore(path, 'w') as file:
-            file.append('runs_final', self.runs_final)
-        if verbose:
-            print(f'Final elog runs saved to "{path}"')
+        return self.runs_final
+
+    def save_filtered_runs(
+        self,
+        file_extension='csv',
+        output_path=None,
+        df=None,
+        verbose=True,
+    ):
+        """Save filtered experimental runs to a file.
+
+        Parameters
+        ----------
+        file_extension : 'csv' or 'h5', default 'csv'
+            File extension of the output file. This will be overwritten if
+            ``output_path`` is specified explicitly by user.
+        output_path : pathlib.Path, default None
+            Path to the output file. If None, the default path is
+            ``$PROJECT_DIR/database/runlog/elog_runs_filtered.${EXT}``, where
+            ``${EXT}`` is the file extension specified by ``file_extension``.
+        df : pd.DataFrame, default None
+            Experimental runs to save. If None, the default is to use
+            ``self.runs_final``.
+        verbose : bool, default True
+            Whether to print the message.
         
-        path = pathlib.Path(PROJECT_DIR, 'database/runlog', 'elog_runs.csv')
-        self.runs_final.to_csv(path, index=False)
+        Raises
+        ------
+        ValueError
+            If ``file_extension`` is not one of 'csv' or 'h5'.
+        """
+        # determine the dataframe to save
+        if df is None:
+            df = self.runs_final
+        
+        # determine output path and file extension
+        if output_path is None:
+            output_path = PROJECT_DIR / f'database/runlog/elog_runs_filtered.{file_extension}'
+        else:
+            output_path = pathlib.Path(output_path)
+            file_extension = output_path.suffix[1:] # remove the leading '.'
+        
+        # save file according to file extension
+        if file_extension == 'h5':
+            self._save_as_hdf({'runs': df}, output_path)
+        elif file_extension == 'csv':
+            self._save_as_csv(df, output_path)
+        else:
+            raise ValueError(f'Unsupported file extension: {file_extension}')
+
         if verbose:
-            print(f'Final elog runs also saved to "{path}"')
+            print(f'Filtered elog runs have been saved to "{str(output_path)}"')
+
+    @staticmethod
+    def _save_as_csv(df, filepath):
+        """Save a dataframe as a csv file.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Dataframe to save.
+        filepath : str or pathlib.Path
+            Path to the output file.
+        """
+        df.to_csv(filepath, index=False)
+    
+    @staticmethod
+    def _save_as_hdf(df, filepath):
+        """Save a dataframe as an hdf file.
+
+        Parameters
+        ----------
+        df : dict of pd.DataFrame
+            A dictionary of dataframes to save.
+        filepath : str or pathlib.Path
+            Path to the output file.
+        """
+        with pd.HDFStore(filepath, 'w') as file:
+            for key, value in df.items():
+                file.append(key, value)
 
 class MySqlCleanser:
     """This is a class of methods to perform data cleansing on the tables freshly downloaded from MySQL at WMU.
@@ -352,3 +530,11 @@ class MySqlCleanser:
         print('Done!')
         return df
 
+
+if __name__ == '__main__':
+    print('Data cleansing the ELOG...')
+    elog_cleanser = ElogCleanser()
+    elog_cleanser.cleanse()
+    elog_cleanser.filtered_runs()
+    elog_cleanser.save_cleansed_elog()
+    elog_cleanser.save_filtered_runs()
