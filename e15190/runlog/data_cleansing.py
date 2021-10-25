@@ -84,14 +84,19 @@ class ElogCleanser:
         output_dir=None,
         df_runs=None,
         df_events=None,
+        elog_hdf_name='elog',
         elog_runs_csv_name='elog_runs',
         elog_events_csv_name='elog_events',
         verbose=True,
     ):
         """Save experimental runs and events after data cleansing.
 
-        Both ``self.runs`` and ``self.events`` are being saved into separate CSV
-        files.
+        Both ``self.runs`` and ``self.events`` are saved into one single HDF5
+        file. Then they are saved into two separate CSV files.
+
+        HDF5 file has the advantage of preserving the data types, while CSV
+        files allow users to inspect the data with simple text editor or
+        spreadsheet software.
 
         Parameters
         ----------
@@ -103,6 +108,9 @@ class ElogCleanser:
             ``self.runs``.
         df_events : pd.DataFrame, default None
             Events to save. If None, the default is to use ``self.events``.
+        elog_hdf_name : str, default 'elog'
+            The name of the HDF file without the extension; the extension
+            ``.h5`` will be appended automatically.
         elog_runs_csv_name : str, default 'elog_runs'
             The name of the CSV file for experimental runs without the extension;
             the extension ``.csv`` will be appended automatically.
@@ -115,6 +123,11 @@ class ElogCleanser:
         output_dir = CLEANSED_DIR if output_dir is None else pathlib.Path(output_dir)
         df_runs = self.runs if df_runs is None else df_runs
         df_events = self.events if df_events is None else df_events
+
+        path = output_dir / (elog_hdf_name + '.h5')
+        self._save_as_hdf({'runs': df_runs, 'events': df_events}, path)
+        if verbose:
+            print(f'Cleansed runs and events have been saved to "{path}"')
 
         path = output_dir / (elog_runs_csv_name + '.csv')
         self._save_as_csv(df_runs, path)
@@ -249,16 +262,20 @@ class ElogCleanser:
 
     def save_filtered_runs(
         self,
-        file_extension='csv',
+        file_extension,
         output_path=None,
         df=None,
         verbose=True,
     ):
         """Save filtered experimental runs to a file.
 
+        HDF5 file has the advantage of preserving the data types, while CSV
+        files allow users to inspect the data with simple text editor or
+        spreadsheet software.
+
         Parameters
         ----------
-        file_extension : 'csv' or 'h5', default 'csv'
+        file_extension : 'csv' or 'h5'
             File extension of the output file. This will be overwritten if
             ``output_path`` is specified explicitly by user.
         output_path : pathlib.Path, default None
@@ -537,4 +554,5 @@ if __name__ == '__main__':
     elog_cleanser.cleanse()
     elog_cleanser.filtered_runs()
     elog_cleanser.save_cleansed_elog()
-    elog_cleanser.save_filtered_runs()
+    elog_cleanser.save_filtered_runs('h5')
+    elog_cleanser.save_filtered_runs('csv')
