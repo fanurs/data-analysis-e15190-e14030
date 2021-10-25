@@ -220,10 +220,10 @@ class Wall:
         """``pandas.DataFrame`` : Dataframe of vertices from all bars"""
 
         self.bars = None
-        """dict : A collection of :py:class:`Bar` objects.
+        """``dict[int, Bar]`` : A collection of :py:class:`Bar` objects.
         
-        Keys are the bar numbers. The bottommost is bar 0, the topmost is bar
-        24. In the experiment, bar 0 was not used because it was shadowed.
+        The bottommost is bar 0, the topmost is bar 24. In the experiment, bar 0
+        was not used because it was shadowed.
         """
 
         # if True, read in again from raw inventor readings
