@@ -1,0 +1,52 @@
+run,time,entry,comment
+E51,2018-03-31 17:20:00,Kyle made one DAQ cable by pass a module,(1) Some cables were found unplugged and some modules were missing
+E49,2018-03-30 14:05:23,Don't mean to add this evernt,none
+E47,2018-03-24 00:26:43,Key given to operator for checking the beam spot,none
+E46,2018-03-23 13:52:58,Now Back to 56 MeV/u,none
+E45,2018-03-23 09:10:10,new beam tune: 48Ca @ 28MeV/u,none
+E43,2018-03-19 17:18:00,Beam is back.,(1) Beam spot may not be stable so operators will monitor it. We will do blank more often to make sure the beam spot is not drifting.
+E44,2018-03-18 08:40:00,New beam: Ca48@56MeV/u,none
+E42,2018-03-13 23:07:48,Shadow Bars Out,none
+E41,2018-03-13 10:21:00,Problem with NW qdc4 fixed..,none
+E40,2018-03-13 06:21:00,Issues with NW qdc4,(1) It's not clear what the problem is. We rebooted CAMAC and reloaded CFDs and GDGs. Still no improvement. Kuan called.
+E39,2018-03-13 04:45:00,Veto Wall is fixed.,"(2) Almost all ""resistor"" boxes were replaced. Many fast amp channels died so we replaced two modules and used free slots. All the detectors were brought back to life but the gain changed on almost all of them so we had to calibrate them again to roughly 17MeV range."
+E38,2018-03-12 01:08:10,Running with HiRA+uBall only,none
+E37,2018-03-11 18:22:57,Took out uB+NW trigger and restart VW HV power crate,none
+E36,2018-03-11 16:02:00,Several veto wall PMTs are giving very strange signals which are showing up as very small signals in the QDCS.,none
+E35,2018-03-11 12:14:59,Om found that the signal from one VW end went off. More detectors went off in the next few hours.,none
+E34,2018-03-11 01:32:26,DAY LIGHT SAVING TIME IN RUN 4098,none
+E33,2018-03-10 16:00:00,Operator wants to look at the beam. Key was taken.,none
+E32,2018-03-10 03:19:59,Beam lost. Key given to operators.,none
+E21,2018-03-09 16:32:00,New glom window.,"(1) Previous data had a glom window of 500 clock ticks (1 milisecond). Therefore, many events were being combined together in one buffer."
+E22,2018-03-09 14:06:10,Ca48@55MeV beam tuning,none
+E23,2018-03-09 08:04:10,Ca48@28MeV/u beam tunning,none
+E19,2018-03-08 23:40:23,Changes to VW,"(1) TDC 127 has a copy at TDC126 for B05 bottom. Before TDC 127 was missing, check the run number. Bar 05 bottom is QDC 08/05 instead of QDC 07/09"
+E20,2018-03-08 18:30:00,New beam tune,(1) The beam was hitting FP slits that were very narrow (5mm). We were getting almost 2k triggers with blank!. Tom opened the slits and the problem got fixed. The rate with blank target dropped to about 10/sec.
+E15,2018-02-25 23:00:00,End of the first part of the campaign. Gave the key to operator at 11pm.,none
+E14,2018-02-25 13:42:00,Adjusted voltage on Detector 21 (B20).,"(1) B21 top HV: (top) changed from 924V to 1024V, (bottom) changed from 952V to 1052V. Somehow, Detector 5 (B04) QDC signal looks good. It's possible one of the cables doesn't have a good contact (OR fast amp connectors)."
+E12,2018-02-25 11:17:00,Target changed to 58Ni,none
+E11,2018-02-25 11:09:00,Target changed to blank,none
+E10,2018-02-25 01:20:00,"Adjusted FA HV and discriminators. Amplified more FA3,FA10 and F16.",none
+E25,2018-02-24 21:46:19,130 CsI gain file mistakenly loaded,"(1) From run 2710 until run 2825, 130 CsI gain file was used instead of 170 CsI gain file. The gain is about a factor of 2 less."
+E9,2018-02-24 19:04:43,DSS out,none
+E7,2018-02-24 16:34:00,Pulser rate increased from 10 to 50.,none
+E8,2018-02-24 16:00:40,Adjusted beam for our attenuators.,(1) Attn 10k - 350k DSS OR; Attn 100k - 31k DSS OR; Attn 1M - 500 DSS OR;  (2) Ignore previous normalization run except the ones where there was no beam.
+E6,2018-02-24 09:56:00,HiRA+uball removed from the trigger,none
+E24,2018-02-23 17:08:31,130 CsI gain file mistakenly loaded,"(1) From run 2710 until run 2825, 130 CsI gain file was used instead of 170 CsI gain file. The gain is about a factor of 2 less."
+E5,2018-02-23 16:36:00,Tom is switching beam back to Ca40@140MeV/u,none
+E4,2018-02-23 10:42:00,Tom is switching beam to Ca40@56MeV/u.,none
+E3,2018-02-22 21:12:14,Changed target to 58Ni. Removed shadow bars. Removed HiRA-uBall from the trigger.,none
+E2,2018-02-22 20:00:16,Fixed the DSS Live. Now it's counting correctly.,(1) The channel was refiring about 10 times more than it was supposed to.
+E1,2018-02-21 10:10:20,New tune of 40Ca@140 MeV,(1) Tom developed a new tune of Ca40@140MeV/u beam that is very similar to Ca40@56MeV/u. It's supposed to be better.
+E48,2018-02-15 02:24:52,NW thresholds lowered to 1 MeV from 2 MeV 15 MeV HV file is actually Co60 from run 2097 to 2256,none
+E13,2018-02-14 22:58:00,VW CFD02 failed. Was replaced by the 5th (from the right) CFD module in VW CAMAC.,"(1) The current configuration is (Slot, CFD#, module # in gui): (2,blank,5),(5,CFD02,4), (9,CFD03,3), (13,blank,2), (17,CFD01,1), (21,CFD00,0)"
+E26,2018-02-13 20:14:00,The chip problem is fixed,none
+E31,2018-02-13 08:27:50,CsI gain 200 loaded in this run until 2199,none
+E18,2018-02-12 21:43:00,"1) delayed hira+NW master by 150 ns, 2) delayed fast clear by 150ns; 3)increased the fast busy by 150 ns",none
+E29,2018-02-12 20:59:10,"Tower 1 CsI gain changed to 170, towers 2 and 3 still at 200 until run 2154",none
+E30,2018-02-12 20:59:10,Wrong CsI gain file (probably CsI130) from this run to 2159,none
+E17,2018-02-12 09:30:00,"Removed Shadow bar, stopped because bad silicon buffers",none
+E16,2018-02-11 16:52:00,NW HV setting changed from 25MeV to Co60. NW threshold loaded: 2MeV,(1) Also increase beam intensity; Lower FA thresholds
+E50,2018-02-11 13:07:58,DSS rotated to avoid beam. Assume DDS is in the beam line before Run 2092. Don't use for NW data,none
+E28,2018-02-09 05:02:40,CsI gain raised to 200 until 2139,none
+E27,2018-02-09 03:43:00,CsI gain file from run 2008 to 2012 is CsI130,none
