@@ -38,7 +38,7 @@
 <h1>e15190.runlog.query.ElogQuery<a class="headerlink" href="#e15190-runlog-query-elogquery" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.query.</span></span><span class="sig-name descname"><span class="pre">ElogQuery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_breakpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.query.</span></span><span class="sig-name descname"><span class="pre">ElogQuery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_run_batches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_run_batches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_run_batches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -46,27 +46,196 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.__init__" title="e15190.runlog.query.ElogQuery.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([set_breakpoints])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.__init__" title="e15190.runlog.query.ElogQuery.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([load_run_batches, ...])</p></td>
+<td><p>Query for the Elog database.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_nwb_pos_calib_params</span></code>(fig[, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_nw_pos_calib_params</span></code>(AB, fig[, ...])</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_trigger_rate</span></code>(fig)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_figure_reaction_overview</span></code>([...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.determine_run_batches" title="e15190.runlog.query.ElogQuery.determine_run_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_run_batches</span></code></a>([...])</p></td>
+<td><p>Determine the run batches.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_figure_reaction_overview</span></code>([...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_breakpoints</span></code>([unified_properties, ...])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.get_run_batches_summary" title="e15190.runlog.query.ElogQuery.get_run_batches_summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_run_batches_summary</span></code></a>()</p></td>
+<td><p>Updates and returns the run batches summary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.load_run_batches" title="e15190.runlog.query.ElogQuery.load_run_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_run_batches</span></code></a>([filepath])</p></td>
+<td><p>Load the run batches from a CSV file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.save_run_batches" title="e15190.runlog.query.ElogQuery.save_run_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_run_batches</span></code></a>([filepath])</p></td>
+<td><p>Save the run batches to a CSV file.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">df</span></code></a></p></td>
+<td><p>The Elog database pandas dataframe.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.batch_unified_properties" title="e15190.runlog.query.ElogQuery.batch_unified_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_unified_properties</span></code></a></p></td>
+<td><p>Properties that are unified across all runs in a single batch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.max_run_gap" title="e15190.runlog.query.ElogQuery.max_run_gap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_run_gap</span></code></a></p></td>
+<td><p>Maximum allowed gap between runs in a single batch.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.ElogQuery.df_batches" title="e15190.runlog.query.ElogQuery.df_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">df_batches</span></code></a></p></td>
+<td><p>A summary of batch properties rather than run properties.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_breakpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_run_batches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_run_batches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_run_batches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query for the Elog database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>load_run_batches</strong> (<em>bool</em><em>, </em><em>default True</em>) – Invoke <a class="reference internal" href="#e15190.runlog.query.ElogQuery.load_run_batches" title="e15190.runlog.query.ElogQuery.load_run_batches"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_run_batches()</span></code></a> upon initialization.</p></li>
+<li><p><strong>update_run_batches</strong> (<em>bool</em><em>, </em><em>default False</em>) – Invoke <a class="reference internal" href="#e15190.runlog.query.ElogQuery.determine_run_batches" title="e15190.runlog.query.ElogQuery.determine_run_batches"><code class="xref py py-func docutils literal notranslate"><span class="pre">determine_run_batches()</span></code></a>, then
+<a class="reference internal" href="#e15190.runlog.query.ElogQuery.get_run_batches_summary" title="e15190.runlog.query.ElogQuery.get_run_batches_summary"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_run_batches_summary()</span></code></a> upon initialization. If <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+<code class="docutils literal notranslate"><span class="pre">load_run_batches</span></code> will be ignored, and the run batches will be
+re-determined.</p></li>
+<li><p><strong>save_run_batches</strong> (<em>bool</em><em>, </em><em>default False</em>) – Invoke <a class="reference internal" href="#e15190.runlog.query.ElogQuery.save_run_batches" title="e15190.runlog.query.ElogQuery.save_run_batches"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_run_batches()</span></code></a> upon initialization. This is
+useful when the run batches are re-determined and we want the new
+run batches to be saved into a CSV file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.df">
+<span class="sig-name descname"><span class="pre">df</span></span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.df" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Elog database pandas dataframe.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.batch_unified_properties">
+<span class="sig-name descname"><span class="pre">batch_unified_properties</span></span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.batch_unified_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties that are unified across all runs in a single batch.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.max_run_gap">
+<span class="sig-name descname"><span class="pre">max_run_gap</span></span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.max_run_gap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum allowed gap between runs in a single batch.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.df_batches">
+<span class="sig-name descname"><span class="pre">df_batches</span></span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.df_batches" title="Permalink to this definition">¶</a></dt>
+<dd><p>A summary of batch properties rather than run properties.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.determine_run_batches">
+<span class="sig-name descname"><span class="pre">determine_run_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_unified_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_run_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.determine_run_batches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the run batches.</p>
+<p>A <em>run batch</em> or simply <em>batch</em> is a group of runs that share the same
+properties like beam energy and target, so that merging the events
+across runs within the same batch makes physical sense. Run batches are
+useful when analyzing quantities (e.g. PSD parameters) that require
+statistics from multiple runs.</p>
+<p>This function tries to determine the run batches by comparing the
+properties of the runs. Additional batches can also be specified by the
+argument <code class="docutils literal notranslate"><span class="pre">additional_runs</span></code>. At the end, <code class="docutils literal notranslate"><span class="pre">self.df</span></code> will be updated to
+use a 2-level index, namely, <code class="docutils literal notranslate"><span class="pre">ibatch</span></code> and <code class="docutils literal notranslate"><span class="pre">irun</span></code>. The <code class="docutils literal notranslate"><span class="pre">ibatch</span></code>
+index is the enumeration of run batches; the <code class="docutils literal notranslate"><span class="pre">irun</span></code> index is a
+consecutive enumeration of all runs across all batches. Both indices
+start from 0.</p>
+<p>While we might expect physical properties of the runs within one single
+batch to be comparable, there is no guarantee for that. As an example,
+consider a batch consists of run 12, 13, 14, 15. All the runs have the
+same reaction systems, Ca40 + Ni58 at 140 MeV/u, without shadow bars.
+However, there is no guarantee that, say, the position calibration
+parameters are similar for all four runs. Some hardware differences or
+DAQ settings might cause one of the runs to be very different from the
+rest. Further analysis is required to study those differences across
+runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_unified_properties</strong> (<em>list of str</em><em>, </em><em>default None</em>) – A list of properties that are unified across all runs in a single
+batch. This means that whenever one of these properties changes, a
+breakpoint will be set to separate the runs into different batches.
+Any column in <code class="docutils literal notranslate"><span class="pre">self.df</span></code> can be used. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the function
+uses <a class="reference internal" href="#e15190.runlog.query.ElogQuery.batch_unified_properties" title="e15190.runlog.query.ElogQuery.batch_unified_properties"><code class="xref py py-attr docutils literal notranslate"><span class="pre">batch_unified_properties</span></code></a>.</p></li>
+<li><p><strong>max_run_gap</strong> (<em>np.timedelta64</em><em>, </em><em>default None</em>) – Maximum allowed gap between runs in a single batch. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the
+function uses <a class="reference internal" href="#e15190.runlog.query.ElogQuery.max_run_gap" title="e15190.runlog.query.ElogQuery.max_run_gap"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_run_gap</span></code></a>.</p></li>
+<li><p><strong>additional_runs</strong> (<em>list of int</em><em>, </em><em>default None</em>) – A list of run numbers that will be used to create additional
+batches. The runs should specify the <em>first</em> run of a batch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.get_run_batches_summary">
+<span class="sig-name descname"><span class="pre">get_run_batches_summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.get_run_batches_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates and returns the run batches summary.</p>
+<p>This function updates the dataframe <a class="reference internal" href="#e15190.runlog.query.ElogQuery.df_batches" title="e15190.runlog.query.ElogQuery.df_batches"><code class="xref py py-attr docutils literal notranslate"><span class="pre">df_batches</span></code></a>, which
+contains the following columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ibatch</span></code> (int): the enumeration of run batches (starting from 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_min</span></code> (int): first run number</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_max</span></code> (int): last run number</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_runs</span></code> (int): number of runs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_skipped_runs</span></code> (int): number of runs that are skipped</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">begin_time</span></code> (Timestamp): begin time of the first run</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">end_time</span></code> (Timestamp): end time of the last run</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_elapse</span></code> (Timedelta): total elapsed time of all the runs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_gap_time</span></code> (Timedelta): total gap time between all the runs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code> (str): e.g. Ni58, Ni64, Sn112, Sn124.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">beam</span></code> (str): e.g. Ca40, Ca48</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">beam_energy</span></code> (float): beam energy in MeV/u</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shadow_bar</span></code> (str): shadow bar configuration, i.e. “in” or “out”</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trigger_rate_min</span></code> (float): minimum trigger rate</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trigger_rate_max</span></code> (float): maximum trigger rate</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trigger_rate_mean</span></code> (float): mean trigger rate</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>df_batches</strong> – A dataframe that lists the batch properties.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.save_run_batches">
+<span class="sig-name descname"><span class="pre">save_run_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.save_run_batches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the run batches to a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em>, </em><em>default None</em>) – The path to the CSV file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the function uses
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">run_batches_path</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.ElogQuery.load_run_batches">
+<span class="sig-name descname"><span class="pre">load_run_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.ElogQuery.load_run_batches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the run batches from a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em>, </em><em>default None</em>) – The path to the CSV file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the function uses
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">run_batches_path</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

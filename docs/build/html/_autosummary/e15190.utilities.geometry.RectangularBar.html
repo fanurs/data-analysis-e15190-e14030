@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.utilities.geometry.RectangularBar &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.geometry.RectangularBar</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="e15190-utilities-geometry-rectangularbar">
+<h1>e15190.utilities.geometry.RectangularBar<a class="headerlink" href="#e15190-utilities-geometry-rectangularbar" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.geometry.</span></span><span class="sig-name descname"><span class="pre">RectangularBar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculate_local_vertices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_vertices_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.__init__" title="e15190.utilities.geometry.RectangularBar.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(vertices[, ...])</p></td>
+<td><p>Construct a rectangular bar.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.construct_plotly_mesh3d" title="e15190.utilities.geometry.RectangularBar.construct_plotly_mesh3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_plotly_mesh3d</span></code></a>()</p></td>
+<td><p>Update bar's attribute <code class="docutils literal notranslate"><span class="pre">self.triangle_mesh</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.dimension" title="e15190.utilities.geometry.RectangularBar.dimension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dimension</span></code></a>([index])</p></td>
+<td><p>Returns the dimension(s) of the bar.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.draw_hit_pattern2d" title="e15190.utilities.geometry.RectangularBar.draw_hit_pattern2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_hit_pattern2d</span></code></a>(hits, ax[, frame, ...])</p></td>
+<td><p>Draw the hit pattern of the bar with 2D histogram.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape" title="e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency_alphashape</span></code></a>([cut])</p></td>
+<td><p>Calculate the geometry efficiency of the bar using the alphashape.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_hit_positions" title="e15190.utilities.geometry.RectangularBar.get_hit_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_hit_positions</span></code></a>([hit_t, frame, ...])</p></td>
+<td><p>Return the hit positions of the simulation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape" title="e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_theta_phi_alphashape</span></code></a>([delta, alpha, cut])</p></td>
+<td><p>Calculate the alphashape of the bar in (theta, phi) coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle" title="e15190.utilities.geometry.RectangularBar.get_total_solid_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle</span></code></a>([method])</p></td>
+<td><p>Return the total solid angle of the bar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape" title="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_alphashape</span></code></a>([return_error])</p></td>
+<td><p>Calculate the total solid angle of the bar using the alphashape.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo" title="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_monte_carlo</span></code></a>([n_rays, ...])</p></td>
+<td><p>Calculate the total solid angle of the bar by Monte Carlo simulation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.is_inside" title="e15190.utilities.geometry.RectangularBar.is_inside"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_inside</span></code></a>(coordinates[, frame, tol])</p></td>
+<td><p>Check if the given coordinates are inside the bar.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.simple_simulation" title="e15190.utilities.geometry.RectangularBar.simple_simulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_simulation</span></code></a>([n_rays, random_seed, ...])</p></td>
+<td><p>A simple ray simulation on the bar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.to_lab_coordinates" title="e15190.utilities.geometry.RectangularBar.to_lab_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_lab_coordinates</span></code></a>(local_coordinates)</p></td>
+<td><p>Converts coordinates from local frame to lab frame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.to_local_coordinates" title="e15190.utilities.geometry.RectangularBar.to_local_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_local_coordinates</span></code></a>(lab_coordinates)</p></td>
+<td><p>Converts coordinates from lab frame to local frame.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.vertices" title="e15190.utilities.geometry.RectangularBar.vertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertices</span></code></a></p></td>
+<td><p>The vertices of the bar in lab frame (unit cm)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.loc_vertices" title="e15190.utilities.geometry.RectangularBar.loc_vertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loc_vertices</span></code></a></p></td>
+<td><p>The vertices of the bar in local frame (unit cm)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.pca" title="e15190.utilities.geometry.RectangularBar.pca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pca</span></code></a></p></td>
+<td><p>The PCA of the bar vertices in lab frame</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculate_local_vertices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_vertices_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a rectangular bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vertices</strong> (<em>ndarray of shape</em><em> (</em><em>8</em><em>, </em><em>3</em><em>)</em>) – Exactly eight (x, y, z) lab coordinates.  As long as all eight
+vertices are distinct, i.e. can properly define a cuboid, the order
+of vertices does not matter because PCA will be applied to
+automatically identify the 1st, 2nd and 3rd principal axes of the
+bar. These vertices are always assumed to have included the Pyrex
+thickness</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.vertices">
+<span class="sig-name descname"><span class="pre">vertices</span></span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>The vertices of the bar in lab frame (unit cm)</p>
+<p>A length-8 dictionary of the form <code class="docutils literal notranslate"><span class="pre">{(i,</span> <span class="pre">j,</span> <span class="pre">k):</span> <span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)}</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.pca">
+<span class="sig-name descname"><span class="pre">pca</span></span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.pca" title="Permalink to this definition">¶</a></dt>
+<dd><p>The PCA of the bar vertices in lab frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">sklearn.decomposition.PCA</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.loc_vertices">
+<span class="sig-name descname"><span class="pre">loc_vertices</span></span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.loc_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>The vertices of the bar in local frame (unit cm)</p>
+<p>A length-8 dictionary of the form <code class="docutils literal notranslate"><span class="pre">{(i,</span> <span class="pre">j,</span> <span class="pre">k):</span> <span class="pre">(x',</span> <span class="pre">y',</span> <span class="pre">z')}</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.dimension">
+<span class="sig-name descname"><span class="pre">dimension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the dimension(s) of the bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>index</strong> (<em>int</em><em>, </em><em>default None</em>) – The index of the direction. If <cite>None</cite>, all three dimensions will be
+returned. Indices 1, 2 and 3 correspond to the x, y and z in the
+local (bar) frame.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>dimension</strong> – The dimension(s) of the bar.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float or 3-tuple of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar._deco_numpy_ndim">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_deco_numpy_ndim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar._deco_numpy_ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator for preserving numpy array’s dimensionality.</p>
+<p>Some functions only accepts 2D arrays, i.e. rows of 1D arrays. To apply
+this kind of functions on 1D arrays, we may use this decoratord. The
+decorated functions can take in either a 2D array or a 1D array. If the
+input is a 2D array, the output will be a 2D array; if the input is a 1D
+array, the output will be kept as a 1D array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>function</em>) – The function to decorate.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>func</strong> – The decorated function.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.to_local_coordinates">
+<span class="sig-name descname"><span class="pre">to_local_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lab_coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.to_local_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts coordinates from lab frame to local frame.</p>
+<p>Always assume Cartesian coordinates in both frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>lab_coordinates</strong> (<em>(</em><em>N</em><em>, </em><em>3</em><em>) or </em><em>(</em><em>3</em><em>, </em><em>) </em><em>array_like</em>) – The lab coordinates <span class="math notranslate nohighlight">\((x, y, z)\)</span> to be converted.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>local_coordinates</strong> – The local coordinates <span class="math notranslate nohighlight">\((x', y', z')\)</span>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(N, 3) or (3, ) array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.to_lab_coordinates">
+<span class="sig-name descname"><span class="pre">to_lab_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.to_lab_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts coordinates from local frame to lab frame.</p>
+<p>Always assume Cartesian coordinates in both frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>local_coordinates</strong> (<em>(</em><em>N</em><em>, </em><em>3</em><em>) or </em><em>(</em><em>3</em><em>, </em><em>) </em><em>array_like</em>) – The local coordinates <span class="math notranslate nohighlight">\((x', y', z')\)</span> to be converted.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lab_coordinates</strong> – The lab coordinates <span class="math notranslate nohighlight">\((x, y, z)\)</span>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(N, 3) or (3, ) array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.is_inside">
+<span class="sig-name descname"><span class="pre">is_inside</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0005</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.is_inside" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the given coordinates are inside the bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coordinates</strong> (<em>3-tuple</em><em> or </em><em>list of 3-tuples</em>) – The coordinates to be checked. Only support Cartesian coordinates.</p></li>
+<li><p><strong>frame</strong> (<em>'local'</em><em> or </em><em>'lab'</em><em>, </em><em>default 'local'</em>) – The frame of the coordinates.</p></li>
+<li><p><strong>tol</strong> (<em>float</em><em>, </em><em>default 5e-4</em>) – The tolerance of the boundary check.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>inside</strong> – <cite>True</cite> if the coordinates are inside the bar, otherwise <cite>False</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool or an array of bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.construct_plotly_mesh3d">
+<span class="sig-name descname"><span class="pre">construct_plotly_mesh3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.construct_plotly_mesh3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update bar’s attribute <code class="docutils literal notranslate"><span class="pre">self.triangle_mesh</span></code>.</p>
+<p>Construct a
+<a class="reference internal" href="e15190.utilities.ray_triangle_intersection.TriangleMesh.html#e15190.utilities.ray_triangle_intersection.TriangleMesh" title="e15190.utilities.ray_triangle_intersection.TriangleMesh"><code class="xref py py-class docutils literal notranslate"><span class="pre">TriangleMesh</span></code></a>
+object, i.e. a triangular mesh for the geometry of the bar, and save as
+<code class="docutils literal notranslate"><span class="pre">self.triangle_mesh</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.simple_simulation">
+<span class="sig-name descname"><span class="pre">simple_simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polar_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.simple_simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple ray simulation on the bar.</p>
+<p>Simple simulation means that there is no scattering, reflection,
+refraction, or any other actual physics consideration. Instead, we are
+only calculating geometrical intersections of random rays with the bar
+geometry.</p>
+<p>By default, this function would first identify the smallest rectangular
+region in the (theta, phi) space that fully contains the entire bar
+geometry.  Then, it would randomly emit rays toward this minimal region.
+Both theta range and phi range will be saved, so that user can calculate
+the actual solid angle later on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_rays</strong> (<em>int</em><em>, </em><em>default 10</em>) – Number of rays to be emitted. Not all of them are guaranteed to
+interact.</p></li>
+<li><p><strong>random_seed</strong> (<em>int</em><em>, </em><em>default None</em>) – Random seed to be used for random number generation. If None, a
+time-based seed will be used, i.e. non-reproducible.</p></li>
+<li><p><strong>polar_range</strong> (<em>2-tuple of floats</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – The polar range in radians. If None, the algorithm will use the
+minimal range determined by the bar vertices. This allows more
+efficient simulation.</p></li>
+<li><p><strong>azimuth_range</strong> (<em>2-tuple of floats</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – The azimuth range in radians. If None, the algorithm will use the
+minimal range determined by the bar vertices. This allows more
+efficient simulation.</p></li>
+<li><p><strong>save_result</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to save the result to this object as
+<code class="docutils literal notranslate"><span class="pre">self.simulation_result</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p><strong>simulation_result</strong> –</p>
+<dl class="simple">
+<dt>A dictionary with the following keys and array shapes:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">origin</span></code> : shape (3, )</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">azimuth_range</span></code> : shape (2, )</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polar_range</span></code> : shape (2, )</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">intersections</span></code> : shape (12, <code class="docutils literal notranslate"><span class="pre">n_rays</span></code>, 3)</p></li>
+</ul>
+</dd>
+</dl>
+<p>The first component of intersections has a size of 12, which comes
+from the 12 triangles that made up the rectangular bar (triangle
+mesh). Other functions like <a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_hit_positions" title="e15190.utilities.geometry.RectangularBar.get_hit_positions"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_hit_positions()</span></code></a> can be used
+to further simplify the intersection points.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_hit_positions">
+<span class="sig-name descname"><span class="pre">get_hit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hit_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uniform'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cartesian'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulation_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_hit_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the hit positions of the simulation.</p>
+<p>This function should be called after <code class="docutils literal notranslate"><span class="pre">self.simulation_result</span></code> is
+updated, e.g. by calling
+<a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.simple_simulation" title="e15190.utilities.geometry.RectangularBar.simple_simulation"><code class="xref py py-func docutils literal notranslate"><span class="pre">simple_simulation</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hit_t</strong> (<em>scalar</em><em> or </em><em>callable</em><em> or </em><em>'uniform'</em><em>, </em><em>default 'uniform'</em>) – If scalar, its value should be within [0, 1], with 0 being at the
+incident point at the surface, 1 being at the exit point, and the
+rest being somewhere in between. If callable, it should take in an
+integer <code class="docutils literal notranslate"><span class="pre">n_rays</span></code>, and return an array of size <code class="docutils literal notranslate"><span class="pre">n_rays</span></code> that
+collect the <code class="docutils literal notranslate"><span class="pre">hit_t</span></code> values in the range of [0, 1].  If ‘uniform’,
+the <code class="docutils literal notranslate"><span class="pre">hit_t</span></code> values will be uniformly distributed over [0, 1].</p></li>
+<li><p><strong>frame</strong> (<em>'local'</em><em> or </em><em>'lab'</em><em>, </em><em>default 'local'</em>) – The coordinate frame of the returned hit positions.</p></li>
+<li><p><strong>coordinate</strong> (<em>'cartesian'</em><em> or </em><em>'spherical'</em><em>, </em><em>default 'cartesian'</em>) – The coordinate system of the returned hit positions.</p></li>
+<li><p><strong>simulation_result</strong> (<em>dict</em><em>, </em><em>default None</em>) – The simulation result to be used. If None, the function uses
+<code class="docutils literal notranslate"><span class="pre">self.simulation_result</span></code>.</p></li>
+<li><p><strong>random_seed</strong> (<em>int</em><em>, </em><em>default None</em>) – The random seed used to generate the <code class="docutils literal notranslate"><span class="pre">hit_t</span></code> values. If None, a
+time-based seed will be used, i.e. non-reproducible.</p></li>
+<li><p><strong>tol</strong> (<em>float</em><em>, </em><em>default 1e-9</em>) – The tolerance used to filter out hit points that are too close to
+the origin, i.e. there were no intersections. The default simulation
+setting is such that if there were no intersections, the hit
+position will be the origin. Here, we simply put in a non-zero
+tolerance to account for any floating point errors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>hit_positions</strong> – The hit positions of the simulation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, shape (n_rays, 3)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo">
+<span class="sig-name descname"><span class="pre">get_total_solid_angle_monte_carlo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the total solid angle of the bar by Monte Carlo simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_rays</strong> (<em>int</em><em>, </em><em>default 1_000_000</em>) – The number of rays to simulate.</p></li>
+<li><p><strong>random_seed</strong> (<em>int</em><em>, </em><em>default None</em>) – The random seed of the Monte Carlo simulation. If None, a time-based
+seed will be used, i.e. non-reproducible.</p></li>
+<li><p><strong>return_error</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to return the error (uncertainty) of the calculation.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to print out the progress of the calculation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>total_solid_angle</strong> (<em>float</em>) – The total solid angle of the bar in steradians.</p></li>
+<li><p><strong>error</strong> (<em>float, optional</em>) – The uncertainty of the calculation. Only returned if
+<code class="docutils literal notranslate"><span class="pre">return_error</span></code> is True.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape">
+<span class="sig-name descname"><span class="pre">get_theta_phi_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the alphashape of the bar in (theta, phi) coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delta</strong> (<em>int</em><em> or </em><em>array of size 3</em><em>, </em><em>default 1.0</em>) – Grid spacing in cm.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>default 10.0</em>) – The alphashape parameter. The larger the value, the greater the
+curvature of the alphashape can be. When alpha is zero, the
+alphashape reduces into a convex hull; when alpha is too large, the
+alphashape could be “overfitted” to data points.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>alpha_shape_xy</strong> – Vertices that define the alphashape in (theta, phi) coordinates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, shape (n, 2)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar._split_theta_phi_alphashape_to_upper_and_lower">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_split_theta_phi_alphashape_to_upper_and_lower</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ashape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar._split_theta_phi_alphashape_to_upper_and_lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the alphashape into upper and lower parts.</p>
+<p>After splitting, both parts should form a function of theta. This is a
+function written mainly to help calculating the azimuthal width
+<span class="math notranslate nohighlight">\(\delta\phi\)</span> as a function of theta, which then is used to give
+the geometry efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ashape</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n</em><em>, </em><em>2</em><em>)</em>) – Vertices that define the alphashape in (theta, phi) coordinates.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>split_ashape</strong> – The upper and lower parts of the alphashape. The keys are ‘upper’
+and ‘lower’, the values are ndarrays of shape (n, 2).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape">
+<span class="sig-name descname"><span class="pre">get_total_solid_angle_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the total solid angle of the bar using the alphashape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>return_error</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to return the error (uncertainty) of the calculation.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>total_solid_angle</strong> (<em>float</em>) – The total solid angle of the bar in steradians.</p></li>
+<li><p><strong>error</strong> (<em>float, optional</em>) – The uncertainty of the calculation. Only returned if
+<code class="docutils literal notranslate"><span class="pre">return_error</span></code> is True.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_total_solid_angle">
+<span class="sig-name descname"><span class="pre">get_total_solid_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'alphashape'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the total solid angle of the bar.</p>
+<p>A wrapper function for the different methods of calculating the total
+solid angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>'alphashape'</em><em> or </em><em>'monte_carlo'</em>) – The method to use to calculate the total solid angle.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em><em>(</em><em>)</em>) – Keyword arguments to pass to the method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>total_solid_angle</strong> – The total solid angle of the bar in steradians.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape">
+<span class="sig-name descname"><span class="pre">get_geometry_efficiency_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the geometry efficiency of the bar using the alphashape.</p>
+<p>The geometry efficiency is defined as the effective azimuthal coverage
+ratio, i.e.
+<span class="math notranslate nohighlight">\(\delta\phi/(2\pi)\)</span>, as a function of theta.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>delta_phi</strong> – A function that takes theta as an argument and returns the geometry
+efficiency.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.draw_hit_pattern2d">
+<span class="sig-name descname"><span class="pre">draw_hit_pattern2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spherical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cartesian_coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('x',</span> <span class="pre">'y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'jet'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.draw_hit_pattern2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the hit pattern of the bar with 2D histogram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hits</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n</em><em>, </em><em>3</em><em>)</em>) – The hits to draw.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The axes to draw the hits on.</p></li>
+<li><p><strong>frame</strong> (<em>'lab'</em><em> or </em><em>'local'</em>) – The frame of reference to use for the hits.</p></li>
+<li><p><strong>coordinate</strong> (<em>'spherical'</em><em> or </em><em>'cartesian'</em>) – The coordinate system to use for the hits.</p></li>
+<li><p><strong>cartesian_coordinates</strong> (<em>tuple of str</em>) – The Cartesian coordinates to use for the hits. If <code class="docutils literal notranslate"><span class="pre">coordinate</span></code> is
+not ‘cartesian’, this argument has no effect.</p></li>
+<li><p><strong>cmap</strong> (<em>str</em><em> or </em><em>matplotlib.colors.Colormap</em>) – The colormap to use for plotting the hits in 2D histogram.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>hist</strong> – The histogram counts of the hits.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>2D ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.geometry.RectangularBar</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

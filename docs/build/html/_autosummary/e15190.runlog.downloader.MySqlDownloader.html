@@ -38,40 +38,226 @@
 <h1>e15190.runlog.downloader.MySqlDownloader<a class="headerlink" href="#e15190-runlog-downloader-mysqldownloader" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">MySqlDownloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auto_connect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">public_key_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader" title="Permalink to this definition">¶</a></dt>
-<dd><p class="rubric">Functions</p>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">MySqlDownloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auto_connect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class downloads the MySQL database from WMU.</p>
+<p>Due to some in-house security measures, the MySQL database is stored at
+Western Michigan University. To analyze the data, we download the database
+from WMU and store it locally at NSCL/FRIB’s server. All tables are
+downloaded as pandas dataframes, and stored in an HDF files. This allows
+quicker access to the data and more complicated analysis.</p>
+<p>It is encouraged to use the <code class="docutils literal notranslate"><span class="pre">with</span></code> statement when interacting with this
+class. Here is an example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">e15190.runlog</span> <span class="kn">import</span> <span class="n">downloader</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">downloader</span><span class="o">.</span><span class="n">MySqlDownloader</span><span class="p">(</span><span class="n">auto_connect</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">dl</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="s1">&#39;runtarget&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.__init__" title="e15190.runlog.downloader.MySqlDownloader.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([auto_connect, public_key_path])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.__init__" title="e15190.runlog.downloader.MySqlDownloader.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([auto_connect, key_path, verbose])</p></td>
+<td><p>Constructor for <a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader" title="e15190.runlog.downloader.MySqlDownloader"><code class="xref py py-class docutils literal notranslate"><span class="pre">MySqlDownloader</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code>([public_key_path])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.connect" title="e15190.runlog.downloader.MySqlDownloader.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code></a>([key_path, verbose])</p></td>
+<td><p>Establish connection to the MySQL database.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">decorate</span></code>(func_that_returns_tuples_of_tuples)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.decorate" title="e15190.runlog.downloader.MySqlDownloader.decorate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decorate</span></code></a>(func_that_returns_tuples_of_tuples)</p></td>
+<td><p>Converts a function that returns tuples of tuples into a function that returns tuples of lists.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">disconnect</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.disconnect" title="e15190.runlog.downloader.MySqlDownloader.disconnect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disconnect</span></code></a>([verbose])</p></td>
+<td><p>Disconnect from the MySQL database.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.download" title="e15190.runlog.downloader.MySqlDownloader.download"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code></a>([auto_disconnect, verbose])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.download" title="e15190.runlog.downloader.MySqlDownloader.download"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code></a>([download_path, table_names, ...])</p></td>
 <td><p>Convert tables into pandas dataframes and save into an HDF file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.get_all_table_names" title="e15190.runlog.downloader.MySqlDownloader.get_all_table_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_table_names</span></code></a>()</p></td>
+<td><p>Returns all table names in the MySQL database.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.get_table" title="e15190.runlog.downloader.MySqlDownloader.get_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_table</span></code></a>(table_name)</p></td>
+<td><p>Returns the table as a pandas dataframe.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.connection" title="e15190.runlog.downloader.MySqlDownloader.connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connection</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pymysql.Connection</span></code> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.cursor" title="e15190.runlog.downloader.MySqlDownloader.cursor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cursor</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pymysql.Cursor</span></code> object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.verbose" title="e15190.runlog.downloader.MySqlDownloader.verbose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbose</span></code></a></p></td>
+<td><p>The global verbose setting.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auto_connect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">public_key_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auto_connect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor for <a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader" title="e15190.runlog.downloader.MySqlDownloader"><code class="xref py py-class docutils literal notranslate"><span class="pre">MySqlDownloader</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>auto_connect</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to automatically connect to the MySQL database. Login
+credentials are needed to connect to the database.</p></li>
+<li><p><strong>key_path</strong> (<em>str</em><em>, </em><em>default None</em>) – <p>File path to the key used to decrypt the login credential at
+<code class="docutils literal notranslate"><span class="pre">$PROJEC_DIR/database/runlog/mysql_login_credential.json</span></code>.</p>
+<p>!! This key should never be committed to the repository. !!</p>
+<p>Ask the owner of this repository for the key.</p>
+</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to print the progress of connecting to the MySQL database.
+This setting has less priority than individual class functions, i.e.
+if other functions have explicitly set a verbose value, then this
+global setting will be ignored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.connection">
+<span class="sig-name descname"><span class="pre">connection</span></span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.connection" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">pymysql.Connection</span></code> object.</p>
+<p>See more at
+<a class="reference external" href="https://pymysql.readthedocs.io/en/latest/modules/connections.html">https://pymysql.readthedocs.io/en/latest/modules/connections.html</a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.cursor">
+<span class="sig-name descname"><span class="pre">cursor</span></span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.cursor" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">pymysql.Cursor</span></code> object.</p>
+<p>See more at
+<a class="reference external" href="https://pymysql.readthedocs.io/en/latest/modules/cursors.html">https://pymysql.readthedocs.io/en/latest/modules/cursors.html</a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.verbose">
+<span class="sig-name descname"><span class="pre">verbose</span></span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>The global verbose setting. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.decorate">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">decorate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_that_returns_tuples_of_tuples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.decorate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a function that returns tuples of tuples into a function
+that returns tuples of lists.</p>
+<p>This is primarily used to decorate
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">MySqlDownloader.cursor.fetchall()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func_that_returns_tuples_of_tuples</strong> (<em>function</em>) – Function that returns tuples of tuples, e.g. <code class="docutils literal notranslate"><span class="pre">cursor.fetchall()</span></code>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>deco_func</strong> – Function that returns a list of lists.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Establish connection to the MySQL database.</p>
+<p>Upon successful connection, <code class="docutils literal notranslate"><span class="pre">self.connection</span></code> is set to the connection
+object and <code class="docutils literal notranslate"><span class="pre">self.cursor</span></code> is set to the cursor object. Fetch functions
+of <code class="docutils literal notranslate"><span class="pre">self.cursor</span></code> are decorated to return lists of lists, including
+<code class="docutils literal notranslate"><span class="pre">fetchall</span></code>, <code class="docutils literal notranslate"><span class="pre">fetchone</span></code> and <code class="docutils literal notranslate"><span class="pre">fetchmany</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key_path</strong> (<em>str</em><em>, </em><em>default None</em>) – <p>File path to the key used to decrypt the login credential at
+<code class="docutils literal notranslate"><span class="pre">$PROJEC_DIR/database/runlog/mysql_login_credential.json</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the key is read from the file at
+<code class="docutils literal notranslate"><span class="pre">$PROJEC_DIR/database/key_for_all.pub</span></code>. This is also the key used
+for all other purposes in this project.</p>
+<p>!! This key should never be committed to the repository. !!</p>
+<p>Ask the owner of this repository for the key.</p>
+</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default None</em>) – Whether to print the progress of connecting to the MySQL database.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the global setting is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>FileNotFoundError</strong> – If the key file is not found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.get_all_table_names">
+<span class="sig-name descname"><span class="pre">get_all_table_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.get_all_table_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all table names in the MySQL database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>table_names</strong> – List of all table names in the MySQL database.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.get_table">
+<span class="sig-name descname"><span class="pre">get_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.get_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the table as a pandas dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table_name</strong> (<em>str</em>) – Name of the table to be downloaded.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>table</strong> – Table as a pandas dataframe.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the table is not found.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.download">
-<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auto_disconnect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.download" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">download_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_disconnect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.download" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert tables into pandas dataframes and save into an HDF file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>download_path</strong> (<em>str</em><em>, </em><em>default None</em>) – File path to the HDF file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the file is saved at
+<code class="docutils literal notranslate"><span class="pre">$PROJECT_DIR/database/runlog/downloads/mysql_database.h5</span></code>.</p></li>
+<li><p><strong>auto_disconnect</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to automatically disconnect from the MySQL database after
+all tables have been downloaded.</p></li>
+<li><p><strong>table_names</strong> (<em>list of str</em><em>, </em><em>default None</em>) – List of table names to download. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, all tables are
+downloaded.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to print the progress of downloading. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the
+global setting is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.disconnect">
+<span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect from the MySQL database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default None</em>) – Whether to print the progress of disconnecting. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the
+global setting is used.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

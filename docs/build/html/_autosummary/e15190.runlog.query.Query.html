@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>e15190.runlog.query &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <title>e15190.runlog.query.Query &#8212; Data Analysis for E15190-E14030  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">e15190.runlog.query</a></li> 
+        <li class="nav-item nav-item-this"><a href="">e15190.runlog.query.Query</a></li> 
       </ul>
     </div>  
 
@@ -34,23 +34,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-e15190.runlog.query">
-<span id="e15190-runlog-query"></span><h1>e15190.runlog.query<a class="headerlink" href="#module-e15190.runlog.query" title="Permalink to this headline">¶</a></h1>
-<p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery" title="e15190.runlog.query.ElogQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ElogQuery</span></code></a>([load_run_batches, ...])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query" title="e15190.runlog.query.Query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Query</span></code></a>()</p></td>
-<td><p>A class of query methods for the database.</p></td>
-</tr>
-</tbody>
-</table>
+  <div class="section" id="e15190-runlog-query-query">
+<h1>e15190.runlog.query.Query<a class="headerlink" href="#e15190-runlog-query-query" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.query.</span></span><span class="sig-name descname"><span class="pre">Query</span></span><a class="headerlink" href="#e15190.runlog.query.Query" title="Permalink to this definition">¶</a></dt>
@@ -98,6 +83,62 @@ basic query interface for users who are not familiar with pandas.</p>
 <span class="go">  150ns; 3)increased the fast busy by 150 ns.&#39;]}</span>
 </pre></div>
 </div>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.__init__" title="e15190.runlog.query.Query.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.beam_energies" title="e15190.runlog.query.Query.beam_energies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beam_energies</span></code></a>()</p></td>
+<td><p>Returns all distinct beam energies in the database.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.beams" title="e15190.runlog.query.Query.beams"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beams</span></code></a>()</p></td>
+<td><p>Returns all distinct beam names in the database.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch" title="e15190.runlog.query.Query.get_batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch</span></code></a>(ibatch)</p></td>
+<td><p>Returns a sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in <a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch_info" title="e15190.runlog.query.Query.get_batch_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch_info</span></code></a>(ibatch[, include_comments])</p></td>
+<td><p>Returns a dictionary of properties for a given batch.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_n_batches" title="e15190.runlog.query.Query.get_n_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_n_batches</span></code></a>()</p></td>
+<td><p>Returns the number of batches in the database.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_run_info" title="e15190.runlog.query.Query.get_run_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_run_info</span></code></a>(run)</p></td>
+<td><p>Returns a dictionary of properties for a given run.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.select_batches" title="e15190.runlog.query.Query.select_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_batches</span></code></a>(cut)</p></td>
+<td><p>Returns a list of batch numbers that satisfy the given cuts.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.select_runs" title="e15190.runlog.query.Query.select_runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_runs</span></code></a>(cut[, comment_cut])</p></td>
+<td><p>Returns a list of run numbers that satisfy the given cuts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.targets" title="e15190.runlog.query.Query.targets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">targets</span></code></a>()</p></td>
+<td><p>Returns all distinct target names in the database.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">elog</span></code></a></p></td>
+<td><p>Class attribute <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery" title="e15190.runlog.query.ElogQuery"><code class="xref py py-class docutils literal notranslate"><span class="pre">ElogQuery</span></code></a> object loaded with run batches.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.elog">
 <span class="sig-name descname"><span class="pre">elog</span></span><em class="property"> <span class="pre">=</span> <span class="pre">&lt;e15190.runlog.query.ElogQuery</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#e15190.runlog.query.Query.elog" title="Permalink to this definition">¶</a></dt>
@@ -108,7 +149,7 @@ basic query interface for users who are not familiar with pandas.</p>
 <dt class="sig sig-object py" id="e15190.runlog.query.Query._get_run_query">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_get_run_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query._get_run_query" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in
-<a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given run.</p>
+<a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>run</strong> (<em>int</em>) – Run number.</p>
@@ -131,7 +172,7 @@ basic query interface for users who are not familiar with pandas.</p>
 <dt class="sig sig-object py" id="e15190.runlog.query.Query._get_batch_query">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_get_batch_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query._get_batch_query" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in
-<a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p>
+<a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>ibatch</strong> (<em>int</em>) – Batch number (0-indexed).</p>
@@ -143,7 +184,7 @@ basic query interface for users who are not familiar with pandas.</p>
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.get_batch">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.get_batch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in
-<a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p>
+<a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p>
 <p>The sub-dataframe has been re-indexed from zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -270,7 +311,7 @@ substring <code class="docutils literal notranslate"><span class="pre">'mb</span
 <dd><p>Returns a list of batch numbers that satisfy the given cuts.</p>
 <p>Comment cut is not supported. But users can easily use this function to
 first select the batches of interest, then invoke
-<a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query.select_runs" title="e15190.runlog.query.Query.select_runs"><code class="xref py py-func docutils literal notranslate"><span class="pre">Query.select_runs()</span></code></a> to further select on the comments with more
+<a class="reference internal" href="#e15190.runlog.query.Query.select_runs" title="e15190.runlog.query.Query.select_runs"><code class="xref py py-func docutils literal notranslate"><span class="pre">Query.select_runs()</span></code></a> to further select on the comments with more
 complicated matching patterns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -346,7 +387,7 @@ following variables are can be specified in the expression:</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">e15190.runlog.query</a></li> 
+        <li class="nav-item nav-item-this"><a href="">e15190.runlog.query.Query</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
