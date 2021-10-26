@@ -23,8 +23,8 @@ This key is used to decrypt the credentials needed to connect to the MySQL. It
 should not be committed to the repository.
 """
 
+# The URL of the e-log, hosted at Western Michigan University (WMU)
 ELOG_URL = 'http://neutronstar.physics.wmich.edu/runlog/index.php?op=list'
-"""The URL of the e-log, hosted at Western Michigan University (WMU)."""
 
 class MySqlDownloader:
     """This class downloads the MySQL database from WMU.
@@ -37,6 +37,7 @@ class MySqlDownloader:
 
     It is encouraged to use the ``with`` statement when interacting with this
     class. Here is an example:
+
     >>> from e15190.runlog import downloader
     >>> with downloader.MySqlDownloader(auto_connect=True) as dl:
     >>>     df = dl.get_table('runtarget')
@@ -297,7 +298,10 @@ class MySqlDownloader:
 
 class ElogDownloader:
     def __init__(self):
-        """Downloads the runlog from the webpage.
+        """Initialize the ElogDownloader.
+
+        The Elog is viewable at
+        http://neutronstar.physics.wmich.edu/runlog/index.php?op=list
         """
         pass
 

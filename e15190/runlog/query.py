@@ -152,22 +152,23 @@ class ElogQuery:
 
         This function updates the dataframe :py:attr:`df_batches`, which
         contains the following columns:
-        - ibatch: the enumeration of run batches (starting from 0)
-        - run_min: first run number
-        - run_max: last run number
-        - n_runs: number of runs
-        - n_skipped_runs: number of runs that are skipped
-        - begin_time: begin time of the first run
-        - end_time: end time of the last run
-        - total_elapse: total elapsed time of all the runs
-        - total_gap_time: total gap time between all the runs
-        - target: e.g. Ni58, Ni64, Sn112, Sn124.
-        - beam: e.g. Ca40, Ca48
-        - beam_energy: beam energy MeV/u
-        - shadow_bar: shadow bar configuration, i.e. "in" or "out"
-        - trigger_rate_min: minimum trigger rate
-        - trigger_rate_max: maximum trigger rate
-        - trigger_rate_mean: mean trigger rate
+
+        - ``ibatch`` (int): the enumeration of run batches (starting from 0)
+        - ``run_min`` (int): first run number
+        - ``run_max`` (int): last run number
+        - ``n_runs`` (int): number of runs
+        - ``n_skipped_runs`` (int): number of runs that are skipped
+        - ``begin_time`` (Timestamp): begin time of the first run
+        - ``end_time`` (Timestamp): end time of the last run
+        - ``total_elapse`` (Timedelta): total elapsed time of all the runs
+        - ``total_gap_time`` (Timedelta): total gap time between all the runs
+        - ``target`` (str): e.g. Ni58, Ni64, Sn112, Sn124.
+        - ``beam`` (str): e.g. Ca40, Ca48
+        - ``beam_energy`` (float): beam energy in MeV/u
+        - ``shadow_bar`` (str): shadow bar configuration, i.e. "in" or "out"
+        - ``trigger_rate_min`` (float): minimum trigger rate
+        - ``trigger_rate_max`` (float): maximum trigger rate
+        - ``trigger_rate_mean`` (float): mean trigger rate
 
         Returns
         -------
@@ -506,8 +507,9 @@ class Query:
     Examples
     --------
     Single run info can easily be queried as following:
-    >>> from e15190.runlog import Query
-    >>> Query.get_run_info(4000)
+
+    >>> from e15190.runlog.query import Query
+    >>> Query.get_run_info(4100)
     {'run': 4100,
      'begin_time': Timestamp('2018-03-11 03:40:40'),
      'end_time': Timestamp('2018-03-11 04:12:19'),
@@ -520,7 +522,8 @@ class Query:
      'comment': '140MeV 64Ni, coincidence trigger, uB DS, RF trig'}
     
     Batch info is queried as following:
-    >>> from e15190.runlog import Query
+
+    >>> from e15190.runlog.query import Query
     >>> Query.get_batch_info(2)
     {'ibatch': 2,
      'run_range': [2142, 2152],
@@ -537,25 +540,27 @@ class Query:
      'trigger_rate_range': [1861.0, 2044.0],
      'trigger_rate_stdev': 70.8092115790343,
      'comment': ['Ni 58 Ca40 140MeV/u, coincidence data delayed triggers 150ns',
-      'Ni 58 Ca40 140MeV/u, coincidence data delayed triggers 150ns(1) Before this run: 1) delayed hira+NW master by 150 ns, 2) dleayed fast clear by 150ns; 3)increased the fast busy by 150 ns.']}
+      'Ni 58 Ca40 140MeV/u, coincidence data delayed triggers 150ns(1) Before
+      this run: 1) delayed hira+NW master by 150 ns, 2) dleayed fast clear by
+      150ns; 3)increased the fast busy by 150 ns.']}
     
     """
     elog = ElogQuery(load_run_batches=True)
-    """:py:class:`ElogQuery` object loaded with run batches."""
+    """Class attribute :py:class:`ElogQuery` object loaded with run batches."""
 
-    map_run_iloc = {run: iloc for iloc, run in enumerate(elog.df['run'].to_list())}
-    """A dictionary of run numbers mapped to indices in :py:attr:`Query.elog`."""
+    _map_run_iloc = {run: iloc for iloc, run in enumerate(elog.df['run'].to_list())}
 
     @staticmethod
     def _get_run_query(run):
-        """Returns sub-dataframe of :py:attr:`Query.elog.df` for a given run.
+        """Returns sub-dataframe of :py:attr:`ElogQuery.df` in
+        :py:attr:`Query.elog` for a given run.
 
         Parameters
         ----------
         run : int
             Run number.
         """
-        return Query.elog.df.iloc[Query.map_run_iloc[run]]
+        return Query.elog.df.iloc[Query._map_run_iloc[run]]
     
     @staticmethod
     def get_run_info(run):
@@ -569,7 +574,8 @@ class Query:
     
     @staticmethod
     def _get_batch_query(ibatch):
-        """Returns a sub-dataframe of :py:attr:`Query.elog.df` for a given batch number.
+        """Returns a sub-dataframe of :py:attr:`ElogQuery.df` in
+        :py:attr:`Query.elog` for a given batch number.
 
         Parameters
         ----------
@@ -580,7 +586,8 @@ class Query:
 
     @staticmethod
     def get_batch(ibatch):
-        """Returns a sub-dataframe of :py:attr:`Query.elog.df` for a given batch number.
+        """Returns a sub-dataframe of :py:attr:`ElogQuery.df` in
+        :py:attr:`Query.elog` for a given batch number.
 
         The sub-dataframe has been re-indexed from zero.
 
@@ -596,8 +603,8 @@ class Query:
     def get_batch_info(ibatch, include_comments=True):
         """Returns a dictionary of properties for a given batch.
 
-        This function basically reads off from the ``df_batches`` in the
-        :py:class:`ElogQuery` object.
+        This function basically reads off from the
+        :py:class:`ElogQuery.df_batches` dataframe.
 
         Parameters
         ----------
@@ -688,23 +695,29 @@ class Query:
         Examples
         --------
         As our first example, we select all runs with target Ni58:
-        >>> from e15190.runlog import Query
+
+        >>> from e15190.runlog.query import Query
         >>> Query.select_runs('target == "Ni58"')
         [2134, 2135, 2142, ..., 4617, 4618, 4619]
 
+
         In the second example, we select all runs with Ca40 + Ni58 at 140 MeV/u
         with shadow bars:
-        >>> from e15190.runlog import Query
-        >>> Query.select_runs('beam == "Ca40" & target == "Ni64" & beam_energy == 56 & shadow_bar == "in"')
+
+        >>> from e15190.runlog.query import Query
+        >>> Query.select_runs('beam == "Ca40" & target == "Ni64"\\
+        ...  & beam_energy == 56 & shadow_bar == "in"')
         [2512, 2513, 2514, 2515, 2517, 2518, 2519, 2520, 2521, 2522, 2523]
         
+
         In the last example, we select runs that have comments that contain
-        substring ``'mb singles 301'``; case insensitive matching is specified:
-        >>> from e15190.runlog import Query
+        substring ``'mb singles 301'``:
+
+        >>> from e15190.runlog.query import Query
         >>> Query.select_runs(
         ...     'beam == "Ca48" & beam_energy == 56',
         ...      comment_cut='mb singles 301',
-        ...      case=False,
+        ...      case=False, # case insensitive matching
         ... )
         [4593, 4594, 4595, ..., 4659, 4660, 4661]
 
@@ -728,22 +741,23 @@ class Query:
         cut : str
             A string that can be evaluated as a boolean expression. The
             following variables are can be specified in the expression:
-            - ibatch (int)
-            - run_min (int)
-            - run_max (int)
-            - n_runs (int)
-            - n_skipped_runs (int)
-            - begin_time (Timestamp)
-            - end_time (Timestamp)
-            - total_elapse (Timedelta)
-            - total_gap_time (Timedelta)
-            - target (str)
-            - beam (str)
-            - beam_energy (float)
-            - shadow_bar ("in" or "out")
-            - trigger_rate_min (float)
-            - trigger_rate_max (float)
-            - trigger_rate_mean (float)
+
+            - ``ibatch`` (int): batch number (0-indexed)
+            - ``run_min`` (int): first run numbe
+            - ``run_max`` (int): last run number
+            - ``n_runs`` (int): number of runs in the batch
+            - ``n_skipped_runs`` (int): number of runs skipped in the batch
+            - ``begin_time`` (Timestamp): start time of the first run
+            - ``end_time`` (Timestamp): end time of the last run
+            - ``total_elapse`` (Timedelta): total elapsed time of all the runs
+            - ``total_gap_time`` (Timedelta): total gap time of between all the runs
+            - ``target`` (str): e.g. Ni58, Ni64, Sn112, Sn124
+            - ``beam`` (str): e.g. Ca40, Ca48
+            - ``beam_energy`` (float): beam energy in MeV/u
+            - ``shadow_bar`` (str): "in" or "out"
+            - ``trigger_rate_min`` (float): minimum trigger rate
+            - ``trigger_rate_max`` (float): maximum trigger rate
+            - ``trigger_rate_mean`` (float): mean trigger rate
         
         Returns
         -------
@@ -752,7 +766,7 @@ class Query:
         
         Examples
         --------
-        >>> from e15190.runlog import Query
+        >>> from e15190.runlog.query import Query
         >>> Query.select_batches('n_runs > 35')
         [22, 33, 49]
         """
