@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.neutron_wall.shadow_bar.ShadowBar &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.shadow_bar.ShadowBar</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="e15190-neutron-wall-shadow-bar-shadowbar">
+<h1>e15190.neutron_wall.shadow_bar.ShadowBar<a class="headerlink" href="#e15190-neutron-wall-shadow-bar-shadowbar" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.shadow_bar.</span></span><span class="sig-name descname"><span class="pre">ShadowBar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.__init__" title="e15190.neutron_wall.shadow_bar.ShadowBar.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(AB[, max_workers])</p></td>
+<td><p>Initialize the <a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar" title="e15190.neutron_wall.shadow_bar.ShadowBar"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShadowBar</span></code></a> class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.cache_run" title="e15190.neutron_wall.shadow_bar.ShadowBar.cache_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_run</span></code></a>(run[, tree_name])</p></td>
+<td><p>Read in data from ROOT file and save relevant branches to an HDF5 file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read" title="e15190.neutron_wall.shadow_bar.ShadowBar.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(run, bar[, from_cache, verbose])</p></td>
+<td><p>Read in the data needed to do shadow bar analysis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file" title="e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run_from_root_file</span></code></a>(run[, tree_name, ...])</p></td>
+<td><p>Read in single run from ROOT file.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">database_dir</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">light_GM_range</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pos_range</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root_files_dir</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the <a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar" title="e15190.neutron_wall.shadow_bar.ShadowBar"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShadowBar</span></code></a> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AB</strong> (<em>str</em>) – Either ‘A’ or ‘B’. To specify neutron wall A or B.</p></li>
+<li><p><strong>max_workers</strong> (<em>int</em><em>, </em><em>default 12</em>) – Maximum number of workers to use for parallelization. The parallelization
+is used to read in data from ROOT files as executors for
+<a class="reference external" href="https://uproot.readthedocs.io/en/latest/uproot.reading.ReadOnlyFile.html#decompression-executor">decompression</a>
+and
+<a class="reference external" href="https://uproot.readthedocs.io/en/latest/uproot.reading.ReadOnlyFile.html#interpretation-executor">interpretation</a>
+in
+<a class="reference external" href="https://uproot.readthedocs.io/">uproot</a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar._cut_for_root_file_data">
+<span class="sig-name descname"><span class="pre">_cut_for_root_file_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar._cut_for_root_file_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple cut to select valid entries only.</p>
+<p>This is not the final cut. It is only the biggest cut that defines the
+largest subset of data that will be used, i.e. we only throw away
+entries that are not useable or recoverable. Data that are not of our
+<em>interest</em> should <em>not</em> be thrown away here.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file">
+<span class="sig-name descname"><span class="pre">read_run_from_root_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in single run from ROOT file.</p>
+<p>The ROOT file here refers to the one generated by <code class="docutils literal notranslate"><span class="pre">calibrate.cpp</span></code>,
+<em>not</em> the “Daniele’s ROOT file”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – Run number.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>default None</em>) – Name of the tree in the ROOT file. If not specified, the function
+will try to automatically determine the tree name. If multiple trees
+are found within the ROOT file, an exception will be raised as the
+function has no way to know which tree to use.</p></li>
+<li><p><strong>apply_cut</strong> (<em>bool</em><em>, </em><em>default True</em>) – If set to <cite>True</cite>, the function will apply the cut specified by
+<a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar._cut_for_root_file_data" title="e15190.neutron_wall.shadow_bar.ShadowBar._cut_for_root_file_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">_cut_for_root_file_data()</span></code></a> to the data. Otherwise, the cut
+is not applied.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – Dataframe containing the data for the specified run.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar.cache_run">
+<span class="sig-name descname"><span class="pre">cache_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar.cache_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in data from ROOT file and save relevant branches to an HDF5 file.</p>
+<p>The data will be grouped according to bar number, because future
+retrieval by this class will most likely analyze only one bar at a time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – Run number.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>default None</em>) – Name of the tree in the ROOT file. If not specified, the function
+will try to automatically determine the tree name. If multiple trees
+are found within the ROOT file, an exception will be raised as the
+function has no way to know which tree to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar._read_single_run">
+<span class="sig-name descname"><span class="pre">_read_single_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar._read_single_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in single run from either cache or ROOT file.</p>
+<p>If no cache is available or <code class="docutils literal notranslate"><span class="pre">from_cache</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the
+function first prepare a cache for the run by invoking
+<a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.cache_run" title="e15190.neutron_wall.shadow_bar.ShadowBar.cache_run"><code class="xref py py-func docutils literal notranslate"><span class="pre">cache_run()</span></code></a>, then read in the data from the newly created cache
+into a dataframe to be returned. Otherwise, it reads directly from the
+cache and returns the dataframe.</p>
+<p>Notice that the cache file is always generated for one run at a time,
+with multiple dataframes contained in it, each dataframe corresponding
+to one bar. In other words, if you have invoked
+<code class="docutils literal notranslate"><span class="pre">_read_single_run(6666,</span> <span class="pre">1)</span></code>,
+then a cache file <code class="docutils literal notranslate"><span class="pre">cache/run-6666.h5</span></code> will be generated, and in it
+there are dataframes for not just bar-01, but also <em>all</em> the other bars
+(of course, excluding those that you had chosen to filter out).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – Run number.</p></li>
+<li><p><strong>bar</strong> (<em>int</em>) – Bar number.</p></li>
+<li><p><strong>from_cache</strong> (<em>bool</em><em>, </em><em>default True</em>) – If set to <cite>True</cite>, the data will be read from the cache if exists.
+Otherwise, it will refresh the cache by reading again from the ROOT
+file, then read from the newly created cache.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – Dataframe containing the data for the specified run and bar.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in the data needed to do shadow bar analysis.</p>
+<p>This function reads in the data as a dataframe, and saves it to
+<code class="docutils literal notranslate"><span class="pre">self.df</span></code>. It also updates <code class="docutils literal notranslate"><span class="pre">self.bar</span></code> for future reference.</p>
+<p>The data will be read from the HDF5 files if they exists, otherwise the
+function will read in from the ROOT files (generated by
+<code class="docutils literal notranslate"><span class="pre">calibrate.cpp</span></code>).</p>
+<p>Branch names that start with NW{self.AB}_ will be dropped because of
+redunancy. For example, <code class="docutils literal notranslate"><span class="pre">NWB_psd</span></code> will be reduced into <code class="docutils literal notranslate"><span class="pre">psd</span></code>.
+However, other prefixes that indicate detectors other than the neutron
+wall will be kept, e.g. <code class="docutils literal notranslate"><span class="pre">MB_multi</span></code>, <code class="docutils literal notranslate"><span class="pre">FA_time_min</span></code>, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em><em> or </em><em>list of ints</em>) – The run number(s).</p></li>
+<li><p><strong>bar</strong> (<em>int</em>) – Bar number.</p></li>
+<li><p><strong>from_cache</strong> (<em>bool</em><em>, </em><em>default True</em>) – If set to <cite>True</cite>, the data will be read from the cache if exists.
+Otherwise, it will refresh the cache by reading again from the ROOT
+file, then read from the newly created cache.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to print out the progress of the read in.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">e15190.neutron_wall.shadow_bar</span> <span class="kn">import</span> <span class="n">ShadowBar</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shade</span> <span class="o">=</span> <span class="n">ShadowBar</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span> <span class="c1"># ShadowBar object for neutron wall B</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shade</span><span class="o">.</span><span class="n">read</span><span class="p">([</span><span class="mi">4083</span><span class="p">,</span> <span class="mi">4084</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># read in run 4083 and 4084, bar-01</span>
+<span class="go">Reading run-4083  (1/2)</span>
+<span class="go">Reading run-4084  (2/2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shade</span><span class="o">.</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="s1">&#39;theta&#39;</span><span class="p">]]</span> <span class="c1"># display the columns run and theta for inspection</span>
+<span class="go">        run      theta</span>
+<span class="go">0      4083  32.787231</span>
+<span class="go">1      4083  33.294674</span>
+<span class="go">2      4083  35.215828</span>
+<span class="go">3      4083  40.720539</span>
+<span class="go">4      4083  31.086285</span>
+<span class="gp">... </span>    <span class="o">...</span>        <span class="o">...</span>
+<span class="go">25253  4084  38.263584</span>
+<span class="go">25254  4084  35.900543</span>
+<span class="go">25255  4084  40.574760</span>
+<span class="go">25256  4084  31.906084</span>
+<span class="go">25257  4084  49.476383</span>
+
+<span class="go">[25258 rows x 2 columns]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.shadow_bar.ShadowBar</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>
