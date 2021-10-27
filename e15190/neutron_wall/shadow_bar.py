@@ -223,13 +223,14 @@ class ShadowBar:
         verbose : bool, default False
             Whether to print out the progress of the read in.
 
-        Examples
+        Example
+        -------
         >>> from e15190.neutron_wall.shadow_bar import ShadowBar
-        >>> shade = ShadowBar('B')
-        >>> shade.read([4083, 4084], 1, verbose=True)
+        >>> shade = ShadowBar('B') # ShadowBar object for neutron wall B
+        >>> shade.read([4083, 4084], 1, verbose=True) # read in run 4083 and 4084, bar-01
         Reading run-4083  (1/2)
         Reading run-4084  (2/2)
-        >>> shade.df[['run', 'theta']]
+        >>> shade.df[['run', 'theta']] # display the columns run and theta for inspection
                 run      theta
         0      4083  32.787231
         1      4083  33.294674
@@ -242,7 +243,7 @@ class ShadowBar:
         25255  4084  40.574760
         25256  4084  31.906084
         25257  4084  49.476383
-
+        <BLANKLINE>
         [25258 rows x 2 columns]
 
         """
