@@ -14,8 +14,8 @@ This decision was made after considering the fact that all major authors of the 
 **Table of contents**
 1. [Installation](#1-installation)
 1. [Structure of the repository](#2-structure-of-the-repository)
-1. [Unit tests](#3-unit-tests)
-1. [PEP8 style guide](#4-pep8-style-guide)
+1. [Testing framework](#3-testing-framework)
+1. [PEP 8 style guide](#4-pep-8-style-guide)
 
 ## 1. Installation
 If you are not familiar with conda, more detailed instructions can be found at [Installation (detailed version)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/manualdoc/installation.html).
@@ -67,10 +67,10 @@ pytest tests/utilities/test_timer.py
 * Any other scenarios where you think there might be a chance to break things, i.e. server updates, conda environment updates, git merge with other collaborators, etc.
 
 
-## 4. PEP8 style guide
-The [PEP8 Style Guide](https://www.python.org/dev/peps/pep-0008/) is the most popular style guide among Python developers. It is a set of guidelines for writing Python code that aims to be consistent and readable. The webpage at https://www.python.org/dev/peps/pep-0008/ has a detailed description of the style guide. While it is always a good idea to go through the guidelines, not everyone will have the luxury to read the whole document and remember all the rules. So oftentimes, people use some automated tools to format their code.
+## 4. PEP 8 style guide
+The [PE P8 Style Guide](https://www.python.org/dev/peps/pep-0008/) is the most popular style guide among Python developers. It is a set of guidelines for writing Python code that aims to be consistent and readable. The webpage at https://www.python.org/dev/peps/pep-0008/ has a detailed description of the style guide. While it is always a good idea to go through the guidelines, not everyone will have the luxury to read the whole document and remember all the rules. So oftentimes, people use some automated tools to format their code.
 
-In this project, we use [autopep8](https://pypi.org/project/autopep8/) to automatically format our code in order to comply with the PEP8 standard. This Python package is already listed in [`environment.yml`](environment.yml), so right after you activate the conda environment, you can simply type:
+In this project, we use [autopep8](https://pypi.org/project/autopep8/) to automatically format our code in order to comply with the PEP 8 standard. This Python package is already listed in [`environment.yml`](environment.yml), so right after you activate the conda environment, you can simply type:
 ```console
 autopep8 demo_script.py --in-place
 ```
