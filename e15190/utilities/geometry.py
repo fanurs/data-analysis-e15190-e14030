@@ -257,12 +257,18 @@ class RectangularBar:
         Parameters
         ----------
         vertices : ndarray of shape (8, 3)        
-            Exactly eight (x, y, z) lab coordinates.  As long as all eight
-            vertices are distinct, i.e. can properly define a cuboid, the order
-            of vertices does not matter because PCA will be applied to
+            Exactly eight tuples of (x, y, z) in lab coordinates. As long as all
+            eight vertices are distinct, i.e. can properly define a cuboid, the
+            order of vertices does not matter because PCA will be applied to
             automatically identify the 1st, 2nd and 3rd principal axes of the
-            bar. These vertices are always assumed to have included the Pyrex
-            thickness
+            bar.
+        calculate_local_vertices : bool, default True
+            Whether to calculate the local vertices. Local vertices are the
+            coordinates with respect to the bar's x, y and z axes, defined as
+            the 1st, 2nd and 3rd principal axes.
+        make_vertices_dict : bool, default True
+            Whether to make the vertices dictionary. See more at
+            :py:func:`_make_vertices_dict`.
         """
         self.vertices = np.array(vertices)
         """dict : The vertices of the bar in lab frame (unit cm)
@@ -289,6 +295,17 @@ class RectangularBar:
             self.vertices_dict = self._make_vertices_dict()
     
     def _make_vertices_dict(self):
+        """Returns a dictionary of directions mapped onto vertices.
+
+        Attributes ``self.vertices`` and ``self.loc_vertices`` will be updated.
+
+        A rectangular bar has eight vertices. To distinguish the vertices, we
+        use 3-tuples of -1 and +1 to indicate the directions in local (bar)
+        frame. For example, ``(-1, +1, -1)`` implies the vertex, when observed
+        in the local frame, is in the negative x direction, positive y
+        direction, and negative z direction. Each vertex's coordinates would be
+        stored as numpy array of length 3, representing :math:`(x, y, z)`.
+        """
         # identify relative directions (egocentric)
         rel_directions = [
             tuple([int(np.sign(coord)) for coord in loc_vertex])
@@ -711,7 +728,6 @@ class RectangularBar:
         else:
             return solid_angle
     
-    @functools.lru_cache(maxsize=5)
     def get_theta_phi_alphashape(self, delta=1.0, alpha=10.0, cut=None):
         """Calculate the alphashape of the bar in (theta, phi) coordinates.
 
@@ -724,6 +740,9 @@ class RectangularBar:
             curvature of the alphashape can be. When alpha is zero, the
             alphashape reduces into a convex hull; when alpha is too large, the
             alphashape could be "overfitted" to data points.
+        cut : str, default None
+            The cut of the alphashape. Available variables include 'x', 'y' and
+            'z' in local frame. If None, no cut will be applied.
         
         Returns
         -------
@@ -870,11 +889,26 @@ class RectangularBar:
         ratio, i.e.
         :math:`\delta\phi/(2\pi)`, as a function of theta.
 
+        Parameters
+        ----------
+        cut : str or list of str, default None
+            Cut to apply to the dataframe of the bar. Available variables include
+            'x', 'y' and 'z' in local frame. If None, no cut is applied.
+
+            Users should make sure that the every cut string must only split the
+            geometry of the bar into one volume, so cut like ``(-10 < x & x <
+            10)`` is okay, but ``(-10 < x & x < 10) & (15 < x & x < 25)`` is not
+            because there is a gap from x = 10 to x = 15, resulting in two
+            unconnected volumes. To apply cuts that result in multiple volumes,
+            supply a list of cuts instead. So
+            ``cut = ['(-10 < x & x < 10)', '(15 < x & x < 25)']``
+            would be okay.
+
         Returns
         -------
         delta_phi : callable
-            A function that takes theta as an argument and returns the geometry
-            efficiency.
+            A function that takes theta (radian) as an argument and returns the
+            geometry efficiency.
         """
         if isinstance(cut, list):
             geom_eff = [
