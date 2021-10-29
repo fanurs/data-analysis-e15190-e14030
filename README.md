@@ -68,7 +68,7 @@ pytest tests/utilities/test_timer.py
 
 
 ## 4. PEP 8 style guide
-The [PE P8 Style Guide](https://www.python.org/dev/peps/pep-0008/) is the most popular style guide among Python developers. It is a set of guidelines for writing Python code that aims to be consistent and readable. The webpage at https://www.python.org/dev/peps/pep-0008/ has a detailed description of the style guide. While it is always a good idea to go through the guidelines, not everyone will have the luxury to read the whole document and remember all the rules. So oftentimes, people use some automated tools to format their code.
+The [PEP 8 Style Guide](https://www.python.org/dev/peps/pep-0008/) is the most popular style guide among Python developers. It is a set of guidelines for writing Python code that aims to be consistent and readable. The webpage at https://www.python.org/dev/peps/pep-0008/ has a detailed description of the style guide. While it is always a good idea to go through the guidelines, not everyone will have the luxury to read the whole document and remember all the rules. So oftentimes, people use some automated tools to format their code.
 
 In this project, we use [autopep8](https://pypi.org/project/autopep8/) to automatically format our code in order to comply with the PEP 8 standard. This Python package is already listed in [`environment.yml`](environment.yml), so right after you activate the conda environment, you can simply type:
 ```console
