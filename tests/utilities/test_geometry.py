@@ -448,3 +448,24 @@ class TestRectangularBar:
         bar.construct_plotly_mesh3d()
         assert isinstance(bar.triangle_mesh, rti.TriangleMesh)
         assert np.allclose(list(bar.vertices.values()), bar.triangle_mesh.vertices)
+
+    def test_simple_simulation(self, sample_bar_vertices):
+        bar = geo.RectangularBar(sample_bar_vertices)
+        bar.construct_plotly_mesh3d()
+
+        # smoke test
+        assert 'simulation_result' not in bar.__dict__
+        n_rays = 10
+        bar.simple_simulation(
+            n_rays=n_rays,
+            random_seed=0,
+        )
+        assert 'simulation_result' in bar.__dict__
+        sim = bar.simulation_result
+        assert np.allclose(sim['origin'], [0, 0, 0])
+        assert isinstance(sim['azimuth_range'], np.ndarray) and sim['azimuth_range'].shape == (2,)
+        assert isinstance(sim['polar_range'], np.ndarray) and sim['polar_range'].shape == (2,)
+        assert isinstance(sim['intersections'], np.ndarray)
+        assert sim['intersections'].shape[0] == 12 # no. of triangles to form a bar
+        assert sim['intersections'].shape[1] == n_rays
+        assert sim['intersections'].shape[2] == 3 # (x, y, z) coordinates
