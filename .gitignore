@@ -36,3 +36,4 @@ database/neutron_wall/position_calibration/gallery
 database/neutron_wall/position_calibration/calib_params
 database/neutron_wall/pulse_shape_discrimination/gallery
 database/neutron_wall/pulse_shape_discrimination/calib_params
+database/neutron_wall/shadow_bar/gallery
