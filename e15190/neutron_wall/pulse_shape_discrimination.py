@@ -105,7 +105,7 @@ class PulseShapeDiscriminator:
         df.columns = list(branches.keys())
 
         # apply position calibration
-        calib_reader = NWCalibrationReader()
+        calib_reader = NWCalibrationReader(self.AB)
         df[f'NW{self.AB}_pos'] = self.get_position(
             df[[f'NW{self.AB}_bar', f'NW{self.AB}_time_L', f'NW{self.AB}_time_R']],
             calib_reader(run),
