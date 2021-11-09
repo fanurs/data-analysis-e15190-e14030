@@ -252,17 +252,23 @@ def angle_between(v1, v2, directional=False, zero_vector=None):
 
 class RectangularBar:
     def __init__(self, vertices, calculate_local_vertices=True, make_vertices_dict=True):
-        """Construct a rectangular bar.
+        """Construct a rectangular bar, a.k.a. a cuboid.
 
         Parameters
         ----------
         vertices : ndarray of shape (8, 3)        
-            Exactly eight (x, y, z) lab coordinates.  As long as all eight
-            vertices are distinct, i.e. can properly define a cuboid, the order
-            of vertices does not matter because PCA will be applied to
+            Exactly eight tuples of (x, y, z) in lab coordinates. As long as all
+            eight vertices are distinct, i.e. can properly define a cuboid, the
+            order of vertices does not matter because PCA will be applied to
             automatically identify the 1st, 2nd and 3rd principal axes of the
-            bar. These vertices are always assumed to have included the Pyrex
-            thickness
+            bar.
+        calculate_local_vertices : bool, default True
+            Whether to calculate the local vertices. Local vertices are the
+            coordinates with respect to the bar's x, y and z axes, defined as
+            the 1st, 2nd and 3rd principal axes.
+        make_vertices_dict : bool, default True
+            Whether to make the vertices dictionary. See more at
+            :py:func:`_make_vertices_dict`.
         """
         self.vertices = np.array(vertices)
         """dict : The vertices of the bar in lab frame (unit cm)
@@ -286,24 +292,72 @@ class RectangularBar:
 
         # update both the vertices and the local vertices into dictionaries
         if make_vertices_dict:
-            self.vertices_dict = self._make_vertices_dict()
-    
-    def _make_vertices_dict(self):
-        # identify relative directions (egocentric)
+            self._make_vertices_dict()
+
+    @staticmethod
+    def _get_vertices_dict(loc_vertices, vertices):
+        """Convert both dictionaries into mappings from egocentric directions onto vertices.
+
+        A rectangular bar has eight vertices. To distinguish the vertices, we
+        use 3-tuples of -1 and +1 to indicate the directions in local (bar)
+        frame. For example, ``(-1, +1, -1)`` implies the vertex, when observed
+        in the local frame, is in the negative x direction, positive y
+        direction, and negative z direction. Each vertex's coordinates would be
+        stored as numpy array of length 3, representing :math:`(x, y, z)`.
+
+        Parameters
+        ----------
+        loc_vertices : array-like of shape (8, 3)
+            The local vertices of the bar, e.g. vertex coordinates in the bar
+            frame. This array will be used to determine the egocentric
+            directions. It is user's responsibility to ensure that the eight
+            coordinates form a cuboid whose center is at the origin and the
+            edges are all parallel to one of the x, y or z axes.
+
+            This can usually be done easily by applying the
+            :py:func:`to_local_coordinates` function to ``vertices``. Under the
+            hood, PCA is applied to identify the three principal axes of the
+            bar.
+        vertices : array-like of shape (8, 3)
+            The vertices in the lab frame. The order of ``vertices`` must match
+            the order of ``loc_vertices``.
+
+        Returns
+        -------
+        loc_vertices_dict : dict
+            A dictionary of ``{(i, j, k): (x', y', z')}``, where :math:`(x', y',
+            k')` are the points in ``loc_vertices``.
+        vertices_dict : dict
+            A dictionary of ``{(i, j, k): (x, y, z)}``, where :math:`(x, y, z)`
+            are the points in ``vertices``.
+        """
+        # identify egocentric directions
         rel_directions = [
             tuple([int(np.sign(coord)) for coord in loc_vertex])
-            for loc_vertex in self.loc_vertices
+            for loc_vertex in loc_vertices
         ]
 
         # map the relative directions back to vertices and local vertices using dictionaries
-        self.vertices = {
-            rel_dir: vertex for rel_dir, vertex in zip(rel_directions, self.vertices)
+        vertices_dict = {
+            rel_dir: vertex for rel_dir, vertex in zip(rel_directions, vertices)
         }
-        self.vertices = dict(sorted(self.vertices.items()))
-        self.loc_vertices = {
-            rel_dir: vertex for rel_dir, vertex in zip(rel_directions, self.loc_vertices)
+        vertices_dict = dict(sorted(vertices_dict.items()))
+
+        loc_vertices_dict = {
+            rel_dir: vertex for rel_dir, vertex in zip(rel_directions, loc_vertices)
         }
-        self.loc_vertices = dict(sorted(self.loc_vertices.items()))
+        loc_vertices_dict = dict(sorted(loc_vertices_dict.items()))
+
+        return loc_vertices_dict, vertices_dict
+
+    def _make_vertices_dict(self):
+        """Convert self local vertices and vertices into dictionaries.
+
+        Simply apply :py:func:`_get_vertices_dict` to update both
+        ``self.loc_vertices`` and ``self.vertices``.
+        """
+        self.loc_vertices, self.vertices = self._get_vertices_dict(
+            self.loc_vertices, self.vertices)
     
     def dimension(self, index=None):
         """Returns the dimension(s) of the bar.
@@ -339,11 +393,12 @@ class RectangularBar:
     def _deco_numpy_ndim(func):
         """Decorator for preserving numpy array's dimensionality.
 
-        Some functions only accepts 2D arrays, i.e. rows of 1D arrays. To apply
-        this kind of functions on 1D arrays, we may use this decoratord. The
-        decorated functions can take in either a 2D array or a 1D array. If the
-        input is a 2D array, the output will be a 2D array; if the input is a 1D
-        array, the output will be kept as a 1D array.
+        Some functions only accepts 2D arrays, i.e. rows of 1D arrays, and
+        perform some row-wise operations. To apply this kind of functions on 1D
+        arrays, we may use this decorator. The decorated functions can take in
+        either a 2D array or a 1D array. If the input is a 2D array, the output
+        will be a 2D array; if the input is a 1D array, the output will be kept
+        as a 1D array.
 
         Parameters
         ----------
@@ -354,6 +409,16 @@ class RectangularBar:
         -------
         func : function
             The decorated function.
+        
+        Example
+        -------
+        >>> f = lambda X: np.array([np.square(x) for x in X])
+        >>> from e15190.utilities import geometry as geom
+        >>> deco_f = geom.RectangularBar._deco_numpy_ndim(f)
+        >>> deco_f(np.array([[1, 2, 3], [4, 5, 6]]))
+        np.array([[1, 4, 9], [16, 25, 36]])
+        >>> deco_f(np.array([1, 2, 3]))
+        np.array([1, 4, 9])
         """
         def inner(x, *args, **kwargs):
             x = np.array(x)
@@ -398,14 +463,14 @@ class RectangularBar:
         """
         return self._deco_numpy_ndim(self.pca.inverse_transform)(local_coordinates)
 
-    def is_inside(self, coordinates, frame='local', tol=5e-4):
+    def is_inside(self, coordinates, frame='lab', tol=5e-4):
         """Check if the given coordinates are inside the bar.
 
         Parameters
         ----------
-        coordinates : 3-tuple or list of 3-tuples
+        coordinates : array of shape (N, 3) or (3, )
             The coordinates to be checked. Only support Cartesian coordinates.
-        frame : 'local' or 'lab', default 'local'
+        frame : 'local' or 'lab', default 'lab'
             The frame of the coordinates.
         tol : float, default 5e-4
             The tolerance of the boundary check.
@@ -413,7 +478,7 @@ class RectangularBar:
         Returns
         -------
         inside : bool or an array of bool
-            `True` if the coordinates are inside the bar, otherwise `False`.
+            ``True`` if the coordinates are inside the bar, otherwise ``False``.
         """
         # convert into 2d numpy array of shape (n_points, 3)
         coordinates = np.array(coordinates, dtype=float)
@@ -711,7 +776,6 @@ class RectangularBar:
         else:
             return solid_angle
     
-    @functools.lru_cache(maxsize=5)
     def get_theta_phi_alphashape(self, delta=1.0, alpha=10.0, cut=None):
         """Calculate the alphashape of the bar in (theta, phi) coordinates.
 
@@ -724,6 +788,9 @@ class RectangularBar:
             curvature of the alphashape can be. When alpha is zero, the
             alphashape reduces into a convex hull; when alpha is too large, the
             alphashape could be "overfitted" to data points.
+        cut : str, default None
+            The cut of the alphashape. Available variables include 'x', 'y' and
+            'z' in local frame. If None, no cut will be applied.
         
         Returns
         -------
@@ -870,11 +937,26 @@ class RectangularBar:
         ratio, i.e.
         :math:`\delta\phi/(2\pi)`, as a function of theta.
 
+        Parameters
+        ----------
+        cut : str or list of str, default None
+            Cut to apply to the dataframe of the bar. Available variables include
+            'x', 'y' and 'z' in local frame. If None, no cut is applied.
+
+            Users should make sure that the every cut string must only split the
+            geometry of the bar into one volume, so cut like ``(-10 < x & x <
+            10)`` is okay, but ``(-10 < x & x < 10) & (15 < x & x < 25)`` is not
+            because there is a gap from x = 10 to x = 15, resulting in two
+            unconnected volumes. To apply cuts that result in multiple volumes,
+            supply a list of cuts instead. So
+            ``cut = ['(-10 < x & x < 10)', '(15 < x & x < 25)']``
+            would be okay.
+
         Returns
         -------
         delta_phi : callable
-            A function that takes theta as an argument and returns the geometry
-            efficiency.
+            A function that takes theta (radian) as an argument and returns the
+            geometry efficiency.
         """
         if isinstance(cut, list):
             geom_eff = [
