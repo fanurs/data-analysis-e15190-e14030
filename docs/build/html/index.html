@@ -52,14 +52,14 @@
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030">GitHub repository</a></p></li>
 <li><p><a class="reference external" href="https://groups.nscl.msu.edu/hira/15190-14030/index.htm">Experiment homepage</a></p></li>
 <li><p><a class="reference external" href="http://neutronstar.physics.wmich.edu/runlog/index.php?op=list">Run log (WMU)</a></p></li>
-<li><p><a class="reference external" href="https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html">Overview of experimental runs</a></p></li>
+<li><p><a class="reference external" href="https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html">Plotly: Experimental runs</a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 </ul>
 </div>
 <div class="section" id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
 <p>All the Python source code is documented at <a class="reference internal" href="_autosummary/e15190.html"><span class="doc">here</span></a>.</p>
-<p>C++ source code is currently not being documented.</p>
+<p>C++ source code and standalone scripts are currently not being documented.</p>
 </div>
 <div class="section" id="background">
 <h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
@@ -102,20 +102,20 @@
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/database">database/</a>: For storing all the calibration parameters, cache files (e.g. <cite>.h5</cite> files), images, ROOT files, Mako templates, etc.</p></li>
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/local">local/</a>: Miscellaneous local configuration files, scripts, etc. C++ source codes also go into here, mainly to separate them from the Python source codes in <a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/e15190">e15190/</a>.</p></li>
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/scripts">scripts/</a>: Here are all the calibration scripts and batch scripts (for parallel computing).</p></li>
-<li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/tests">tests/</a>: Unit tests.</p></li>
+<li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/tests">tests/</a>: Contains all the test scripts.</p></li>
 <li><p>env_e15190/: Where the conda environment is built. This directory should not be committed to git. Any custom modifications should be added as symbolic links directing to <a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/local">local/</a>.</p></li>
-<li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/docs">docs/</a>: Documentation.</p></li>
+<li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/docs">docs/</a>: Documentation of the project. This directory is used to build GitHub Pages for this project (see <a class="reference external" href="https://fanurs.github.io/data-analysis-e15190-e14030/">here</a>, and the files are auto-generated using <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx</a>.</p></li>
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/environment.yml">environment.yml</a>: Configuration file for setting up the conda environment.</p></li>
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/build.py">build.py</a>: Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.</p></li>
 </ul>
 </div>
-<div class="section" id="unit-tests">
-<h2>Unit tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
-<p>We are using the <a class="reference external" href="https://docs.pytest.org/">pytest</a> framework. To test everything, simply activate the conda environment, go to the project directory and type</p>
+<div class="section" id="testing-framework">
+<h2>Testing framework<a class="headerlink" href="#testing-framework" title="Permalink to this headline">¶</a></h2>
+<p>We are using the <a class="reference external" href="https://docs.pytest.org/">pytest</a> framework. To test everything, simply activate the conda environment, go to the project directory and type:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pytest</span>
 </pre></div>
 </div>
-<p>To test a specify file or directory, e.g. <code class="docutils literal notranslate"><span class="pre">tests/utilities/test_timer.py</span></code></p>
+<p>To test a specify file or directory, e.g. <code class="docutils literal notranslate"><span class="pre">tests/utilities/test_timer.py</span></code>:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pytest tests/utilities/test_timer.py</span>
 </pre></div>
 </div>
@@ -128,6 +128,16 @@
 <li><p>Any other scenarios where you think there might be a chance to break things, i.e. server updates, conda environment updates, git merge with other collaborators, etc.</p></li>
 </ul>
 </div>
+</div>
+<div class="section" id="pep-8-style-guide">
+<h2>PEP 8 style guide<a class="headerlink" href="#pep-8-style-guide" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8 Style Guide</a> is the most popular style guide among Python developers. It is a set of guidelines for writing Python code that aims to be consistent and readable. The <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">webpage</a> has a detailed description of the style guide. While it is always a good idea to go through the guidelines, not everyone will have the luxury to read the whole document and remember all the rules. So oftentimes, people use some automated tools to format their code.</p>
+<p>In this project, we use <a class="reference external" href="https://pypi.org/project/autopep8/">autopep8</a> to automatically format our code in order to comply with the PEP 8 standard. This Python package is already listed in <a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/environment.yml">environment.yml</a>, so right after you activate the conda environment, you can simply type:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">autopep8 demo_script.py --in-place</span>
+</pre></div>
+</div>
+<p>This command should have automatically formatted the <code class="docutils literal notranslate"><span class="pre">demo_script.py</span></code> script in place. In most cases, autopep8 only changes the style of the code, e.g. whitespaces, indentation, etc., and it should not change the behavior of the code. Always re-run some tests if you are not sure.</p>
+<p>Lastly, it is strongly recommended to apply autopep8 to your script before committing to git or pushing to GitHub.</p>
 </div>
 </div>
 
@@ -146,10 +156,11 @@
 <li><a class="reference internal" href="#background">Background</a></li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#structure-of-the-repository">Structure of the repository</a></li>
-<li><a class="reference internal" href="#unit-tests">Unit tests</a><ul>
+<li><a class="reference internal" href="#testing-framework">Testing framework</a><ul>
 <li><a class="reference internal" href="#when-to-do-unit-testing">When to do unit testing?</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#pep-8-style-guide">PEP 8 style guide</a></li>
 </ul>
 </li>
 </ul>
