@@ -14,6 +14,7 @@ def main():
     bg_pos = ['F', 'B']
     for bar in bar_of_interest:
         for bg_position in bg_pos:
+            print(f'Analyzing Bar {bar} Background position {bg_position}')
             shade.read(run=args.runs, bar=bar,
                        from_cache=not args.no_cache, verbose=read_verbose)
             read_verbose = False  # only show read status once

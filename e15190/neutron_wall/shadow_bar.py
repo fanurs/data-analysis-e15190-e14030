@@ -23,6 +23,8 @@ class ShadowBar:
     light_GM_range = [5.0, 500.0]  # MeVee
     pos_range = [-120.0, 120.0]  # cm
     psd = [0.5, 2]
+    theta_b=[40,48]
+    theta_f=[32,40]
 
     def __init__(self, AB, max_workers=8):
         """Initialize the :py:class:`ShadowBar` class.
@@ -323,11 +325,10 @@ class ShadowBar:
         subdf = self.df[(self.df['energy'] > ene-10) &
                         (self.df['energy'] < ene+10)]
 
-        # Backward Angle (range theta >40 and <48 backward angle) (range>32 and <40 forward angle)
         if background_position == 'F':
-            subdf = subdf[(subdf['theta'] > 32) & (subdf['theta'] < 40)]
+            subdf = subdf[(subdf['theta'] > self.theta_f[0]) & (subdf['theta'] < self.theta_f[1])]
         elif background_position == 'B':
-            subdf = subdf[(subdf['theta'] > 40) & (subdf['theta'] < 48)]
+            subdf = subdf[(subdf['theta'] > self.theta_b[0]) & (subdf['theta'] < self.theta_b[1])]
         else:
             print('shadow_bar position is not correct')
 
@@ -336,10 +337,10 @@ class ShadowBar:
         ax.set_ylabel(r'Density')
         if background_position == 'F':
             y, x, _ = ax.hist(subdf['theta'], range=[
-                              32, 40], bins=50, histtype='step', density='true')
+                              self.theta_f[0], self.theta_f[1]], bins=50, histtype='step', density='true')
         elif background_position == 'B':
             y, x, _ = ax.hist(subdf['theta'], range=[
-                              40, 48], bins=50, histtype='step', density='true')
+                              self.theta_b[0], self.theta_b[1]], bins=50, histtype='step', density='true')
         else:
             print('shadow_bar position is not correct')
         x = 0.5 * (x[1:] + x[:-1])
@@ -353,9 +354,6 @@ class ShadowBar:
 
         def f_dip1(x, A, x_L, x_R, s_L, s_R):
             return A*(-erf((x-x_L)/(s_L)) + erf((x-x_R)/(s_R)))
-
-        def f_fit_total(x, k0, k1, A, x_L, x_R, s_L, s_R):
-            return k0 + k1 * x + A*(1.0+0.50*-erf((x-x_L)/(np.sqrt(2)*s_L)) + 0.5*erf((x-x_R)/(np.sqrt(2)*s_R)))
 
         param = Parameters()
         # backward angles
@@ -418,10 +416,8 @@ class ShadowBar:
         background = np.amin(result.best_fit/comps['f_kin1'])
         background_upper = np.amin((result.best_fit+dely)/upper_kin)
         background_lower = np.amin((result.best_fit-dely)/lower_kin)
-        background_err_ul = np.amin(
-            (result.best_fit+dely)/upper_kin)-np.amin(result.best_fit/comps['f_kin1'])
-        background_err_ll = np.amin(
-            result.best_fit/comps['f_kin1'])-np.amin((result.best_fit-dely)/lower_kin)
+        background_err_ul = background_upper-background
+        background_err_ll = background-background_lower
         return err_y, background*1e2, 1e2*0.50*(background_err_ul+background_err_ll)
 
     def _draw_Energy_vs_lightGM(self, ax):
@@ -500,10 +496,6 @@ class ShadowBar:
         background = np.amin(result.best_fit/comps['f_kin1'])
         background_upper = np.amin((result.best_fit+dely)/upper_kin)
         background_lower = np.amin((result.best_fit-dely)/lower_kin)
-        background_err_ul = np.amin(
-            (result.best_fit+dely)/upper_kin)-np.amin(result.best_fit/comps['f_kin1'])
-        background_err_ll = np.amin(
-            result.best_fit/comps['f_kin1'])-np.amin((result.best_fit-dely)/lower_kin)
         ax.plot(x, result.best_fit/comps['f_kin1'], 'r--', label='normalized')
         ax.plot(x, (result.best_fit-dely)/lower_kin,
                 'c--', label='lower limit')
@@ -551,7 +543,8 @@ class ShadowBar:
         fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(
             10, 10), constrained_layout=True)
         fig.suptitle(
-            f'Ca48Sn124_@140 MeV_bar_{self.bar}_{background_position}_Ene_{ene}+-10')
+            '%s+%s_%.02d_MeV_bar_%02d_%s_ene_%.02d' % (
+            sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position, ene))
 
         rc = (0, 0)
         # self._draw_Energy_vs_lightGM(ax[rc])
@@ -597,6 +590,4 @@ class ShadowBar:
                 self.save_to_gallery(sf, background_position, ene, x, y,
                                      result, err_y, path=None, show_plot=False, save=True)
                 file.write('{} {} {} {} \n'.format(self.bar, ene, bg, bg_err))
-
-
 'Done'
