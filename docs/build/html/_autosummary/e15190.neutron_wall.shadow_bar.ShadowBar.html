@@ -50,13 +50,40 @@
 <td><p>Initialize the <a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar" title="e15190.neutron_wall.shadow_bar.ShadowBar"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShadowBar</span></code></a> class.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.cache_run" title="e15190.neutron_wall.shadow_bar.ShadowBar.cache_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_run</span></code></a>(run[, tree_name])</p></td>
-<td><p>Read in data from ROOT file and save relevant branches to an HDF5 file.</p></td>
+<td><p>Read in data from ROOT file and save relevant branches to an SQLite database.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read" title="e15190.neutron_wall.shadow_bar.ShadowBar.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(run, bar[, from_cache, verbose])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_background</span></code>(result, x, y)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(background_position[, path])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_energy_range</span></code>(ene, background_position)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_parameters</span></code>(background_position, x, y, y_err)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gate_on_tof</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.make_space_above" title="e15190.neutron_wall.shadow_bar.ShadowBar.make_space_above"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_space_above</span></code></a>([topmargin])</p></td>
+<td><p>increase figure size to make topmargin (in inches) space for titles, without changing the axes sizes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">preprocessing</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read" title="e15190.neutron_wall.shadow_bar.ShadowBar.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(run, bar[, from_cache, verbose])</p></td>
 <td><p>Read in the data needed to do shadow bar analysis.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file" title="e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run_from_root_file</span></code></a>(run[, tree_name, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file" title="e15190.neutron_wall.shadow_bar.ShadowBar.read_run_from_root_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run_from_root_file</span></code></a>(run[, tree_name, ...])</p></td>
 <td><p>Read in single run from ROOT file.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_vetowall_coincidences</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.shadow_bar.ShadowBar.save_to_gallery" title="e15190.neutron_wall.shadow_bar.ShadowBar.save_to_gallery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_gallery</span></code></a>(sf, background_position, ...)</p></td>
+<td><p>Save a diagnostic plot to the gallery as a PNG file.</p></td>
 </tr>
 </tbody>
 </table>
@@ -76,7 +103,10 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pos_range</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root_files_dir</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">psd</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root_files_dir</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -142,7 +172,7 @@ is not applied.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar.cache_run">
 <span class="sig-name descname"><span class="pre">cache_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar.cache_run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read in data from ROOT file and save relevant branches to an HDF5 file.</p>
+<dd><p>Read in data from ROOT file and save relevant branches to an SQLite database.</p>
 <p>The data will be grouped according to bar number, because future
 retrieval by this class will most likely analyze only one bar at a time.</p>
 <dl class="field-list simple">
@@ -171,7 +201,7 @@ cache and returns the dataframe.</p>
 with multiple dataframes contained in it, each dataframe corresponding
 to one bar. In other words, if you have invoked
 <code class="docutils literal notranslate"><span class="pre">_read_single_run(6666,</span> <span class="pre">1)</span></code>,
-then a cache file <code class="docutils literal notranslate"><span class="pre">cache/run-6666.h5</span></code> will be generated, and in it
+then a cache file <code class="docutils literal notranslate"><span class="pre">cache/run-6666.db</span></code> will be generated, and in it
 there are dataframes for not just bar-01, but also <em>all</em> the other bars
 (of course, excluding those that you had chosen to filter out).</p>
 <dl class="field-list simple">
@@ -199,7 +229,7 @@ file, then read from the newly created cache.</p></li>
 <dd><p>Read in the data needed to do shadow bar analysis.</p>
 <p>This function reads in the data as a dataframe, and saves it to
 <code class="docutils literal notranslate"><span class="pre">self.df</span></code>. It also updates <code class="docutils literal notranslate"><span class="pre">self.bar</span></code> for future reference.</p>
-<p>The data will be read from the HDF5 files if they exists, otherwise the
+<p>The data will be read from the cache files if they exists, otherwise the
 function will read in from the ROOT files (generated by
 <code class="docutils literal notranslate"><span class="pre">calibrate.cpp</span></code>).</p>
 <p>Branch names that start with <code class="docutils literal notranslate"><span class="pre">NW{self.AB}_</span></code> will be dropped because of
@@ -241,6 +271,39 @@ file, then read from the newly created cache.</p></li>
 <span class="go">[25258 rows x 2 columns]</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar.make_space_above">
+<span class="sig-name descname"><span class="pre">make_space_above</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topmargin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar.make_space_above" title="Permalink to this definition">¶</a></dt>
+<dd><p>increase figure size to make topmargin (in inches) space for
+titles, without changing the axes sizes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.shadow_bar.ShadowBar.save_to_gallery">
+<span class="sig-name descname"><span class="pre">save_to_gallery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">err_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.shadow_bar.ShadowBar.save_to_gallery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a diagnostic plot to the gallery as a PNG file.</p>
+<dl class="simple">
+<dt>Parameters</dt><dd><dl class="simple">
+<dt>path<span class="classifier">str or pathlib.Path, default None</span></dt><dd><p>The path to save the plot. If None, the plot is saved to the
+default database.</p>
+</dd>
+<dt>cut<span class="classifier">str, default ‘light_GM &gt; 3’</span></dt><dd><p>The cut to apply to the data when plotting. All panels in the
+figure will apply this cut, and potentially other cuts, joined
+by logical AND, except for the panel that draws the PPSD as a
+function of light GM.</p>
+</dd>
+<dt>show_plot<span class="classifier">bool, default False</span></dt><dd><p>If True, the plot will be shown in run time, i.e. the command
+<cite>plt.show()</cite> will be called.</p>
+</dd>
+<dt>save<span class="classifier">bool, default True</span></dt><dd><p>If <cite>True</cite>, the plot will be saved to the database. <cite>False</cite>
+option is useful when users are using this function to inspect
+the plot without saving.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

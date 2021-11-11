@@ -18,7 +18,7 @@ Useful links
 - `GitHub repository <https://github.com/Fanurs/data-analysis-e15190-e14030>`__
 - `Experiment homepage <https://groups.nscl.msu.edu/hira/15190-14030/index.htm>`__
 - `Run log (WMU) <http://neutronstar.physics.wmich.edu/runlog/index.php?op=list>`__
-- `Overview of experimental runs <https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html>`__
+- `Plotly: Experimental runs <https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html>`__
 - :ref:`modindex`
 
 Documentation
@@ -26,7 +26,7 @@ Documentation
 
 All the Python source code is documented at :doc:`here <./_autosummary/e15190>`.
 
-C++ source code is currently not being documented.
+C++ source code and standalone scripts are currently not being documented.
 
 Background
 ==========
@@ -74,25 +74,25 @@ This repository is written mainly in Python 3.8 and C++20 (``-std=c++2a`` in GCC
 
 - `scripts/ <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/scripts>`__: Here are all the calibration scripts and batch scripts (for parallel computing).
 
-- `tests/ <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/tests>`__: Unit tests.
+- `tests/ <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/tests>`__: Contains all the test scripts.
 
 - env_e15190/: Where the conda environment is built. This directory should not be committed to git. Any custom modifications should be added as symbolic links directing to `local/ <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/local>`__.
 
-- `docs/ <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/docs>`__: Documentation.
+- `docs/ <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/docs>`__: Documentation of the project. This directory is used to build GitHub Pages for this project (see `here <https://fanurs.github.io/data-analysis-e15190-e14030/>`__, and the files are auto-generated using `Sphinx <https://www.sphinx-doc.org/>`__.
 
 - `environment.yml <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/environment.yml>`__: Configuration file for setting up the conda environment.
 
 - `build.py <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/build.py>`__: Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.
 
 
-Unit tests
-==========
+Testing framework
+=================
 
-We are using the `pytest <https://docs.pytest.org/>`__ framework. To test everything, simply activate the conda environment, go to the project directory and type
+We are using the `pytest <https://docs.pytest.org/>`__ framework. To test everything, simply activate the conda environment, go to the project directory and type:
 ::
    pytest
 
-To test a specify file or directory, e.g. ``tests/utilities/test_timer.py``
+To test a specify file or directory, e.g. ``tests/utilities/test_timer.py``:
 ::
    pytest tests/utilities/test_timer.py
 
@@ -105,3 +105,17 @@ When to do unit testing?
 * After changing any codes, run all tests to check in case things that were previously working are now broken, a.k.a. regression testing. :red:`Important!`
 * You are also encouraged to write and run tests *while* developing the source code. This is often considered as the best practice, though sometimes a little too tedious.
 * Any other scenarios where you think there might be a chance to break things, i.e. server updates, conda environment updates, git merge with other collaborators, etc.
+
+
+PEP 8 style guide
+=================
+
+The `PEP 8 Style Guide <https://www.python.org/dev/peps/pep-0008/>`__ is the most popular style guide among Python developers. It is a set of guidelines for writing Python code that aims to be consistent and readable. The `webpage <https://www.python.org/dev/peps/pep-0008/>`__ has a detailed description of the style guide. While it is always a good idea to go through the guidelines, not everyone will have the luxury to read the whole document and remember all the rules. So oftentimes, people use some automated tools to format their code.
+
+In this project, we use `autopep8 <https://pypi.org/project/autopep8/>`__ to automatically format our code in order to comply with the PEP 8 standard. This Python package is already listed in `environment.yml <https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/environment.yml>`__, so right after you activate the conda environment, you can simply type:
+::
+   autopep8 demo_script.py --in-place
+
+This command should have automatically formatted the ``demo_script.py`` script in place. In most cases, autopep8 only changes the style of the code, e.g. whitespaces, indentation, etc., and it should not change the behavior of the code. Always re-run some tests if you are not sure.
+
+Lastly, it is strongly recommended to apply autopep8 to your script before committing to git or pushing to GitHub.
