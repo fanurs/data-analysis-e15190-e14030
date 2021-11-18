@@ -249,11 +249,12 @@ non-reproducible.</p></li>
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar._deco_numpy_ndim">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_deco_numpy_ndim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar._deco_numpy_ndim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator for preserving numpy array’s dimensionality.</p>
-<p>Some functions only accepts 2D arrays, i.e. rows of 1D arrays. To apply
-this kind of functions on 1D arrays, we may use this decoratord. The
-decorated functions can take in either a 2D array or a 1D array. If the
-input is a 2D array, the output will be a 2D array; if the input is a 1D
-array, the output will be kept as a 1D array.</p>
+<p>Some functions only accepts 2D arrays, i.e. rows of 1D arrays, and
+perform some row-wise operations. To apply this kind of functions on 1D
+arrays, we may use this decorator. The decorated functions can take in
+either a 2D array or a 1D array. If the input is a 2D array, the output
+will be a 2D array; if the input is a 1D array, the output will be kept
+as a 1D array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>function</em>) – The function to decorate.</p>
@@ -265,6 +266,63 @@ array, the output will be kept as a 1D array.</p>
 <dd class="field-odd"><p>function</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">X</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">e15190.utilities</span> <span class="kn">import</span> <span class="n">geometry</span> <span class="k">as</span> <span class="n">geom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deco_f</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">RectangularBar</span><span class="o">.</span><span class="n">_deco_numpy_ndim</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deco_f</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]))</span>
+<span class="go">np.array([[1, 4, 9], [16, 25, 36]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deco_f</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]))</span>
+<span class="go">np.array([1, 4, 9])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar._get_vertices_dict">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_get_vertices_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar._get_vertices_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert both dictionaries into mappings from egocentric directions onto vertices.</p>
+<p>A rectangular bar has eight vertices. To distinguish the vertices, we
+use 3-tuples of -1 and +1 to indicate the directions in local (bar)
+frame. For example, <code class="docutils literal notranslate"><span class="pre">(-1,</span> <span class="pre">+1,</span> <span class="pre">-1)</span></code> implies the vertex, when observed
+in the local frame, is in the negative x direction, positive y
+direction, and negative z direction. Each vertex’s coordinates would be
+stored as numpy array of length 3, representing <span class="math notranslate nohighlight">\((x, y, z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loc_vertices</strong> (<em>array-like of shape</em><em> (</em><em>8</em><em>, </em><em>3</em><em>)</em>) – <p>The local vertices of the bar, e.g. vertex coordinates in the bar
+frame. This array will be used to determine the egocentric
+directions. It is user’s responsibility to ensure that the eight
+coordinates form a cuboid whose center is at the origin and the
+edges are all parallel to one of the x, y or z axes.</p>
+<p>This can usually be done easily by applying the
+<a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.to_local_coordinates" title="e15190.neutron_wall.geometry.Bar.to_local_coordinates"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_local_coordinates()</span></code></a> function to <code class="docutils literal notranslate"><span class="pre">vertices</span></code>. Under the
+hood, PCA is applied to identify the three principal axes of the
+bar.</p>
+</p></li>
+<li><p><strong>vertices</strong> (<em>array-like of shape</em><em> (</em><em>8</em><em>, </em><em>3</em><em>)</em>) – The vertices in the lab frame. The order of <code class="docutils literal notranslate"><span class="pre">vertices</span></code> must match
+the order of <code class="docutils literal notranslate"><span class="pre">loc_vertices</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>loc_vertices_dict</strong> (<em>dict</em>) – A dictionary of <code class="docutils literal notranslate"><span class="pre">{(i,</span> <span class="pre">j,</span> <span class="pre">k):</span> <span class="pre">(x',</span> <span class="pre">y',</span> <span class="pre">z')}</span></code>, where <span class="math notranslate nohighlight">\((x', y',
+k')\)</span> are the points in <code class="docutils literal notranslate"><span class="pre">loc_vertices</span></code>.</p></li>
+<li><p><strong>vertices_dict</strong> (<em>dict</em>) – A dictionary of <code class="docutils literal notranslate"><span class="pre">{(i,</span> <span class="pre">j,</span> <span class="pre">k):</span> <span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)}</span></code>, where <span class="math notranslate nohighlight">\((x, y, z)\)</span>
+are the points in <code class="docutils literal notranslate"><span class="pre">vertices</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar._make_vertices_dict">
+<span class="sig-name descname"><span class="pre">_make_vertices_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar._make_vertices_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert self local vertices and vertices into dictionaries.</p>
+<p>Simply apply <a class="reference internal" href="#e15190.neutron_wall.geometry.Bar._get_vertices_dict" title="e15190.neutron_wall.geometry.Bar._get_vertices_dict"><code class="xref py py-func docutils literal notranslate"><span class="pre">_get_vertices_dict()</span></code></a> to update both
+<code class="docutils literal notranslate"><span class="pre">self.loc_vertices</span></code> and <code class="docutils literal notranslate"><span class="pre">self.vertices</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -351,12 +409,25 @@ not ‘cartesian’, this argument has no effect.</p></li>
 ratio, i.e.
 <span class="math notranslate nohighlight">\(\delta\phi/(2\pi)\)</span>, as a function of theta.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>delta_phi</strong> – A function that takes theta as an argument and returns the geometry
-efficiency.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cut</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>default None</em>) – <p>Cut to apply to the dataframe of the bar. Available variables include
+‘x’, ‘y’ and ‘z’ in local frame. If None, no cut is applied.</p>
+<p>Users should make sure that the every cut string must only split the
+geometry of the bar into one volume, so cut like <code class="docutils literal notranslate"><span class="pre">(-10</span> <span class="pre">&lt;</span> <span class="pre">x</span> <span class="pre">&amp;</span> <span class="pre">x</span> <span class="pre">&lt;</span>
+<span class="pre">10)</span></code> is okay, but <code class="docutils literal notranslate"><span class="pre">(-10</span> <span class="pre">&lt;</span> <span class="pre">x</span> <span class="pre">&amp;</span> <span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">10)</span> <span class="pre">&amp;</span> <span class="pre">(15</span> <span class="pre">&lt;</span> <span class="pre">x</span> <span class="pre">&amp;</span> <span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">25)</span></code> is not
+because there is a gap from x = 10 to x = 15, resulting in two
+unconnected volumes. To apply cuts that result in multiple volumes,
+supply a list of cuts instead. So
+<code class="docutils literal notranslate"><span class="pre">cut</span> <span class="pre">=</span> <span class="pre">['(-10</span> <span class="pre">&lt;</span> <span class="pre">x</span> <span class="pre">&amp;</span> <span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">10)',</span> <span class="pre">'(15</span> <span class="pre">&lt;</span> <span class="pre">x</span> <span class="pre">&amp;</span> <span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">25)']</span></code>
+would be okay.</p>
+</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>callable</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>delta_phi</strong> – A function that takes theta (radian) as an argument and returns the
+geometry efficiency.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>callable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -411,6 +482,8 @@ tolerance to account for any floating point errors.</p></li>
 curvature of the alphashape can be. When alpha is zero, the
 alphashape reduces into a convex hull; when alpha is too large, the
 alphashape could be “overfitted” to data points.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The cut of the alphashape. Available variables include ‘x’, ‘y’ and
+‘z’ in local frame. If None, no cut will be applied.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -490,18 +563,18 @@ seed will be used, i.e. non-reproducible.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.is_inside">
-<span class="sig-name descname"><span class="pre">is_inside</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0005</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.is_inside" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_inside</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0005</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.is_inside" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the given coordinates are inside the bar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>coordinates</strong> (<em>3-tuple</em><em> or </em><em>list of 3-tuples</em>) – The coordinates to be checked. Only support Cartesian coordinates.</p></li>
-<li><p><strong>frame</strong> (<em>'local'</em><em> or </em><em>'lab'</em><em>, </em><em>default 'local'</em>) – The frame of the coordinates.</p></li>
+<li><p><strong>coordinates</strong> (<em>array of shape</em><em> (</em><em>N</em><em>, </em><em>3</em><em>) or </em><em>(</em><em>3</em><em>, </em><em>)</em>) – The coordinates to be checked. Only support Cartesian coordinates.</p></li>
+<li><p><strong>frame</strong> (<em>'local'</em><em> or </em><em>'lab'</em><em>, </em><em>default 'lab'</em>) – The frame of the coordinates.</p></li>
 <li><p><strong>tol</strong> (<em>float</em><em>, </em><em>default 5e-4</em>) – The tolerance of the boundary check.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>inside</strong> – <cite>True</cite> if the coordinates are inside the bar, otherwise <cite>False</cite>.</p>
+<dd class="field-even"><p><strong>inside</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the coordinates are inside the bar, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool or an array of bool</p>
