@@ -5,6 +5,7 @@ import pathlib
 import warnings
 
 import matplotlib as mpl
+mpl_default_backend = mpl.get_backend()
 import matplotlib.pyplot as plt
 import numdifftools as nd
 import numpy as np
@@ -1210,6 +1211,10 @@ class PulseShapeDiscriminator:
             path = pathlib.Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
+        if show_plot:
+            mpl.use(mpl_default_backend)
+        else:
+            mpl.use('Agg')
         fig, ax = plt.subplots(ncols=3, nrows=3, figsize=(13, 11), constrained_layout=True)
         fig.suptitle(f'{self._run_hash_str}: NW{self.AB}-bar{self.bar:02d}')
 
