@@ -1,6 +1,6 @@
 # Data Analysis: E15190-E14030
 **Useful links**
-- [:closed_book: Documentation](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html)
+- [:closed_book: Documentation (API reference)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html)
 - [:radioactive: Experiment homepage](https://groups.nscl.msu.edu/hira/15190-14030/index.htm)
 - [:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list)
 - [:chart_with_upwards_trend:	 Plotly: Experimental runs](https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html)
