@@ -31,6 +31,19 @@ class PulseShapeDiscriminator:
     adc_range = [0, 4000] # the upper limit is 4096, but those would definitely be saturated.
 
     def __init__(self, AB, max_workers=12):
+        """Construct a class to perform pulse shape discrimination.
+
+        Parameters
+        ----------
+        AB : 'A' or 'B'
+            The neutron wall to use.
+        max_workers : int, default 12
+            The maximum number of workers to use for parallelization. This value
+            will be passed to the `concurrent.futures.ThreadPoolExecutor` for
+            constructing ``self.decompression_executor`` and
+            ``self.interpretation_executor``. Each executor is assigned with a
+            thread pool of size ``max_workers``.
+        """
         self.AB = AB.upper()
         self.ab = self.AB.lower()
         self.decompression_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
@@ -56,6 +69,18 @@ class PulseShapeDiscriminator:
     
     @classmethod
     def _cut_for_root_file_data(cls, AB):
+        """Returns a string that specifies the first common cut.
+
+        This cut is the first common cut that is applied to all the data before
+        analysis. Their purpose is only to remove the events that are
+        unphysical. Further analysis cuts will have to be applied separately for
+        each bar.
+
+        Parameters
+        ----------
+        AB : 'A' or 'B'
+            The neutron wall to use.
+        """
         cuts = [
             f'NW{AB}_light_GM > {cls.light_GM_range[0]}',
             f'NW{AB}_light_GM < {cls.light_GM_range[1]}',
@@ -73,6 +98,20 @@ class PulseShapeDiscriminator:
         return ' & '.join([f'({c.strip()})' for c in cuts])
 
     def read_run_from_root_file(self, run, tree_name=None, apply_cut=True):
+        """Read in the data from Daniele's ROOT file.
+
+        Parameters
+        ----------
+        run : int
+            The run number.
+        tree_name : str, default None
+            The name of the tree to read. If None, the default tree name is
+            automatically determined. An exception is raised if multiple objects
+            are found in the ROOT file.
+        apply_cut : bool, default True
+            Whether to apply the first common cut to the data. If ``True``,
+            ``self._cut_for_root_file_data(self.AB)`` is used as the cut.
+        """
         path = self.root_files_dir / f'CalibratedData_{run:04d}.root'
 
         # determine the tree_name
@@ -119,6 +158,22 @@ class PulseShapeDiscriminator:
     
     @staticmethod
     def get_position(df_time, pos_calib_params):
+        """Calculate the positions from time and calibration parameters.
+
+        Parameters
+        ----------
+        df_time : pandas.DataFrame
+            The dataframe with columns ``bar``, ``time_L``, and ``time_R``.
+        pos_calib_params : panda.DataFrame
+            The calibration parameters. The index is bar number; the first
+            column is the calibration offset; the second column is the
+            calibration slope.
+        
+        Returns
+        -------
+        positions : numpy.1darray
+            The calibrated positions in cm.
+        """
         pars = pos_calib_params # shorthand
         df_time.columns = ['bar', 'time_L', 'time_R']
         pars = pars.loc[df_time['bar']].to_numpy()
@@ -129,6 +184,15 @@ class PulseShapeDiscriminator:
 
         The data will be categorized according to bar number, because future
         retrieval by this class will most likely analyze only one bar at a time.
+
+        Parameters
+        ----------
+        run : int
+            The run number.
+        tree_name : str, default None
+            The name of the tree to read. If None, the default tree name is
+            automatically determined. An exception is raised if multiple objects
+            are found in the ROOT file.
         """
         path = self.database_dir / f'cache/run-{run:04d}.h5'
         df = self.read_run_from_root_file(run, tree_name=tree_name)
@@ -147,6 +211,23 @@ class PulseShapeDiscriminator:
                 file.put(f'nw{self.ab}{bar:02d}', subdf[columns], format='fixed')
     
     def _read_single_run(self, run, bar, from_cache=True):
+        """Read in the data from a single bar in a single run.
+
+        Parameters
+        ----------
+        run : int
+            The run number.
+        bar : int
+            The bar number.
+        from_cache : bool, default True
+            Whether to read the data from the cache. If ``False``, the data is
+            read from the ROOT file.
+        
+        Returns
+        -------
+        df : pandas.DataFrame
+            The dataframe with the data.
+        """
         path = self.database_dir / f'cache/run-{run:04d}.h5'
         if not from_cache or not path.exists():
             self.cache_run(run)
@@ -158,7 +239,9 @@ class PulseShapeDiscriminator:
     def read(self, run, bar, from_cache=True, verbose=False):
         """Read in the data needed to do pulse shape discrimintion.
 
-        The data will be read from the HDF5 file if it exists, otherwise they will be read in from the ROOT file (generated by Daniele's framework).
+        Attributes ``self.bar`` and ``self.df`` will be updated.  The data will
+        be read from the HDF5 file if it exists, otherwise they will be read in
+        from the ROOT file (generated by Daniele's framework).
 
         Parameters
             run : int or list of ints
@@ -197,6 +280,17 @@ class PulseShapeDiscriminator:
         self.df.columns = [name.replace(f'NW{self.AB}_', '') for name in self.df.columns]
     
     def randomize_integer_features(self, seed=None):
+        """Randomize the integer columns in ``self.df``.
+
+        For each integer column, we add a uniform random number between -0.5 and
+        +0.5 to the values. This is done in-place.
+
+        Parameters
+        ----------
+        seed : int, default None
+            The seed for the random number generator. If None, the randomization
+            non-reproducible.
+        """
         rng = np.random.default_rng(seed=seed)
         for name, column in self.df.iteritems():
             if name not in self.features:
@@ -1188,6 +1282,7 @@ class PulseShapeDiscriminator:
         """Save a diagnostic plot to the gallery as a PNG file.
 
         Parameters
+        ----------
             path : str or pathlib.Path, default None
                 The path to save the plot. If None, the plot is saved to the
                 default database.
