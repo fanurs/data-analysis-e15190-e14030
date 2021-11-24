@@ -300,24 +300,81 @@ class PulseShapeDiscriminator:
                 self.df[name] = self.df[name].astype(np.float32)
     
     def normalize_features(self, df=None):
+        """Normalize features.
+
+        Normalization is done such that the resulting variables have mean 0 and
+        standard deviation 1. Under the hood, this is done by
+        ``sklearn.preprocessing.StandardScaler``. The normalization parameters
+        are stored in ``self.feature_scaler``. This allows for denormalization
+        later on.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame, default None
+            The dataframe to normalize. If None, the dataframe in ``self.df``
+            is used, and the normalization is done in-place.
+
+        Returns
+        -------
+        normed_df : pandas.DataFrame
+            The normalized dataframe.
+        """
         self.feature_scaler = StandardScaler().fit(self.df[self.features])
         _df = self.feature_scaler.transform(self.df[self.features])
         if df is None:
             self.df[self.features] = _df
-        else:
-            return _df
+        return _df
     
     def denormalize_features(self, df=None):
+        """Denormalize features.
+
+        Recovers the original values of the features from the normalized ones.
+        This is done by applying the inverse transformation by
+        ``self.feature_scaler``. The attribute ``self.feature_scaler`` will also
+        be deleted after this operation to prevent further denormalization.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame, default None
+            The dataframe to denormalize. If None, the dataframe in ``self.df``
+            is used, and the denormalization is done in-place.
+        
+        Returns
+        -------
+        denormed_df : pandas.DataFrame
+            The denormalized dataframe.
+        """
         _df = self.feature_scaler.inverse_transform(self.df[self.features])
         del self.feature_scaler
         if df is None:
             self.df[self.features] = _df
-        else:
-            return _df
+        return _df
     
-    def remove_vetowall_coincidences(self):
-        self.df = self.df.query('VW_multi == 0')
-        self.df.drop('VW_multi', axis=1, inplace=True)
+    def remove_vetowall_coincidences(self, df=None):
+        """Remove Veto Wall coincidences.
+
+        This is done to effectively remove charged particles from the data.
+        Currently, this is done by removing the entire event as long as there is
+        any non-zero Veto Wall multiplicity. In the future, this could be
+        further improved by removing only hits that fall within a certain solid
+        angle from the point of contact of the veto wall.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame, default None
+            The dataframe to remove the Veto Wall coincidences from. If None,
+            the dataframe in ``self.df`` is used in-place.
+        
+        Returns
+        -------
+        df_result : pandas.DataFrame
+            The dataframe with the Veto Wall coincidences removed.
+        """
+        _df = self.df.query('VW_multi == 0')
+        _df.drop('VW_multi', axis=1, inplace=True)
+        if df is None:
+            self.df = _df
+        return _df
     
     def remove_distorted_fast_total(self):
         self.total_threshold = dict()
