@@ -883,9 +883,10 @@ class PulseShapeDiscriminator:
         provide a better PSD parameter that is built on top of this one-sided
         VPSD parameter.
 
-        Parameters:
-            side : 'L' or 'R'
-                The side of the NW bar to do the value-assignment.
+        Parameters
+        ----------
+        side : 'L' or 'R'
+            The side of the NW bar to do the value-assignment.
         """
         total = f'total_{side}'
         fast = f'fast_{side}'
@@ -1010,6 +1011,8 @@ class PulseShapeDiscriminator:
 
     @property
     def _run_hash_str(self):
+        """Returns a string that uniquely identifies the runs.
+        """
         runs = sorted(set(self.df['run']))
         runs_hash = hashlib.sha256(','.join([str(run) for run in runs]).encode()).hexdigest()
         return f'run-{min(runs):04d}-{max(runs):04d}-h{runs_hash[-5:]}'
@@ -1022,9 +1025,10 @@ class PulseShapeDiscriminator:
         `$PROJECT_DIR/database/calib_params/run-4082-4123-ha88b0/NWB-bar01.json`
 
         Parameters
-            path : str or pathlib.Path, default None
-                The path to save the parameters. If None, the parameters will be
-                saved to the default database.
+        ----------
+        path : str or pathlib.Path, default None
+            The path to save the parameters. If None, the parameters will be
+            saved to the default database.
         """
         # prepare JSON path
         filename = f'NW{self.AB}-bar{self.bar:02d}.json'
@@ -1340,21 +1344,21 @@ class PulseShapeDiscriminator:
 
         Parameters
         ----------
-            path : str or pathlib.Path, default None
-                The path to save the plot. If None, the plot is saved to the
-                default database.
-            cut : str, default 'light_GM > 3'
-                The cut to apply to the data when plotting. All panels in the
-                figure will apply this cut, and potentially other cuts, joined
-                by logical AND, except for the panel that draws the PPSD as a
-                function of light GM.
-            show_plot : bool, default False
-                If True, the plot will be shown in run time, i.e. the command
-                `plt.show()` will be called.
-            save : bool, default True
-                If `True`, the plot will be saved to the database. `False`
-                option is useful when users are using this function to inspect
-                the plot without saving.
+        path : str or pathlib.Path, default None
+            The path to save the plot. If None, the plot is saved to the default
+            database.
+        cut : str, default 'light_GM > 3'
+            The cut to apply to the data when plotting. All panels in the figure
+            will apply this cut, and potentially other cuts, joined by logical
+            AND, except for the panel that draws the PPSD as a function of light
+            GM.
+        show_plot : bool, default False
+            If True, the plot will be shown in run time, i.e. the command
+            `plt.show()` will be called.
+        save : bool, default True
+            If `True`, the plot will be saved to the database. `False` option is
+            useful when users are using this function to inspect the plot
+            without saving.
         """
         filename = f'{self._run_hash_str}-NW{self.AB}-bar{self.bar:02d}.png'
         if path is None:
