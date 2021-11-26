@@ -704,6 +704,26 @@ class PulseShapeDiscriminator:
         ax=None,
         find_peaks_kwargs=None,
     ):
+        """Fit and update ``self.cfast_total``.
+
+        Parameters
+        ----------
+        side : 'L' or 'R'
+            The side to fit.
+        position_range : list of 2 floats, default None
+            The range of positions to fit . If None, use the default ranges.
+            For left side, the range is [-100, -30]; for right side, the range
+            is [30, 100].
+        ax : matplotlib.axes.Axes, default None
+            The axes to plot the fitting result. If None, no plot will be shown.
+        find_peaks_kwargs : dict, default None
+            The keyword arguments for :py:func:`find_topN_peaks`.
+        
+        Returns
+        -------
+        cfast_total : dict
+            The fitted parameters.
+        """
         # initialize function arguments
         if find_peaks_kwargs is None:
             find_peaks_kwargs = dict()
