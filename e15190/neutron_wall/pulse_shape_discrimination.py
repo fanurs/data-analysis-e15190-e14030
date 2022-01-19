@@ -49,7 +49,7 @@ class PulseShapeDiscriminator:
         self.decompression_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
         self.interpretation_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
         self.features = [
-            'pos'
+            'pos',
             'total_L',
             'total_R',
             'fast_L',
