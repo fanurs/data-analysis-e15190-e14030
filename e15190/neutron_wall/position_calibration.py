@@ -8,6 +8,7 @@ import warnings
 import sys
 
 import matplotlib as mpl
+mpl_default_backend = mpl.get_backend()
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,6 +27,8 @@ from e15190.utilities import geometry as geom
 from e15190.utilities import fast_histogram as fh
 from e15190.utilities import local_manager, tables
 from e15190.utilities import ray_triangle_intersection as rti
+from e15190.utilities import styles
+styles.set_matplotlib_style(mpl)
 
 DATABASE_DIR = PROJECT_DIR / 'database/neutron_wall/position_calibration'
 CACHE_DIR = DATABASE_DIR / 'cache'
