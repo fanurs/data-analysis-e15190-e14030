@@ -44,8 +44,8 @@ def get_args():
             calibrations, otherwise there is not enough statistics. Consecutive
             runs can be specified in ranges separated by the character "-". Here
             is an example:
-                > ./NWB_pulse_shape_discrimination.py 8-10 11 20 2-5
-            This will calibrate the runs 8, 9, 10, 11, 20, 2, 3, 4, 5.
+                > ./NW_pulse_shape_discrimination.py B 8-10 11 20 2-5
+            This will calibrate the runs 8, 9, 10, 11, 20, 2, 3, 4, 5, on NWB.
         '''),
     )
     parser.add_argument(
