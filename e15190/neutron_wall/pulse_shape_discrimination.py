@@ -1104,60 +1104,10 @@ class PulseShapeDiscriminator:
         with open(path, 'w') as file:
             json.dump(pars, file, indent=4, default=default)
 
-    def _draw_figure_of_merits(self, ax, cut):
-        subdf = self.df.query(cut)[['ppsd', 'ppsd_perp', 'pos', 'light_GM']]
 
-        # as function of light GM
-        light_GM_ranges = self.create_ranges(3, 60, width=10, step=5)
-        light_fom = []
-        for light_GM_range in light_GM_ranges:
-            subdf_light = subdf.query(' & '.join([
-                f'{light_GM_range[0]} <= light_GM < {light_GM_range[1]}',
-                '-3 < ppsd < 4',
-                '-1 < ppsd_perp < 1',
-            ]))
-            if len(subdf_light) < 500:
-                break
-            light_mean = np.mean(light_GM_range)
-            fom = self.figure_of_merit(subdf_light['ppsd'])
-            light_fom.append([light_mean, fom])
-        light_fom = pd.DataFrame(light_fom, columns=['light_GM', 'fom'])
-
-        # design
-        ax.errorbar(
-            light_fom['light_GM'], light_fom['fom'],
-            fmt='o-', color='crimson', linestyle='dashed', linewidth=0.8,
-        )
-        ax.set_xlim(0, 60)
-        ax.set_ylim(0.5, 1.5)
-        ax.set_xlabel('G.M. light (MeVee)', color='crimson')
-        ax.set_ylabel('Figure of merit')
-
-        # as function of position
-        pos_ranges = self.create_ranges(-100, 100, width=30, step=15)
-        pos_fom = []
-        for pos_range in pos_ranges:
-            subdf_pos = subdf.query(' & '.join([
-                f'{pos_range[0]} <= pos < {pos_range[1]}',
-                '-3 < ppsd < 4',
-                '-1 < ppsd_perp < 1',
-            ]))
-            pos_mean = np.mean(pos_range)
-            fom = self.figure_of_merit(subdf_pos['ppsd'])
-            pos_fom.append([pos_mean, fom])
-        pos_fom = pd.DataFrame(pos_fom, columns=['pos', 'fom'])
-
-        # plot
-        tw = ax.twiny()
-        tw.errorbar(
-            pos_fom['pos'], pos_fom['fom'],
-            fmt='^-', markerfacecolor='white', color='navy', linewidth=0.8,
-        )
-        tw.set_xlim(-120, 120)
-        tw.set_xlabel(f'NW{self.AB} hit position ' + r'$x$' + ' (cm)', color='navy')
-        tw.set_ylabel('Figure-of-merit')
-
-    def save_to_gallery(self, path=None, cut='light_GM > 3', show_plot=False, save=True):
+class Gallery:
+    @staticmethod
+    def save_as_png(psd_obj, path=None, cut='light_GM > 3', show_plot=False, save=True):
         """Save a diagnostic plot to the gallery as a PNG file.
 
         Parameters
@@ -1178,57 +1128,63 @@ class PulseShapeDiscriminator:
             useful when users are using this function to inspect the plot
             without saving.
         """
-        filename = f'{self._run_hash_str}-NW{self.AB}-bar{self.bar:02d}.png'
+        # prepare image path and directory
+        filename = f'{psd_obj._run_hash_str}-NW{psd_obj.AB}-bar{psd_obj.bar:02d}.png'
         if path is None:
-            path = self.database_dir / 'gallery' / filename
+            path = psd_obj.database_dir / 'gallery' / filename
         elif isinstance(path, str):
             path = pathlib.Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
+        # determine matplotlib backend
         if show_plot:
             mpl.use(mpl_default_backend)
         else:
             mpl.use('Agg')
-        fig, ax = plt.subplots(ncols=3, nrows=3, figsize=(13, 11), constrained_layout=True)
-        fig.suptitle(f'{self._run_hash_str}: NW{self.AB}-bar{self.bar:02d}')
+
+        # construct figure
+        fig, ax = plt.subplots(
+            ncols=3, nrows=3,
+            figsize=(13, 11),
+            constrained_layout=True,
+        )
+        fig.suptitle(f'{psd_obj._run_hash_str}: NW{psd_obj.AB}-bar{psd_obj.bar:02d}')
 
         plt.sca(ax[0, 0])
-        Gallery.draw_cfast_total(self, 'L', ' & '.join([f'({cut})', '(-100 < pos < -40)']))
+        Gallery.draw_cfast_total(psd_obj, 'L', ' & '.join([f'({cut})', '(-100 < pos < -40)']))
         
         plt.sca(ax[0, 1])
-        Gallery.draw_cfast_total(self, 'R', ' & '.join([f'({cut})', '(40 < pos < 100)']))
+        Gallery.draw_cfast_total(psd_obj, 'R', ' & '.join([f'({cut})', '(40 < pos < 100)']))
 
         plt.sca(ax[0, 2])
-        Gallery.draw_vpsd2d(self, cut)
+        Gallery.draw_vpsd2d(psd_obj, cut)
 
         plt.sca(ax[1, 0])
-        Gallery.draw_centroid_as_func_of_position(self)
+        Gallery.draw_centroid_as_func_of_position(psd_obj)
 
         plt.sca(ax[1, 1])
-        Gallery.draw_ppsd2d(self, cut)
+        Gallery.draw_ppsd2d(psd_obj, cut)
 
         plt.sca(ax[1, 2])
-        Gallery.draw_ppsd_as_func_of_lightGM(self, cut)
+        Gallery.draw_ppsd_as_func_of_lightGM(psd_obj, cut)
 
-        rc = (2, 0)
-        self._draw_figure_of_merits(ax[rc], cut)
+        plt.sca(ax[2, 0])
+        Gallery.draw_figure_of_merits(psd_obj, cut)
 
         plt.sca(ax[2, 1])
-        Gallery.draw_ppsd_as_func_of_position(self, cut)
+        Gallery.draw_ppsd_as_func_of_position(psd_obj, cut)
 
         plt.sca(ax[2, 2])
-        Gallery.draw_ppsd1d(self, cut)
+        Gallery.draw_ppsd1d(psd_obj, cut)
 
         plt.draw()
         if save:
-            fig.savefig(path, dpi=500, bbox_inches='tight')
+            fig.savefig(path, dpi=300, bbox_inches='tight')
         if show_plot:
             plt.show()
         else:
             plt.close()
 
-
-class Gallery:
     @staticmethod
     def draw_cfast_total(psd_obj, side, cut=None, ax=None):
         """Draw centered-fast v.s. total.
@@ -1619,24 +1575,88 @@ class Gallery:
         psd_obj : PulseShapeDiscriminator instance
             The PSD object to draw.
         cut : str, default None
-            The cut to apply to the PSD object.
+            The common cut to apply to the PSD object. Additional cuts are added
+            when constructing each F.O.M. point: ``-3 < ppsd < 4`` and
+            ``-1 < ppsd_perp < 1``.
         ax : matplotlib.axes.Axes, default None
             Default None, and `plt.gca()` is used.
         """
-        pass
+        if cut is None:
+            subdf = psd_obj.df.copy()[['ppsd', 'ppsd_perp', 'pos', 'light_GM']]
+        else:
+            subdf = psd_obj.df.query(cut)[['ppsd', 'ppsd_perp', 'pos', 'light_GM']]
+
+        if ax is None:
+            ax = plt.gca()
+        ax_low = ax # for position
+        ax_upp = ax.twiny() # for light_GM
+
+        # calculate FOM as function of light GM
+        light_GM_ranges = psd_obj.create_ranges(3, 60, width=10, step=5)
+        df_light_fom = []
+        for light_GM_range in light_GM_ranges:
+            subdf_light = subdf.query(' & '.join([
+                f'{light_GM_range[0]} <= light_GM < {light_GM_range[1]}',
+                '-3 < ppsd < 4',
+                '-1 < ppsd_perp < 1',
+            ]))
+            
+            # if too few events, skip
+            if len(subdf_light) < 500:
+                continue
+
+            light_mean = np.mean(light_GM_range)
+            fom = psd_obj.figure_of_merit(subdf_light['ppsd'])
+            df_light_fom.append([light_mean, fom])
+        df_light_fom = pd.DataFrame(df_light_fom, columns=['light_GM', 'fom'])
+
+        # plot FOM as a function of light GM with the upper x-axis
+        ax_upp.errorbar(
+            df_light_fom['light_GM'], df_light_fom['fom'],
+            fmt='o-', color='crimson', linestyle='dashed', linewidth=0.8,
+        )
+        ax_upp.set_xlim(0, 60)
+        ax_upp.set_ylim(0.5, 1.5)
+        ax_upp.set_xlabel('G.M. light (MeVee)', color='crimson')
+        ax_upp.set_ylabel('Figure of merit')
+
+        # calculate FOM as a function of position
+        pos_ranges = psd_obj.create_ranges(-100, 100, width=30, step=15)
+        df_pos_fom = []
+        for pos_range in pos_ranges:
+            subdf_pos = subdf.query(' & '.join([
+                f'{pos_range[0]} <= pos < {pos_range[1]}',
+                '-3 < ppsd < 4',
+                '-1 < ppsd_perp < 1',
+            ]))
+            pos_mean = np.mean(pos_range)
+            fom = psd_obj.figure_of_merit(subdf_pos['ppsd'])
+            df_pos_fom.append([pos_mean, fom])
+        df_pos_fom = pd.DataFrame(df_pos_fom, columns=['pos', 'fom'])
+
+        # plot FOM as a funciton of position with the lower x-axis
+        ax_low.errorbar(
+            df_pos_fom['pos'], df_pos_fom['fom'],
+            fmt='^-', markerfacecolor='white', color='navy', linewidth=0.8,
+        )
+        ax_low.set_xlim(-120, 120)
+        ax_low.set_xlabel(f'NW{psd_obj.AB} hit position ' + r'$x$' + ' (cm)', color='navy')
+        ax_low.set_ylabel('Figure-of-merit')
 
 
 
-"""
-Functions, classes and attributes for using this module as a script. For
-example, to analyze PSD on NWB from run 1000 to 1100, just type on the terminal:
 
-.. code-block:: console
-    $ python pulse_shape_discrimination.py B 1000-1100
-
-Use the flag ``-h`` or ``--help`` to see the list of available options.
-"""
 class _MainUtilities:
+    """
+    Functions, classes and attributes for using this module as a script. For
+    example, to analyze PSD on NWB from run 1000 to 1100, just type on the
+    terminal:
+
+    .. code-block:: console
+        $ python pulse_shape_discrimination.py B 1000-1100
+
+    Use the flag ``-h`` or ``--help`` to see the list of available options.
+    """
     @staticmethod
     def get_args():
         parser = argparse.ArgumentParser(
@@ -1752,6 +1772,6 @@ if __name__ == '__main__':
         
         psd.fit()
         psd.save_parameters()
-        psd.save_to_gallery()
+        Gallery.save_as_png(psd)
 
         print(' Done', flush=True)
