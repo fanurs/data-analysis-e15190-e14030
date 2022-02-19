@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import concurrent.futures
 import hashlib
 import json
@@ -1103,210 +1104,6 @@ class PulseShapeDiscriminator:
         with open(path, 'w') as file:
             json.dump(pars, file, indent=4, default=default)
 
-    def _draw_fast_total(self, side, ax, cut):
-        total, fast = f'total_{side}', f'fast_{side}'
-        subdf = self.df.query(cut)[[total, fast]]
-        subdf['cfast'] = subdf[fast] - self.center_line[side](subdf[total])
-
-        # two-dimensional histogram
-        h = fh.plot_histo2d(
-            ax.hist2d,
-            subdf[total], subdf['cfast'],
-            range=[[0, 4000], [-150, 200]],
-            bins=[500, 175],
-            cmap=mpl.cm.jet,
-            norm=mpl.colors.LogNorm(vmin=1),
-        )
-        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
-
-        # fast-total relations
-        total_plt = np.linspace(0, 4000, 200)
-        for particle, ft in self.cfast_total[side].items():
-            ax.plot(total_plt, ft(total_plt), color='black', linewidth=1.5, zorder=10)
-            ax.plot(total_plt, ft(total_plt), color='gold', linewidth=1.2, zorder=20)
-        
-        # control points
-        for particle, ctrl_pts in self.ctrl_pts[side].items():
-            if particle == 'neutron':
-                kw = dict(fmt='o', color='navy')
-            else:
-                kw = dict(fmt='s', color='darkgreen')
-
-            sub_ctrl_pts = ctrl_pts.query('valid == True')
-            ax.errorbar(
-                sub_ctrl_pts['total'], sub_ctrl_pts['fast'],
-                markerfacecolor='white', markersize=3, linewidth=0.6, zorder=100,
-                **kw,
-            )
-            sub_ctrl_pts = ctrl_pts.query('valid == False')
-            ax.errorbar(
-                sub_ctrl_pts['total'], sub_ctrl_pts['fast'],
-                markerfacecolor='red', markersize=4, linewidth=0.6, zorder=100,
-                **kw,
-            )
-        
-        # designs
-        ax.set_xlim(0, 4000)
-        ax.set_ylim(-150, 200)
-        ax.set_xlabel(f'TOTAL-{side}')
-        ax.set_ylabel(f'Centered FAST-{side}')
-
-    def _draw_vpsd2d(self, ax, cut):
-        subdf = self.df.query(cut)
-
-        # two-dimensional histogram
-        h = fh.plot_histo2d(
-            ax.hist2d,
-            subdf['vpsd_L'], subdf['vpsd_R'],
-            range=[[-2, 3], [-2, 3]],
-            bins=[250, 250],
-            cmap=mpl.cm.jet,
-            norm=mpl.colors.LogNorm(vmin=1),
-        )
-        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
-
-        # position correction curves
-        pos_pars = self.position_correction_params
-        positions = np.linspace(-100, 100, 500)
-        for particle, curve in pos_pars['centroid_curves'].items():
-            centroids = curve(positions)
-            ax.plot(centroids[:, 0], centroids[:, 1], color='black', linewidth=1.5, zorder=10)
-            color = 'navy' if particle == 'neutron' else 'green'
-            ax.plot(centroids[:, 0], centroids[:, 1], color=color, linewidth=1.2, zorder=20)
-
-        # design
-        ax.set_xlim(-2, 3)
-        ax.set_ylim(-2, 3)
-        ax.set_xlabel(r'VPSD-L $v^{(\mathrm{L})}$')
-        ax.set_ylabel(r'VPSD-R $v^{(\mathrm{R})}$')
-
-    def _draw_centroid_curves(self, ax):
-        curves = self.position_correction_params['centroid_curves']
-        tw = ax.twinx()
-        for particle, curve in curves.items():
-            color = 'navy' if particle == 'neutron' else 'green'
-            symb = r'n' if particle == 'neutron' else r'\gamma'
-
-            centroids = curve(curve.x)
-            kw = dict(color=color, markersize=5, linewidth=0.6)
-            ax.errorbar(
-                curve.x, centroids[:, 0],
-                fmt='*', label=r'$v^{(\mathrm{L})}_%s$' % symb,
-                **kw,
-            )
-            tw.errorbar(
-                curve.x, centroids[:, 1],
-                fmt='P', markerfacecolor='white', label=r'$v^{(\mathrm{R})}_%s$' % symb,
-                **kw,
-            )
-
-            pos_plt = np.linspace(-110, 110, 500)
-            c_plt = curve(pos_plt)
-            ax.plot(pos_plt, c_plt[:, 0], **kw)
-            tw.plot(pos_plt, c_plt[:, 1], linestyle='dashed', **kw)
-        
-        # design
-        ax.set_xlabel(f'NW{self.AB} hit position ' + r'$x$' + ' (cm)')
-        ax.set_ylabel(r'VPSD-L $v^{(\mathrm{L})}$')
-        tw.set_ylabel(r'VPSD-R $v^{(\mathrm{R})}$')
-        ax.set_xlim(-120, 120)
-        ax.set_ylim(ax.get_ylim()[0], 1.1 * np.diff(ax.get_ylim())[0] + ax.get_ylim()[0])
-        tw.set_ylim(tw.get_ylim()[0], 1.1 * np.diff(tw.get_ylim())[0] + tw.get_ylim()[0])
-        kw = dict(
-            labelspacing=0.0,
-            handlelength=0.3,
-            handletextpad=0.2,
-            borderaxespad=0.3,
-            ncol=2,
-            columnspacing=0.8,
-        )
-        ax.legend(loc='upper left', **kw)
-        tw.legend(loc='upper right', **kw)
-
-    def _draw_ppsd2d(self, ax, cut):
-        subdf = self.df.query(cut)
-
-        # two-dimensional histogram
-        h = fh.plot_histo2d(
-            ax.hist2d,
-            subdf['ppsd'], subdf['ppsd_perp'],
-            range=[[-2, 3], [-2, 2]],
-            bins=[250, 200],
-            cmap=mpl.cm.jet,
-            norm=mpl.colors.LogNorm(vmin=1),
-        )
-        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
-
-        # design
-        ax.set_xlim(-2, 3)
-        ax.set_ylim(-2, 2)
-        ax.set_xlabel('PPSD')
-        ax.set_ylabel('PPSD-perpendicular')
-
-    def _draw_ppsd_vs_lightGM(self, ax, cut):
-        subdf = self.df.query(cut)
-
-        # two-dimensional histogram
-        h = fh.plot_histo2d(
-            ax.hist2d,
-            subdf['ppsd'], subdf['light_GM'],
-            range=[[-3, 4], [0, 60]],
-            bins=[350, 300],
-            cmap=mpl.cm.jet,
-            norm=mpl.colors.LogNorm(vmin=1),
-        )
-        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
-        ax.fill_betweenx([0, 3], -4, 5, color='silver', alpha=0.6, edgecolor='black', linewidth=1.5)
-        ax.axvline(0.5, color='black', linewidth=1.2, zorder=10)
-        ax.axvline(0.5, color='gold', linewidth=0.9, zorder=20)
-
-        # design
-        ax.set_xlim(-3, 4)
-        ax.set_ylim(0, 60)
-        ax.set_xlabel('PPSD')
-        ax.set_ylabel('G.M. light (MeVee)')
-
-    def _draw_ppsd_vs_pos(self, ax, cut):
-        subdf = self.df.query(cut)
-
-        # two-dimensional histogram
-        h = fh.plot_histo2d(
-            ax.hist2d,
-            subdf['pos'], subdf['ppsd'],
-            range=[[-120, 120], [-3, 4]],
-            bins=[240, 350],
-            cmap=mpl.cm.jet,
-            norm=mpl.colors.LogNorm(vmin=1),
-        )
-        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
-        ax.axhline(0.5, color='black', linewidth=1.2, zorder=10)
-        ax.axhline(0.5, color='gold', linewidth=0.9, zorder=20)
-        
-        # design
-        ax.set_xlim(-120, 120)
-        ax.set_ylim(-3, 4)
-        ax.set_xlabel(f'NW{self.AB} hit position ' + r'$x$' + ' (cm)')
-        ax.set_ylabel('PPSD')
-
-    def _draw_ppsd(self, ax, cut):
-        subdf = self.df.query(cut)
-        fh.plot_histo1d(
-            ax.hist,
-            subdf['ppsd'],
-            range=[-3, 4],
-            bins=700,
-            histtype='step',
-            color='navy',
-            density=True,
-        )
-        ax.axvline(0.5, color='gold', linewidth=1.0)
-
-        # design
-        ax.set_xlim(-3, 4)
-        ax.set_ylim(0, )
-        ax.set_xlabel('PPSD')
-        ax.set_ylabel('Probability density')
-
     def _draw_figure_of_merits(self, ax, cut):
         subdf = self.df.query(cut)[['ppsd', 'ppsd_perp', 'pos', 'light_GM']]
 
@@ -1395,34 +1192,32 @@ class PulseShapeDiscriminator:
         fig, ax = plt.subplots(ncols=3, nrows=3, figsize=(13, 11), constrained_layout=True)
         fig.suptitle(f'{self._run_hash_str}: NW{self.AB}-bar{self.bar:02d}')
 
-        rc = (0, 0)
-        _cut = ' & '.join([f'({cut})', '(-100 < pos < -40)'])
-        self._draw_fast_total('L', ax[rc], _cut)
+        plt.sca(ax[0, 0])
+        Gallery.draw_cfast_total(self, 'L', ' & '.join([f'({cut})', '(-100 < pos < -40)']))
         
-        rc = (0, 1)
-        _cut = ' & '.join([f'({cut})', '(40 < pos < 100)'])
-        self._draw_fast_total('R', ax[rc], _cut)
+        plt.sca(ax[0, 1])
+        Gallery.draw_cfast_total(self, 'R', ' & '.join([f'({cut})', '(40 < pos < 100)']))
 
-        rc = (0, 2)
-        self._draw_vpsd2d(ax[rc], cut)
+        plt.sca(ax[0, 2])
+        Gallery.draw_vpsd2d(self, cut)
 
-        rc = (1, 0)
-        self._draw_centroid_curves(ax[rc])
+        plt.sca(ax[1, 0])
+        Gallery.draw_centroid_as_func_of_position(self)
 
-        rc = (1, 1)
-        self._draw_ppsd2d(ax[rc], cut)
+        plt.sca(ax[1, 1])
+        Gallery.draw_ppsd2d(self, cut)
 
-        rc = (1, 2)
-        self._draw_ppsd_vs_lightGM(ax[rc], 'light_GM > 1')
+        plt.sca(ax[1, 2])
+        Gallery.draw_ppsd_as_func_of_lightGM(self, cut)
 
         rc = (2, 0)
         self._draw_figure_of_merits(ax[rc], cut)
 
-        rc = (2, 1)
-        self._draw_ppsd_vs_pos(ax[rc], cut)
+        plt.sca(ax[2, 1])
+        Gallery.draw_ppsd_as_func_of_position(self, cut)
 
-        rc = (2, 2)
-        self._draw_ppsd(ax[rc], cut)
+        plt.sca(ax[2, 2])
+        Gallery.draw_ppsd1d(self, cut)
 
         plt.draw()
         if save:
@@ -1431,3 +1226,532 @@ class PulseShapeDiscriminator:
             plt.show()
         else:
             plt.close()
+
+
+class Gallery:
+    @staticmethod
+    def draw_cfast_total(psd_obj, side, cut=None, ax=None):
+        """Draw centered-fast v.s. total.
+
+        Centered-fast, or cfast, is defined as the residual of fast w.r.t. to
+        the center line.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        side : str
+            The side of the bar, either 'L' or 'R'.
+        cut : str, default None
+            The cut to apply to the data to be plotted. This has nothing to do
+            with the actual data used for analysis.
+        ax : matplotlib.axes.Axes
+            Default None, and `plt.gca()` is used.
+        """
+        # prepare data for plotting
+        total, fast = f'total_{side}', f'fast_{side}'
+        if cut is None:
+            subdf = psd_obj.copy()[[total, fast]]
+        else:
+            subdf = psd_obj.df.query(cut)[[total, fast]]
+        subdf['cfast'] = subdf[fast] - psd_obj.center_line[side](subdf[total])
+
+        if ax is not None:
+            plt.sca(ax)
+
+        # plot the 2D histogram of cfast-total
+        h = fh.plot_histo2d(
+            plt.hist2d,
+            subdf[total], subdf['cfast'],
+            range=[[0, 4000], [-150, 200]],
+            bins=[500, 175],
+            cmap=plt.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=plt.gca(), pad=-0.02, fraction=0.08, aspect=50.0)
+
+        # plot the cfast-total relation
+        total_plt = np.linspace(0, 4000, 200)
+        for particle, ft in psd_obj.cfast_total[side].items():
+            # to emulate a golden line with black edges, we draw two overlapping lines
+            # this is to improve the visibility
+            plt.plot(total_plt, ft(total_plt), color='black', linewidth=1.5, zorder=10)
+            plt.plot(total_plt, ft(total_plt), color='gold', linewidth=1.2, zorder=20)
+
+        # control points, including
+        # 1. those that were used to establish the cfast-total relation (filled white)
+        # 2. those that were disgarded because of bad Gaussian fit (filled red)
+        # The edge color is determined by particle: navy for neutron, darkgreen for gamma.
+        for particle, ctrl_pts in psd_obj.ctrl_pts[side].items():
+            # style by particles
+            if particle == 'neutron':
+                kw = dict(fmt='o', color='navy')
+            if particle == 'gamma':
+                kw = dict(fmt='s', color='darkgreen')
+
+            common_kw = dict(linewidth=0.6, zorder=100)
+            
+            # control points used in fitting cfast-total relation
+            cpoints = ctrl_pts.query('valid == True')
+            plt.errorbar(
+                cpoints['total'], cpoints['fast'],
+                markerfacecolor='white', markersize=3,
+                **kw, **common_kw
+            )
+        
+            # control points that were disgarded
+            cpoints = ctrl_pts.query('valid == False')
+            plt.errorbar(
+                cpoints['total'], cpoints['fast'],
+                markerfacecolor='red', markersize=4,
+                **kw, **common_kw
+            )
+
+        # final styling
+        plt.xlim(0, 4000)
+        plt.ylim(-150, 200)
+        plt.xlabel(f'TOTAL-{side}')
+        plt.ylabel(f'Centered FAST-{side}')
+
+    @staticmethod
+    def draw_vpsd2d(psd_obj, cut=None, ax=None):
+        """Draw two-dimensional VPSD plot.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        cut : str, default None
+            The cut to apply to the data to be plotted. This has nothing to do
+            with the actual data used for analysis.
+        ax : matplotlib.axes.Axes, default None
+            Default None, and `plt.gca()` is used.
+        """
+        # prepare data for plotting
+        if cut is None:
+            subdf = psd_obj.copy()[['vpsd_L', 'vpsd_R']]
+        else:
+            subdf = psd_obj.df.query(cut)[['vpsd_L', 'vpsd_R']]
+
+        if ax is not None:
+            plt.sca(ax)
+
+        # plot the 2D VPSD histogram
+        h = fh.plot_histo2d(
+            plt.hist2d,
+            subdf['vpsd_L'], subdf['vpsd_R'],
+            range=[[-2, 3], [-2, 3]],
+            bins=[250, 250],
+            cmap=plt.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=plt.gca(), pad=-0.02, fraction=0.08, aspect=50.0)
+
+        # plot position correction curves
+        pos_pars = psd_obj.position_correction_params # shorthand
+        positions = np.linspace(-100, 100, 500)
+        for particle, curve in pos_pars['centroid_curves'].items():
+            centroids = curve(positions)
+            color = 'navy' if particle == 'neutron' else 'green' # gamma
+
+            # emulate a golden line with black edges, to improve the visibility
+            x, y = centroids[:, 0], centroids[:, 1]
+            plt.plot(x, y, color='black', linewidth=1.5, zorder=10)
+            plt.plot(x, y, color=color, linewidth=1.2, zorder=20)
+        
+        # final styling
+        plt.xlim(-2, 3)
+        plt.ylim(-2, 3)
+        plt.xlabel(r'VPSD-L $v^{(\mathrm{L})}$')
+        plt.ylabel(r'VPSD-R $v^{(\mathrm{R})}$')
+
+    @staticmethod
+    def draw_centroid_as_func_of_position(psd_obj, ax=None):
+        """Draw centroid as a function of position.
+
+        "Centroid curve" refers to the trajectory of centroids in the 2D VPSD
+        plot when we vary the hit position. In this function, we will be
+        plotting four curves in total - two for neutron and two for gamma. For
+        each particle, one curve is plotting VPSD-L and the another is plotting
+        VPSD-R.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        ax : matplotlib.axes.Axes, default None
+            Default None, and `plt.gca()` is used.
+        """
+        # ax_L will be used to plot VPSD-L (y ticks on left)
+        # ax_R will be used to plot VPSD-R (y ticks on right)
+        ax_L = plt.gca() if ax is None else ax
+        ax_R = ax_L.twinx()
+
+        curves = psd_obj.position_correction_params['centroid_curves']
+        for particle, curve in curves.items():
+            # particle-dependent attributes
+            if particle == 'neutron':
+                color = 'navy'
+                symb = r'n'
+            if particle == 'gamma':
+                color = 'green'
+                symb = r'\gamma'
+
+            # plot the centroids (dots)
+            centroids = curve(curve.x)
+            kw = dict(color=color, markersize=5, linewidth=0.6)
+            ax_L.errorbar(
+                curve.x, centroids[:, 0],
+                fmt='*',
+                label=r'$v^{(\mathrm{L})}_%s$' % symb,
+                **kw,
+            )
+            ax_R.errorbar(
+                curve.x, centroids[:, 1],
+                fmt='P',
+                markerfacecolor='white',
+                label=r'$v^{(\mathrm{R})}_%s$' % symb,
+                **kw,
+            )
+
+            # plot the centroid curves (interpolation)
+            pos_plt = np.linspace(-110, 110, 500)
+            c_plt = curve(pos_plt)
+            ax_L.plot(pos_plt, c_plt[:, 0], **kw)
+            ax_R.plot(pos_plt, c_plt[:, 1], linestyle='dashed', **kw)
+        
+        # final styling
+        ax_L.set_xlabel(f'NW{psd_obj.AB} hit position ' + r'$x$' + ' (cm)')
+        ax_L.set_ylabel(r'VPSD-L $v^{(\mathrm{L})}$')
+        ax_R.set_ylabel(r'VPSD-R $v^{(\mathrm{R})}$')
+        ax_L.set_xlim(-120, 120)
+        ax_L.set_ylim(ax_L.get_ylim()[0], 1.1 * np.diff(ax_L.get_ylim())[0] + ax_L.get_ylim()[0])
+        ax_R.set_ylim(ax_R.get_ylim()[0], 1.1 * np.diff(ax_R.get_ylim())[0] + ax_R.get_ylim()[0])
+        kw = dict(
+            labelspacing=0.0,
+            handlelength=0.3,
+            handletextpad=0.2,
+            borderaxespad=0.3,
+            ncol=2,
+            columnspacing=0.8,
+        )
+        ax_L.legend(loc='upper left', **kw)
+        ax_R.legend(loc='upper right', **kw)
+
+    @staticmethod
+    def draw_ppsd2d(psd_obj, cut=None, ax=None):
+        """Draw two-dimensional PPSD histogram.
+
+        The x-axis is the PPSD value, and the y-axis is the perpendicular-PPSD
+        value.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        cut : str, default None
+            The cut to apply to the PSD object.
+        ax : matplotlib.axes.Axes, default None
+            Default None, and `plt.gca()` is used.
+        """
+        # prepare data for plotting
+        if cut is None:
+            subdf = psd_obj.df.copy()[['ppsd', 'ppsd_perp']]
+        else:
+            subdf = psd_obj.df.query(cut)[['ppsd', 'ppsd_perp']]
+
+        if ax is not None:
+            plt.sca(ax)
+
+        # plot two-dimensional histogram
+        h = fh.plot_histo2d(
+            plt.hist2d,
+            subdf['ppsd'], subdf['ppsd_perp'],
+            range=[[-2, 3], [-2, 2]],
+            bins=[250, 200],
+            cmap=plt.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=plt.gca(), pad=-0.02, fraction=0.08, aspect=50.0)
+
+        # final styling
+        plt.xlim(-2, 3)
+        plt.ylim(-2, 2)
+        plt.xlabel('PPSD')
+        plt.ylabel('PPSD-perpendicular')
+
+    @staticmethod
+    def draw_ppsd_as_func_of_lightGM(psd_obj, cut=None, ax=None):
+        """Draw PPSD as a function of light_GM (geometric mean)
+
+        This plot can give us a sense of how well can we trust the PPSD at low
+        light_GM. The lower the light_GM value, the harder to separate neutrons
+        and gammas.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        cut : str, default None
+            The cut to apply to the PSD object. It is suggested to use some low
+            threshold, e.g. ``light_GM > 1``, so that we can inspect the
+            relation as low as 1 MeVee; the default threshold for data analysis,
+            however, is empirically established to be at least 3 MeVee or above.
+        ax : matplotlib.axes.Axes, default None
+            Default None, and `plt.gca()` is used.
+        """
+        if cut is None:
+            subdf = psd_obj.df.copy()[['ppsd', 'light_GM']]
+        else:
+            subdf = psd_obj.df.query(cut)[['ppsd', 'light_GM']]
+
+        if ax is not None:
+            plt.sca(ax)
+
+        # plot two-dimensional histogram
+        h = fh.plot_histo2d(
+            plt.hist2d,
+            subdf['ppsd'], subdf['light_GM'],
+            range=[[-3, 4], [0, 60]],
+            bins=[350, 300],
+            cmap=plt.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=plt.gca(), pad=-0.02, fraction=0.08, aspect=50.0)
+        plt.fill_betweenx([0, 3], -4, 5, color='silver', alpha=0.6, edgecolor='black', linewidth=1.5)
+
+        # plot a vertical separation line for neutron and gamma (PPSD = 0.5)
+        # we emulate a golden line with black edge by drawing two overlapping lines
+        plt.axvline(0.5, color='black', linewidth=1.2, zorder=10)
+        plt.axvline(0.5, color='gold', linewidth=0.9, zorder=20)
+
+        # final styling
+        plt.xlim(-3, 4)
+        plt.ylim(0, 60)
+        plt.xlabel('PPSD')
+        plt.ylabel('G.M. light (MeVee)')
+    
+    @staticmethod
+    def draw_ppsd_as_func_of_position(psd_obj, cut=None, ax=None):
+        """Draw PPSD as a function of position.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        cut : str, default None
+            The cut to apply to the PSD object.
+        ax : matplotlib.axes.Axes, default None
+            Default None, and `plt.gca()` is used.
+        """
+        if cut is None:
+            subdf = psd_obj.df.copy()[['pos', 'ppsd']]
+        else:
+            subdf = psd_obj.df.query(cut)[['pos', 'ppsd']]
+
+        if ax is not None:
+            plt.sca(ax)
+
+        # plot the two-dimensional histogram
+        h = fh.plot_histo2d(
+            plt.hist2d,
+            subdf['pos'], subdf['ppsd'],
+            range=[[-120, 120], [-3, 4]],
+            bins=[240, 350],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        plt.colorbar(h[3], ax=plt.gca(), pad=-0.02, fraction=0.08, aspect=50.0)
+        plt.axhline(0.5, color='black', linewidth=1.2, zorder=10)
+        plt.axhline(0.5, color='gold', linewidth=0.9, zorder=20)
+        
+        # design
+        plt.xlim(-120, 120)
+        plt.ylim(-3, 4)
+        plt.xlabel(f'NW{psd_obj.AB} hit position ' + r'$x$' + ' (cm)')
+        plt.ylabel('PPSD')
+    
+    @staticmethod
+    def draw_ppsd1d(psd_obj, cut=None, ax=None):
+        """Draw one-dimensional histogram of PPSD.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        cut : str, default None
+            The cut to apply to the PSD object.
+        ax : matplotlib.axes.Axes, default None
+            Default None, and `plt.gca()` is used.
+        """
+        if cut is None:
+            subdf = psd_obj.df.copy()[['ppsd']]
+        else:
+            subdf = psd_obj.df.query(cut)[['ppsd']]
+
+        if ax is not None:
+            plt.sca(ax)
+        
+        # plot the histogram
+        fh.plot_histo1d(
+            plt.hist,
+            subdf['ppsd'],
+            range=[-3, 4],
+            bins=700,
+            histtype='step',
+            color='navy',
+            density=True,
+        )
+        plt.axvline(0.5, color='gold', linewidth=1.0)
+
+        # design
+        plt.xlim(-3, 4)
+        plt.ylim(0, )
+        plt.xlabel('PPSD')
+        plt.ylabel('Probability density')
+    
+    @staticmethod
+    def draw_figure_of_merits(psd_obj, cut=None, ax=None):
+        """Draw figure of merit as functions of light_GM and position.
+
+        Parameters
+        ----------
+        psd_obj : PulseShapeDiscriminator instance
+            The PSD object to draw.
+        cut : str, default None
+            The cut to apply to the PSD object.
+        ax : matplotlib.axes.Axes, default None
+            Default None, and `plt.gca()` is used.
+        """
+        pass
+
+
+
+"""
+Functions, classes and attributes for using this module as a script. For
+example, to analyze PSD on NWB from run 1000 to 1100, just type on the terminal:
+
+.. code-block:: console
+    $ python pulse_shape_discrimination.py B 1000-1100
+
+Use the flag ``-h`` or ``--help`` to see the list of available options.
+"""
+class _MainUtilities:
+    @staticmethod
+    def get_args():
+        parser = argparse.ArgumentParser(
+            description='Pulse shape discrimination for neutron wall',
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+        parser.add_argument(
+            'AB',
+            type=str,
+            help='"A" or "B", this selects NWA or NWB'
+        )
+        parser.add_argument(
+            'runs',
+            nargs='+',
+            help=inspect.cleandoc('''
+                Runs to calibrate.
+
+                Usually the script needs at least five runs to give reliable
+                calibrations, otherwise there is not enough statistics.
+                Consecutive runs can be specified in ranges separated by the
+                character "-". Here is an example:
+                    > ./pulse_shape_discrimination.py B 8-10 11 20 2-5
+                This will calibrate the runs 8, 9, 10, 11, 20, 2, 3, 4, 5, on
+                NWB.
+            '''),
+        )
+        parser.add_argument(
+            '-b', '--bars',
+            nargs='+',
+            help=inspect.cleandoc('''
+                The bar number(s) to calibrate. If not specfiied, all bars,
+                including bar 1 to 24, will be analyzed. Dash "-" can be used to
+                specify ranges, e.g. "1-3 10-12" would make the program
+                analyzes bars 1, 2, 3, 10, 11, 12.
+            '''),
+            default='1-24',
+        )
+        parser.add_argument(
+            '-c', '--no-cache',
+            help=inspect.cleandoc('''
+                When this option is given, the script will ignore the HDF5 cache
+                files. All data will be read from the ROOT files. New cache
+                files will then be created. By default, the script will use the
+                cache.
+            '''),
+            action='store_true',
+        )
+        parser.add_argument(
+            '-o', '--output',
+            help=inspect.cleandoc('''
+                The output directory. If not given, the default is
+                ``$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination/``.
+            '''),
+        )
+        parser.add_argument(
+            '-s', '--silence',
+            help='To silent all status messages.',
+            action='store_true',
+        )
+        args = parser.parse_args()
+
+        # process the wall type
+        args.AB = args.AB.upper()
+        if args.AB not in ['A', 'B']:
+            raise ValueError(f'Invalid wall type: "{args.AB}"')
+        
+        # process the runs
+        runs = []
+        for run_str in args.runs:
+            run_range = [int(run) for run in run_str.split('-')]
+            if len(run_range) == 1:
+                runs.append(run_range[0])
+            elif len(run_range) == 2:
+                runs.extend(range(run_range[0], run_range[1] + 1))
+            else:
+                raise ValueError(f'Unrecognized input: {run_str}')
+        args.runs = runs
+
+        # process the bars
+        bars = []
+        for bar_str in args.bars:
+            bar_range = [int(bar) for bar in bar_str.split('-')]
+            if len(bar_range) == 1:
+                bars.append(bar_range[0])
+            elif len(bar_range) == 2:
+                bars.extend(range(bar_range[0], bar_range[1] + 1))
+            else:
+                raise ValueError(f'Unrecognized input: {bar_str}')
+        args.bars = bars
+
+        return args
+
+if __name__ == '__main__':
+    import argparse
+    import inspect
+    
+    args = _MainUtilities.get_args()
+
+    PulseShapeDiscriminator.database_dir = pathlib.Path(args.output)
+    psd = PulseShapeDiscriminator(args.AB)
+    read_verbose = (not args.silence)
+    for bar in args.bars:
+        psd.read(
+            run=args.runs,
+            bar=bar,
+            from_cache=(not args.no_cache),
+            verbose=read_verbose,
+        )
+        read_verbose = False # only show read status once
+
+        if not args.silence:
+            print(f'Calibrating NW{args.AB}-bar{bar:02d}...', end='', flush=True)
+        
+        psd.fit()
+        psd.save_parameters()
+        psd.save_to_gallery()
+
+        print(' Done', flush=True)
