@@ -204,7 +204,8 @@ class PulseShapeDiscriminator:
 
         # write cache to HDF5 files bar by bar
         columns = [col for col in df.columns if col != f'NW{self.AB}_bar']
-        pathlib.Path(path).unlink(missing_ok=True) # remove pre-existing file, if any
+        path.unlink(missing_ok=True) # remove pre-existing file, if any
+        path.parent.mkdir(exist_ok=True, parents=True)
         for bar, subdf in df.groupby(f'NW{self.AB}_bar'):
             subdf.reset_index(drop=True, inplace=True)
             with pd.HDFStore(path, mode='a') as file:
