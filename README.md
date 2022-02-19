@@ -1,9 +1,14 @@
+<a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-v3.8-1e415e.svg?style=flat@logo=python" alt="Python"></a>
+<a href="https://www.cplusplus.com/"><img src="https://img.shields.io/badge/C++-v20-005697.svg?style=flat&logo=c%2B%2B" alt="C++"></a>
+<a href="https://root.cern/"><img src="http://img.shields.io/badge/CERN%20ROOT-v6.22-0c4b33.svg?style=flat" alt="CERN ROOT"></a>
+<a href="https://gitmoji.dev"><img src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=flat" alt="Gitmoji"></a>
+
 # Data Analysis: E15190-E14030
 **Useful links**
-- [:closed_book: Documentation (API reference)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html)
+- [:closed_book: Documentation (API reference)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html) <a href="https://www.sphinx-doc.org/"><img src="https://img.shields.io/badge/Made%20with-Sphinx-1f425f.svg" alt="Sphinx"></a>
 - [:radioactive: Experiment homepage](https://groups.nscl.msu.edu/hira/15190-14030/index.htm)
-- [:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list)
-- [:chart_with_upwards_trend:	 Plotly: Experimental runs](https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html)
+- [:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list) <a href="https://www.djangoproject.com/"><img src="https://img.shields.io/badge/Made%20with-Django-0c4b33" alt="Django"></a>
+- [:chart_with_upwards_trend: Experimental runs](https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html) <a href="https://plotly.com/"><img src="https://img.shields.io/badge/Made%20with-Plotly-3c4d70" alt="Django"></a>
 
 **Background**
 

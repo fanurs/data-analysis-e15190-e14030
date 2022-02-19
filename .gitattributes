@@ -1,2 +1,2 @@
 *.html linguist-vendored=true
-tests/** linguist-vendored=true
+tests/*/*.py linguist-vendored=true
