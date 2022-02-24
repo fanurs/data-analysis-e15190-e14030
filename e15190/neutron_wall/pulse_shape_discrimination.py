@@ -1692,7 +1692,7 @@ class _MainUtilities:
                 specify ranges, e.g. "1-3 10-12" would make the program
                 analyzes bars 1, 2, 3, 10, 11, 12.
             '''),
-            default='1-24',
+            default=['1-24'],
         )
         parser.add_argument(
             '-c', '--no-cache',
