@@ -1157,9 +1157,9 @@ class Gallery:
             without saving.
         """
         # prepare image path and directory
-        filename = f'{psd_obj._run_hash_str}-NW{psd_obj.AB}-bar{psd_obj.bar:02d}.png'
         if path is None:
-            path = psd_obj.database_dir / 'gallery' / filename
+            path = psd_obj.database_dir / 'gallery' / psd_obj._run_hash_str # sub-directory
+            path = path / f'NW{psd_obj.AB}-bar{psd_obj.bar:02d}.png'
         elif isinstance(path, str):
             path = pathlib.Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -1744,11 +1744,11 @@ class _MainUtilities:
         )
         parser.add_argument(
             '-o', '--output',
-            default=str(PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'),
             help=inspect.cleandoc('''
                 The output directory. If not given, the default is
                 "$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination/".
             '''),
+            default=str(PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'),
         )
         parser.add_argument(
             '-s', '--silence',
