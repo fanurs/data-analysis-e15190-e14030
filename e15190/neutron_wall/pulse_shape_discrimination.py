@@ -1705,6 +1705,16 @@ class _MainUtilities:
             action='store_true',
         )
         parser.add_argument(
+            '-d', '--debug',
+            help=inspect.cleandoc('''
+                When this option is given, no output would be saved. This
+                includes both calibration parameters and gallery. The cached
+                data is not controlled by this option; for that, refer to "-c"
+                or "--no-cache".
+            '''),
+            action='store_true',
+        )
+        parser.add_argument(
             '-o', '--output',
             default=str(PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'),
             help=inspect.cleandoc('''
@@ -1772,7 +1782,9 @@ if __name__ == '__main__':
             print(f'Calibrating NW{args.AB}-bar{bar:02d}...', end='', flush=True)
         
         psd.fit()
-        psd.save_parameters()
-        Gallery.save_as_png(psd)
+
+        if not args.debug:
+            psd.save_parameters()
+            Gallery.save_as_png(psd)
 
         print(' Done', flush=True)
