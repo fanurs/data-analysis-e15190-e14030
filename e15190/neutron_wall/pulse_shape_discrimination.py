@@ -1066,6 +1066,34 @@ class PulseShapeDiscriminator:
             'bar': self.bar,
         }
 
+        # prepare control points into JSON serializable
+        pars['ctrl_pts'] = {
+            'L': {
+                'gamma': {
+                    'total': list(self.ctrl_pts['L']['gamma']['total']),
+                    'fast': list(self.ctrl_pts['L']['gamma']['fast']),
+                    'valid': list(self.ctrl_pts['L']['gamma']['valid']),
+                },
+                'neutron': {
+                    'total': list(self.ctrl_pts['L']['neutron']['total']),
+                    'fast': list(self.ctrl_pts['L']['neutron']['fast']),
+                    'valid': list(self.ctrl_pts['L']['neutron']['valid']),
+                },
+            },
+            'R': {
+                'gamma': {
+                    'total': list(self.ctrl_pts['R']['gamma']['total']),
+                    'fast': list(self.ctrl_pts['R']['gamma']['fast']),
+                    'valid': list(self.ctrl_pts['R']['gamma']['valid']),
+                },
+                'neutron': {
+                    'total': list(self.ctrl_pts['R']['neutron']['total']),
+                    'fast': list(self.ctrl_pts['R']['neutron']['fast']),
+                    'valid': list(self.ctrl_pts['R']['neutron']['valid']),
+                },
+            },
+        }
+
         # prepare fast-total relations into JSON serializable
         totals = np.arange(0, 4100 + 1e-9, 20.0)
         pars['fast_total'] = {
