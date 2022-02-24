@@ -1194,7 +1194,7 @@ class Gallery:
         Gallery.draw_ppsd2d(psd_obj, cut)
 
         plt.sca(ax[1, 2])
-        Gallery.draw_ppsd_as_func_of_lightGM(psd_obj, cut)
+        Gallery.draw_ppsd_as_func_of_lightGM(psd_obj, 'light_GM > 1')
 
         plt.sca(ax[2, 0])
         Gallery.draw_figure_of_merits(psd_obj, cut)
