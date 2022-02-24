@@ -1709,7 +1709,7 @@ class _MainUtilities:
             default=str(PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'),
             help=inspect.cleandoc('''
                 The output directory. If not given, the default is
-                ``$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination/``.
+                "$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination/".
             '''),
         )
         parser.add_argument(
