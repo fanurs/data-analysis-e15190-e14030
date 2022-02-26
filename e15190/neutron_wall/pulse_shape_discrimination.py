@@ -1675,16 +1675,7 @@ class Gallery:
 
 
 class _MainUtilities:
-    """
-    Functions, classes and attributes for using this module as a script. For
-    example, to analyze PSD on NWB from run 1000 to 1100, just type on the
-    terminal:
-
-    .. code-block:: console
-        $ python pulse_shape_discrimination.py B 1000-1100
-
-    Use the flag ``-h`` or ``--help`` to see the list of available options.
-    """
+    """Functions, classes and attributes for using this module as a script."""
     @staticmethod
     def get_args():
         parser = argparse.ArgumentParser(
@@ -1789,6 +1780,15 @@ class _MainUtilities:
         return args
 
 if __name__ == '__main__':
+    """
+    To use this as a script for analyzing PSD on NWB from, say, run 1000 to
+    1100, just type on the terminal:
+
+    .. code-block:: console
+        $ python pulse_shape_discrimination.py B 1000-1100
+
+    Use the flag ``-h`` or ``--help`` to see the list of available options.
+    """
     import argparse
     import inspect
     
