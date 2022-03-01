@@ -47,8 +47,9 @@ class PulseShapeDiscriminator:
         """
         self.AB = AB.upper()
         self.ab = self.AB.lower()
-        self.decompression_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
-        self.interpretation_executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+        self.max_workers = max_workers
+        self.decompression_executor = None
+        self.interpretation_executor = None
         self.features = [
             'pos',
             'total_L',
@@ -136,6 +137,10 @@ class PulseShapeDiscriminator:
             f'NW{self.AB}_light_GM': f'NW{self.AB}.fGeoMeanSaturationCorrected',
              'VW_multi'            :  'VetoWall.fmulti',
         }
+        if self.decompression_exector is None:
+            self.decompression_executor = concurrent.futures.ThreadPoolExecutor(self.max_workers)
+        if self.interpretation_executor is None:
+            self.interpretation_executor = concurrent.futures.ThreadPoolExecutor(self.max_workers)
         with uproot.open(str(path) + ':' + tree_name) as tree:
             df = tree.arrays(
                 list(branches.values()),
