@@ -15,6 +15,7 @@ import scipy.interpolate
 import scipy.optimize
 import scipy.stats
 from sklearn import decomposition
+from sklearn.linear_model import RANSACRegressor
 from sklearn.preprocessing import StandardScaler
 import uproot 
 
@@ -23,6 +24,219 @@ from e15190.neutron_wall.position_calibration import NWCalibrationReader
 from e15190.utilities import fast_histogram as fh
 from e15190.utilities import styles
 styles.set_matplotlib_style(mpl)
+
+
+class FastTotalRansacEstimator:
+    """Custom base estimator object for RANSAC.
+
+    By default, RANSAC regressor in scikit-learn only uses linear regression.
+    To use custom regressor, we need to construct a base estimator object.
+    See
+    `sklearn.linear_model.RANSACRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RANSACRegressor.html>`__
+    for more details.
+    """
+    def __init__(self):
+        pass
+    
+    def model(self, x, *args, **kwargs):
+        """The fast-total relation function.
+
+        This function is currently just an empty function. When inheriting from
+        this class, define this model to enable all other methods that depend on
+        the model.
+
+        Parameters
+        ----------
+        x : array-like
+            The TOTAL values.
+        
+        Returns
+        -------
+        y : array-like
+            The predicted FAST values.
+        """
+        pass
+    
+    def fit(self, X, y, **kwargs):
+        self.par, _ = scipy.optimize.curve_fit(self.model, X.flatten(), y, **kwargs)
+        return self
+    
+    def predict(self, X):
+        return self.model(X.flatten(), *self.par)
+    
+    def score(self, X, y):
+        """Coefficient of determination.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Input data.
+        y : array-like, shape (n_samples,)
+            Target values, or ground truth.
+        
+        Returns
+        -------
+        score : float
+            The coefficient of determination. For model that perfectly predicts
+            all true values, the score is 1. For model that always predicts the
+            mean of all true values, the score is 0. Models with worse
+            performance will have negative scores.
+        """
+        y_pred = self.predict(X)
+        y_true = y
+        u = np.sum((y_true - y_pred)**2)
+        v = np.sum((y_true - np.mean(y_true))**2)
+        v = np.maximum(v, 1e-12) # avoid division by zero
+        return 1 - u / v
+    
+    def get_params(self, deep=True):
+        return dict()
+    
+    def set_params(self, **params):
+        return FastTotalRansacEstimator()
+
+
+class FastTotalRansacEstimatorGamma(FastTotalRansacEstimator):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+    def model(self, x, p0, p1):
+        """The fast-total relation for gammas.
+
+        Parameters
+        ----------
+        x : array_like
+            The TOTAL values.
+        p0 : float
+            The intercept.
+        p1 : float
+            The slope.
+        
+        Returns
+        -------
+        y : array_like
+            The predicted FAST values.
+        """
+        return p0 + p1 * x
+
+
+class FastTotalRansacEstimatorNeutron(FastTotalRansacEstimator):
+    def __init__(self, x_switch=1000.0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.x_switch = x_switch
+
+    def model(self, x, a0, a1, a2):
+        """The fast-total relation for neutrons.
+
+        Unlike gammas, whose fast-total relation is mostly linear, the observed
+        fast-total relation of neutrons has non-linearity at low TOTAL light
+        region. Hence, we fit the fast-total relation using piecewise function.
+        When ``TOTAL >= x_switch``, we use linear function; when
+        ``TOTAL < x_switch``, we quadratic function. At ``TOTAL = x_switch``,
+        the two functions are continuous and smooth. This removes the freedom of
+        choosing the intercept and slope of the linear function, hence there are
+        only three parameters, ``a0``, ``a1`` and ``a2``.
+
+        Parameters
+        ----------
+        x : array_like
+            The TOTAL values.
+        a0 : float
+            The intercept.
+        a1 : float
+            The slope.
+        a2 : float
+            The coefficient of the quadratic term.
+
+        Returns
+        -------
+        y : array_like
+            The predicted FAST values.
+        """
+        xs = self.x_switch
+        b1 = a1 + 2 * a2 * xs
+        b0 = a0 + a1 * xs + a2 * xs**2 - b1 * xs
+        return np.where(
+            x < xs,
+            a0 + a1 * x + a2 * x**2,
+            b0 + b1 * x,
+        )
+
+
+class FastTotalFitter:
+    def __init__(self, total, cfast, particle):
+        self.data = pd.DataFrame({'total': total, 'cfast': cfast})
+        self.fitted_model = None
+        self.particle = particle
+        if self.particle == 'gamma':
+            self.estimator = FastTotalRansacEstimatorGamma()
+        elif self.particle == 'neutron':
+            self.estimator = FastTotalRansacEstimatorNeutron()
+    
+    def _fitted_model(self, x):
+        if np.issubdtype(type(x), np.float) or np.issubdtype(type(x), np.integer):
+            X = np.array([[x]])
+        if np.array(x).ndim == 1:
+            X = np.array(x)[:, None]
+        return self.ransac.predict(X)
+    
+    def fit(self, **kwargs):
+        X = np.array(self.data.total)[:, None]
+        y = np.array(self.data.cfast)
+        kw = dict(
+            base_estimator=self.estimator,
+            min_samples=0.1,
+            residual_threshold=5,
+        )
+        kw.update(kwargs)
+        self.ransac = RANSACRegressor(**kw).fit(X, y)
+        self.fitted_model = self._fitted_model
+        return self
+    
+    @property
+    def score_of_data(self):
+        """A custom score to evaluate the quality of data.
+
+        A simple metric would be to compute the ratio between the number of
+        inliers and the total number of data points. But in our case, outliers
+        are commonly expected at large TOTAL values due to lack of statistics.
+        Hence, we want to weight the numbers. For outliers at low TOTAL values,
+        more weights would be assigned to act as heavy penalties; for outliers
+        at high TOTAL values, less weights would be assigned.
+
+        Returns
+        -------
+        score : float
+            The metric that measures the quality of data. A score of 1 implies
+            zero outliers. A score of 0 implies all data points are outliers.
+            For our application, we found empirically that scores between 0.6 to
+            0.8 can be set as a separator between good and bad data.
+        """
+        inliers = self.ransac.inlier_mask_
+        weights = 1 / np.arange(1, len(inliers) + 1)**0.5
+        return np.sum(inliers * weights) / np.sum(weights)
+
+    def plot_data(self, ax=None, mask=None, **kwargs):
+        if ax is not None:
+            plt.sca(ax)
+        if mask is None:
+            x = self.data.total
+            y = self.data.cfast
+        else:
+            x = self.data.total[mask]
+            y = self.data.cfast[mask]
+        kw = dict(fmt='o')
+        kw.update(kwargs)
+        plt.errorbar(x, y, **kw)
+    
+    def plot_fit(self, ax=None, **kwargs):
+        if ax is not None:
+            plt.sca(ax)
+        kw = dict(linestyle='solid')
+        kw.update(kwargs)
+        x_plt = np.linspace(self.data.total.min(), self.data.total.max(), 100)
+        plt.plot(x_plt, self.fitted_model(x_plt), **kw)
+
 
 class PulseShapeDiscriminator:
     database_dir = PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'
