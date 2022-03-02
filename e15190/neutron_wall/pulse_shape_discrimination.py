@@ -1175,6 +1175,14 @@ class PulseShapeDiscriminator:
             'bar': self.bar,
         }
 
+        pars['hyper_params'] = {
+            'ft_breakpoint1': self.ft_breakpoint1,
+            'ft_breakpoint2': self.ft_breakpoint2,
+            'min_samples_gamma': self.min_samples_gamma,
+            'min_samples_neutron': self.min_samples_neutron,
+            'x_switch_neutron': self.x_switch_neutron,
+        }
+
         # prepare control points into JSON serializable
         pars['ctrl_pts'] = {
             'L': {
