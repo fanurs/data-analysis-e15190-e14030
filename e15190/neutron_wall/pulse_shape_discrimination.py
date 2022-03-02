@@ -8,7 +8,6 @@ import warnings
 import matplotlib as mpl
 mpl_default_backend = mpl.get_backend()
 import matplotlib.pyplot as plt
-import numdifftools as nd
 import numpy as np
 import pandas as pd
 import scipy.interpolate
@@ -121,7 +120,7 @@ class FastTotalRansacEstimatorGamma(FastTotalRansacEstimator):
 
 
 class FastTotalRansacEstimatorNeutron(FastTotalRansacEstimator):
-    def __init__(self, x_switch=1000.0, *args, **kwargs):
+    def __init__(self, x_switch=1500.0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.x_switch = x_switch
 
@@ -277,6 +276,7 @@ class PulseShapeDiscriminator:
         self.center_line = {'L': None, 'R': None}
         self.cfast_total = {'L': None, 'R': None}
         self.ctrl_pts = {'L': None, 'R': None}
+        self.fitter = {'L': None, 'R': None}
 
         # initialize input root files directory
         path = PROJECT_DIR / 'database/local_paths.json'
@@ -815,45 +815,6 @@ class PulseShapeDiscriminator:
         
         return xpeaks if not return_gaus_fit else gpars
 
-    @staticmethod
-    def extrapolate_linearly(func, boundary):
-        func_deriv = nd.Derivative(func, n=1)
-        if boundary is None or boundary == [None, None]:
-            return func
-        elif boundary[0] is None:
-            x_ranges = [lambda x: x <= boundary[1], lambda x: x > boundary[1]]
-            functions = [
-                func,
-                lambda x: func_deriv(boundary[1]) * (x - boundary[1]) + func(boundary[1]),
-            ]
-        elif boundary[1] is None:
-            x_ranges = [lambda x: x < boundary[0], lambda x: x >= boundary[0]]
-            functions = [
-                lambda x: func_deriv(boundary[0]) * (x - boundary[0]) + func(boundary[0]),
-                func,
-            ]
-        else:
-            x_ranges = [
-                lambda x: x < boundary[0],
-                lambda x: (x >= boundary[0]) & (x <= boundary[1]),
-                lambda x: x > boundary[1],
-            ]
-            functions = [
-                lambda x: func_deriv(boundary[0]) * (x - boundary[0]) + func(boundary[0]),
-                func,
-                lambda x: func_deriv(boundary[1]) * (x - boundary[1]) + func(boundary[1]),
-            ]
-
-        def extrapolated_func(x):
-            nonlocal x_ranges, functions
-            x = np.array(x)
-            return np.piecewise(
-                x,
-                [x_range(x) for x_range in x_ranges],
-                [function for function in functions],
-            )
-        return extrapolated_func
-    
     def normalize_psd_values(self, psd_column, **find_peak_kwargs):
         xpeaks = self.find_topN_peaks(self.df[psd_column], **find_peak_kwargs)
 
@@ -922,7 +883,6 @@ class PulseShapeDiscriminator:
         self,
         side,
         position_range=None,
-        ax=None,
         find_peaks_kwargs=None,
     ):
         """Fit and update ``self.cfast_total``.
@@ -935,8 +895,6 @@ class PulseShapeDiscriminator:
             The range of positions to fit . If None, use the default ranges.
             For left side, the range is [-100, -30]; for right side, the range
             is [30, 100].
-        ax : matplotlib.axes.Axes, default None
-            The axes to plot the fitting result. If None, no plot will be shown.
         find_peaks_kwargs : dict, default None
             The keyword arguments for :py:func:`find_topN_peaks`.
         
@@ -950,161 +908,70 @@ class PulseShapeDiscriminator:
             find_peaks_kwargs = dict()
         total = f'total_{side}'
         fast = f'fast_{side}'
+        cfast = 'cfast'
         if position_range is None:
-            position_range = [-100, -30] if side == 'L' else [30, 100]
-
-        # prepare the data for fitting and center the fast-total pairs
+            if side == 'L':
+                position_range = [-100.0, -30.0]
+            else: # 'R'
+                position_range = [30.0, 100.0]
+        
+        # center the fast-total pairs
         df = self.df.query(f'{position_range[0]} < pos < {position_range[1]}')
         df = df[[total, fast]]
         self.center_line[side] = np.polynomial.Polynomial.fit(df[total], df[fast], 1)
-        df['cfast'] = df[fast] - self.center_line[side](df[total])
+        df[cfast] = df[fast] - self.center_line[side](df[total])
 
-        # collect the peak information at various x-slices and save as control points
+        # collect peak information at various x-slices and save as control points
         ctrl_pts = {particle: [] for particle in self.particles}
         x_min = np.round(np.quantile(df[total], [0, 1e-4]).mean(), -2)
         if x_min > 100.0:
             warnings.warn(f'np.round({total}, -2) = {x_min} > 100.0')
         slices = [
             dict(
-                x_range=[100, 1500], width=100, step=100, particles=['neutron', 'gamma'],
+                x_range=[100, 1500], width=100, step=75, particles=['neutron', 'gamma'],
             ),
             dict(
-                x_range=[1500, 2500], width=250, step=125, particles=['neutron', 'gamma'],
+                x_range=[1500, 2000], width=250, step=100, particles=['neutron', 'gamma'],
                 find_peaks_kw=dict(
                     kernel_width=0.01,
-                )
+                ),
             ),
             dict(
-                x_range=[2500, 4000], width=500, step=250, particles=['neutron'],
+                x_range=[2000, 4000], width=400, step=150, particles=['neutron'],
             ),
         ]
-        for sl in slices:
-            x_ranges = self.create_ranges(*sl['x_range'], width=sl['width'], step=sl['step'])
+        for slice_ in slices:
+            x_ranges = self.create_ranges(*slice_['x_range'], width=slice_['width'], step=slice_['step'])
             for x_range in x_ranges:
                 subdf = df.query(f'{x_range[0]} < {total} < {x_range[1]}')
                 if len(subdf) < 100:
                     continue
-                n_peaks = len(sl['particles'])
+                n_peaks = len(slice_['particles'])
                 kw = find_peaks_kwargs.copy()
-                if 'find_peaks_kw' in sl:
-                    kw.update(sl['find_peaks_kw'])
+                if 'find_peaks_kw' in slice_:
+                    kw.update(slice_['find_peaks_kw'])
                 cfasts = self.find_topN_peaks(subdf['cfast'], n_peaks=n_peaks, **kw)
                 x_mean = np.mean(x_range)
-                for ip, particle in enumerate(sl['particles']):
+                for ip, particle in enumerate(slice_['particles']):
                     ctrl_pts[particle].append([x_mean, cfasts[ip]])
-        ctrl_pts = {particle: np.array(pts) for particle, pts in ctrl_pts.items()}
-
-        # throw away control points that are vertically too far from the previous point
-        # all following points (to the right) are abandoned too
-        removed_ctrl_pts = dict()
-        for particle in ctrl_pts:
-            x = ctrl_pts[particle][:, 0]
-            y = ctrl_pts[particle][:, 1]
-            dx = np.diff(x)
-            dy = np.diff(y)
-            slopes = np.divide(dy, dx, out=np.zeros_like(dy), where=dx != 0)
-            n_heads = np.sum(x < 1500)
-            slopes = slopes[n_heads:]
-            dy = dy[n_heads:]
-            indices = np.where((np.abs(slopes) > 0.12) | (np.abs(dy) > 25))[0] # HARD-CODED
-            i_outlier = None if len(indices) == 0 else indices[0]
-            if i_outlier is not None:
-                i_outlier += n_heads + 1
-                removed_ctrl_pts[particle] = ctrl_pts[particle][i_outlier:]
-                ctrl_pts[particle] = ctrl_pts[particle][:i_outlier]
+        ctrl_pts = {particle: pd.DataFrame(pts, columns=['total', 'fast']) for particle, pts in ctrl_pts.items()}
 
         # fit the control points
-        pars = {particle: None for particle in self.particles}
-        for particle in pars:
-            if particle == 'neutron':
-                kwargs = dict(
-                    p0=np.zeros(3 + 1),
-                )
-            else:
-                kwargs = dict(
-                    p0=np.zeros(2 + 1),
-                    method='trf',
-                    loss='soft_l1',
-                    f_scale=0.1,
-                )
-            pars[particle], _ = scipy.optimize.curve_fit(
-                lambda x, *p: np.polynomial.Polynomial(p)(x),
-                ctrl_pts[particle][:, 0], ctrl_pts[particle][:, 1],
-                **kwargs,
-            )
+        fitter = {
+            'gamma': FastTotalFitter(ctrl_pts['gamma'].total, ctrl_pts['gamma'].fast, 'gamma'),
+            'neutron': FastTotalFitter(ctrl_pts['neutron'].total, ctrl_pts['neutron'].fast, 'neutron'),
+        }
+        fitter['gamma'].fit(min_samples=0.25)
+        fitter['neutron'].fit(min_samples=0.7)
+        self.fitter[side] = fitter
+        ctrl_pts['gamma']['valid'] = fitter['gamma'].ransac.inlier_mask_
+        ctrl_pts['neutron']['valid'] = fitter['neutron'].ransac.inlier_mask_
 
-        # construct fast-total relations
-        fast_total = {particle: None for particle in self.particles}
-        for particle in fast_total:
-            fast_total[particle] = self.extrapolate_linearly(
-                np.polynomial.Polynomial(pars[particle]),
-                [ctrl_pts[particle][0, 0], ctrl_pts[particle][-1, 0]],
-            )
-
-        # save all the control points, including the removed ones
-        self.ctrl_pts[side] = dict()
-        for particle, ctps in ctrl_pts.items():
-            if particle in removed_ctrl_pts:
-                rm_ctps = removed_ctrl_pts[particle]
-                df = np.vstack([ctps, rm_ctps])
-                df = pd.DataFrame(df, columns=['total', 'fast'])
-                df['valid'] = [True] * len(ctps) + [False] * len(rm_ctps)
-            else:
-                df = pd.DataFrame(ctps, columns=['total', 'fast'])
-                df['valid'] = [True] * len(ctps)
-            self.ctrl_pts[side][particle] = df
-
-        # plot for debug or check
-        if ax:
-            # some styling
-            ax.grid(linestyle='dashed', color='cyan')
-            ax.set_axisbelow(True)
-            ax.set_xlabel(f'TOTAL-{side}')
-            ax.set_ylabel(f'Centered FAST-{side}')
-
-            # plot the centered fast-total 2D histogram
-            h = fh.plot_histo2d(
-                ax.hist2d,
-                df[total], df['cfast'],
-                range=[[0, 4000], [-150, 200]],
-                bins=[1000, 175],
-                cmap=mpl.cm.viridis,
-                norm=mpl.colors.LogNorm(vmin=1),
-            )
-            plt.colorbar(h[3], ax=ax, pad=-0.05, fraction=0.1, aspect=30.0)
-
-            # plot boundaries of slices
-            for sl in slices:
-                ax.axvline(sl['x_range'][1], color='green', linewidth=2, linestyle='dotted')
-
-            # plot the control points
-            kw = dict(s=8, color='white', linewidth=1.0, zorder=10)
-            pts = ctrl_pts # shorthand
-            ax.scatter(pts['neutron'][:, 0], pts['neutron'][:, 1], edgecolor='darkorange', marker='s', **kw)
-            ax.scatter(pts['gamma'][:, 0], pts['gamma'][:, 1], edgecolor='magenta', marker='o', **kw)
-
-            # plot the removed control points
-            kw = dict(s=25, marker='X', edgecolor='black', linewidth=1.0, zorder=20)
-            pts = removed_ctrl_pts # shorthand
-            if 'neutron' in removed_ctrl_pts:
-                ax.scatter(pts['neutron'][:, 0], pts['neutron'][:, 1], color='darkorange', **kw)
-            if 'gamma' in removed_ctrl_pts:
-                ax.scatter(pts['gamma'][:, 0], pts['gamma'][:, 1], color='magenta', **kw)
-            
-            # plot the fitted polynomials and its linearly extrapolated version
-            colors = dict(neutron='red', gamma='red')
-            for particle in fast_total:
-                x_plt = np.linspace(0, 4000, 1000)
-                ax.plot(
-                    x_plt, np.polynomial.Polynomial(pars[particle])(x_plt),
-                    color='gray', linewidth=1.0, linestyle='dashed',
-                )
-                ax.plot(
-                    x_plt, fast_total[particle](x_plt),
-                    color=colors[particle], linewidth=1.2, linestyle='solid',
-                )
-        
-        self.cfast_total[side] = fast_total
+        self.ctrl_pts[side] = ctrl_pts
+        self.cfast_total[side] = {
+            'gamma': fitter['gamma'].fitted_model,
+            'neutron': fitter['neutron'].fitted_model,
+        }
         return self.cfast_total[side]
 
     def value_assign(self, side):
@@ -1313,6 +1180,17 @@ class PulseShapeDiscriminator:
             },
         }
 
+        pars['score_of_data'] = {
+            'L': {
+                'neutron': self.fitter['L']['neutron'].score_of_data,
+                'gamma': self.fitter['L']['gamma'].score_of_data,
+            },
+            'R': {
+                'neutron': self.fitter['R']['neutron'].score_of_data,
+                'gamma': self.fitter['R']['gamma'].score_of_data,
+            },
+        }
+
         # prepare fast-total relations into JSON serializable
         totals = np.arange(0, 4100 + 1e-9, 20.0)
         pars['fast_total'] = {
@@ -1509,6 +1387,27 @@ class Gallery:
                 markerfacecolor='red', markersize=4,
                 **kw, **common_kw
             )
+        
+        # annotate the score for data quality
+        kw = dict(
+            xycoords='axes fraction',
+            ha='left',
+            va='top',
+        )
+        fitter = psd_obj.fitter
+        plt.annotate(
+            '\n'.join([
+                r'$\gamma$: ' + f'{fitter[side]["gamma"].score_of_data:.3f}',
+                r'$n$: ' + f'{fitter[side]["neutron"].score_of_data:.3f}',
+            ]),
+            (0, 0),
+            xytext=(0.05, 0.95),
+            xycoords='axes fraction',
+            ha='left',
+            va='top',
+            linespacing=0.8,
+            bbox=dict(facecolor='white', alpha=0.8, boxstyle='round'),
+        )
 
         # final styling
         plt.xlim(0, 4000)
