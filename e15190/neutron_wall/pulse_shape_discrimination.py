@@ -1341,10 +1341,12 @@ class Gallery:
             plt.sca(ax)
 
         # plot the 2D histogram of cfast-total
+        x_range = [0, 4000]
+        y_range = [-150, 200]
         h = fh.plot_histo2d(
             plt.hist2d,
             subdf[total], subdf['cfast'],
-            range=[[0, 4000], [-150, 200]],
+            range=[x_range, y_range],
             bins=[500, 175],
             cmap=plt.cm.jet,
             norm=mpl.colors.LogNorm(vmin=1),
@@ -1352,7 +1354,7 @@ class Gallery:
         plt.colorbar(h[3], ax=plt.gca(), pad=-0.02, fraction=0.08, aspect=50.0)
 
         # plot the cfast-total relation
-        total_plt = np.linspace(0, 4000, 200)
+        total_plt = np.linspace(*x_range, 200)
         for particle, ft in psd_obj.cfast_total[side].items():
             # to emulate a golden line with black edges, we draw two overlapping lines
             # this is to improve the visibility
@@ -1375,7 +1377,7 @@ class Gallery:
             # control points used in fitting cfast-total relation
             cpoints = ctrl_pts.query('valid == True')
             plt.errorbar(
-                cpoints['total'], cpoints['fast'],
+                cpoints['total'], np.clip(cpoints['fast'], *y_range),
                 markerfacecolor='white', markersize=3,
                 **kw, **common_kw
             )
@@ -1383,7 +1385,7 @@ class Gallery:
             # control points that were disgarded
             cpoints = ctrl_pts.query('valid == False')
             plt.errorbar(
-                cpoints['total'], cpoints['fast'],
+                cpoints['total'], np.clip(cpoints['fast'], *y_range),
                 markerfacecolor='red', markersize=4,
                 **kw, **common_kw
             )
@@ -1410,8 +1412,8 @@ class Gallery:
         )
 
         # final styling
-        plt.xlim(0, 4000)
-        plt.ylim(-150, 200)
+        plt.xlim(x_range)
+        plt.ylim(y_range)
         plt.xlabel(f'TOTAL-{side}')
         plt.ylabel(f'Centered FAST-{side}')
 
