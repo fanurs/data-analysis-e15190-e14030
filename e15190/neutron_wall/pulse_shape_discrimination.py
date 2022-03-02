@@ -187,7 +187,7 @@ class FastTotalFitter:
         kw = dict(
             base_estimator=self.estimator,
             min_samples=0.1,
-            residual_threshold=5,
+            residual_threshold=10,
         )
         kw.update(kwargs)
         self.ransac = RANSACRegressor(**kw).fit(X, y)
