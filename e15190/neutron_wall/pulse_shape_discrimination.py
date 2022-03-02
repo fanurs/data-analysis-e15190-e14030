@@ -120,9 +120,11 @@ class FastTotalRansacEstimatorGamma(FastTotalRansacEstimator):
 
 
 class FastTotalRansacEstimatorNeutron(FastTotalRansacEstimator):
-    def __init__(self, x_switch=1500.0, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.x_switch = x_switch
+    # default hyperparameters
+    x_switch = 1500.0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
     def model(self, x, a0, a1, a2):
         """The fast-total relation for neutrons.
@@ -163,14 +165,14 @@ class FastTotalRansacEstimatorNeutron(FastTotalRansacEstimator):
 
 
 class FastTotalFitter:
-    def __init__(self, total, cfast, particle):
+    def __init__(self, total, cfast, particle, **kwargs):
         self.data = pd.DataFrame({'total': total, 'cfast': cfast})
         self.fitted_model = None
         self.particle = particle
         if self.particle == 'gamma':
-            self.estimator = FastTotalRansacEstimatorGamma()
+            self.estimator = FastTotalRansacEstimatorGamma(**kwargs)
         elif self.particle == 'neutron':
-            self.estimator = FastTotalRansacEstimatorNeutron()
+            self.estimator = FastTotalRansacEstimatorNeutron(**kwargs)
     
     def _fitted_model(self, x):
         if np.issubdtype(type(x), np.float) or np.issubdtype(type(x), np.integer):
@@ -244,6 +246,13 @@ class PulseShapeDiscriminator:
     pos_range = [-120.0, 120.0] # cm
     adc_range = [0, 4000] # the upper limit is 4096, but those would definitely be saturated.
 
+    # some hyper-parameters for optimizing the fast-total fit
+    ft_breakpoint1 = 1500.0 # TOTAL in raw ADC
+    ft_breakpoint2 = 2500.0 # TOTAL in raw ADC
+    min_samples_gamma = 0.25 # the minimum percentage of inliers
+    min_samples_neutron = 0.7 # the minimum percentage of inliers
+    x_switch_neutron = 1300.0 # TOTAL in raw ADC
+
     def __init__(self, AB, max_workers=12):
         """Construct a class to perform pulse shape discrimination.
 
@@ -282,6 +291,19 @@ class PulseShapeDiscriminator:
         path = PROJECT_DIR / 'database/local_paths.json'
         with open(path, 'r') as file:
             self.root_files_dir = pathlib.Path(json.load(file)['daniele_root_files_dir'])
+    
+    @classmethod
+    def update_hyperparameters(cls, args):
+        if args.ft_breakpoint1 is not None:
+            cls.ft_breakpoint1 = args.ft_breakpoint1
+        if args.ft_breakpoint2 is not None:
+            cls.ft_breakpoint2 = args.ft_breakpoint2
+        if args.min_samples_gamma is not None:
+            cls.min_samples_gamma = args.min_samples_gamma
+        if args.min_samples_neutron is not None:
+            cls.min_samples_neutron = args.min_samples_neutron
+        if args.x_switch_neutron is not None:
+            cls.x_switch_neutron = args.x_switch_neutron
     
     @classmethod
     def _cut_for_root_file_data(cls, AB):
@@ -928,16 +950,16 @@ class PulseShapeDiscriminator:
             warnings.warn(f'np.round({total}, -2) = {x_min} > 100.0')
         slices = [
             dict(
-                x_range=[100, 1500], width=100, step=75, particles=['neutron', 'gamma'],
+                x_range=[100.0, self.ft_breakpoint1], width=100, step=75, particles=['neutron', 'gamma'],
             ),
             dict(
-                x_range=[1500, 2000], width=250, step=100, particles=['neutron', 'gamma'],
+                x_range=[self.ft_breakpoint1, self.ft_breakpoint2], width=250, step=100, particles=['neutron', 'gamma'],
                 find_peaks_kw=dict(
                     kernel_width=0.01,
                 ),
             ),
             dict(
-                x_range=[2000, 4000], width=400, step=150, particles=['neutron'],
+                x_range=[self.ft_breakpoint2, 4000.0], width=400, step=150, particles=['neutron'],
             ),
         ]
         for slice_ in slices:
@@ -957,12 +979,13 @@ class PulseShapeDiscriminator:
         ctrl_pts = {particle: pd.DataFrame(pts, columns=['total', 'fast']) for particle, pts in ctrl_pts.items()}
 
         # fit the control points
+        FastTotalRansacEstimatorNeutron.x_switch = self.x_switch_neutron
         fitter = {
             'gamma': FastTotalFitter(ctrl_pts['gamma'].total, ctrl_pts['gamma'].fast, 'gamma'),
-            'neutron': FastTotalFitter(ctrl_pts['neutron'].total, ctrl_pts['neutron'].fast, 'neutron'),
+            'neutron': FastTotalFitter(ctrl_pts['neutron'].total, ctrl_pts['neutron'].fast, 'neutron')
         }
-        fitter['gamma'].fit(min_samples=0.25)
-        fitter['neutron'].fit(min_samples=0.7)
+        fitter['gamma'].fit(min_samples=self.min_samples_gamma)
+        fitter['neutron'].fit(min_samples=self.min_samples_neutron)
         self.fitter[side] = fitter
         ctrl_pts['gamma']['valid'] = fitter['gamma'].ransac.inlier_mask_
         ctrl_pts['neutron']['valid'] = fitter['neutron'].ransac.inlier_mask_
@@ -1354,12 +1377,22 @@ class Gallery:
         plt.colorbar(h[3], ax=plt.gca(), pad=-0.02, fraction=0.08, aspect=50.0)
 
         # plot the cfast-total relation
+        # to emulate a colored line with black edges, we draw two overlapping lines
+        # this is to improve the visibility
         total_plt = np.linspace(*x_range, 200)
         for particle, ft in psd_obj.cfast_total[side].items():
-            # to emulate a golden line with black edges, we draw two overlapping lines
-            # this is to improve the visibility
             plt.plot(total_plt, ft(total_plt), color='black', linewidth=1.5, zorder=10)
             plt.plot(total_plt, ft(total_plt), color='gold', linewidth=1.2, zorder=20)
+        # use a different color for the linear segment of neutron line
+        total_plt = np.linspace(psd_obj.x_switch_neutron, x_range[1], 100)
+        ft = psd_obj.cfast_total[side]['neutron']
+        plt.plot(total_plt, ft(total_plt), color='pink', linewidth=1.2, zorder=20)
+        cfast_total = psd_obj.cfast_total[side]
+        plt.plot(
+            [psd_obj.x_switch_neutron] * 2,
+            [y_range[0], 0.5 * (cfast_total['neutron'](psd_obj.x_switch_neutron) + cfast_total['gamma'](psd_obj.x_switch_neutron))],
+            color='deeppink', linewidth=1.2, linestyle='dashed', zorder=10,
+        )
 
         # control points, including
         # 1. those that were used to establish the cfast-total relation (filled white)
@@ -1390,6 +1423,13 @@ class Gallery:
                 **kw, **common_kw
             )
         
+        # draw vertical lines to indicate slice segments
+        sty = dict(color='black', linewidth=1.2, linestyle='dashed', zorder=10)
+        plt.axvline(100.0, **sty)
+        plt.axvline(psd_obj.ft_breakpoint2, **sty)
+        plt.axvline(psd_obj.ft_breakpoint1, **sty)
+        plt.axvline(4000.0, **sty)
+
         # annotate the score for data quality
         kw = dict(
             xycoords='axes fraction',
@@ -1866,6 +1906,50 @@ class _MainUtilities:
             help='To silent all status messages.',
             action='store_true',
         )
+        parser.add_argument(
+            '--ft-breakpoint1',
+            type=float,
+            help=inspect.cleandoc('''
+                The breakpoint 1 for the fast-total fitting ranges. Default is
+                1500.0. From this breakpoint onward till the second breakpoint,
+                a smoother convolution is applied (due to lower statistics) to
+                make the peak finding more stable.
+            '''),
+        )
+        parser.add_argument(
+            '--ft-breakpoint2',
+            type=float,
+            help=inspect.cleandoc('''
+                The breakpoint 2 for the fast-total fitting ranges. Default is
+                2500.0. If gamma statistics is insufficient at high ADC,
+                reducing this value may improve the overall fit. No gamma peak
+                finding is performed after this breakpoint.
+            '''),
+        )
+        parser.add_argument(
+            '--min-samples-gamma',
+            type=float,
+            help=inspect.cleandoc('''
+                The minimum number of samples for gamma to pass a RANSAC fit.
+                Default is 0.25.
+            '''),
+        )
+        parser.add_argument(
+            '--min-samples-neutron',
+            type=float,
+            help=inspect.cleandoc('''
+                The minimum number of samples for neutron to pass a RANSAC fit.
+                Default is 0.70.
+            '''),
+        )
+        parser.add_argument(
+            '--x-switch-neutron',
+            type=float,
+            help=inspect.cleandoc('''
+                The switching point for neutron fast-total relation from
+                quadratic to linear. Default is 1300.0.
+            '''),
+        )
         args = parser.parse_args()
 
         # process the wall type
@@ -1915,7 +1999,9 @@ if __name__ == '__main__':
     args = _MainUtilities.get_args()
 
     PulseShapeDiscriminator.database_dir = pathlib.Path(args.output)
+    PulseShapeDiscriminator.update_hyperparameters(args)
     psd = PulseShapeDiscriminator(args.AB)
+
     read_verbose = (not args.silence)
     for bar in args.bars:
         psd.read(
