@@ -10,13 +10,13 @@ pymysql.install_as_MySQLdb() # WMU uses MySQL
 
 from e15190 import PROJECT_DIR
 
-MYSQL_DOWNLOAD_PATH = PROJECT_DIR / 'database/runlog/downloads/mysql_database.h5'
+MYSQL_DOWNLOAD_PATH = 'database/runlog/downloads/mysql_database.h5'
 """Local path where MySQL database is downloaded to as HDF5 file."""
 
-ELOG_DOWNLOAD_PATH = PROJECT_DIR / 'database/runlog/downloads/elog.html'
+ELOG_DOWNLOAD_PATH = 'database/runlog/downloads/elog.html'
 """Local path where ELOG is downloaded to as HTML file."""
 
-KEY_PATH = PROJECT_DIR / 'database/key_for_all.pub'
+KEY_PATH = 'database/key_for_all.pub'
 """Local path where secret key is stored.
 
 This key is used to decrypt the credentials needed to connect to the MySQL. It
@@ -150,7 +150,7 @@ class MySqlDownloader:
         """
         verbose = self.verbose if verbose is None else verbose
 
-        key_path = KEY_PATH if key_path is None else pathlib.Path(key_path)
+        key_path = PROJECT_DIR / KEY_PATH if key_path is None else pathlib.Path(key_path)
         if not key_path.is_file():
             raise FileNotFoundError(inspect.cleandoc(
                 f'''Key is not found at
@@ -246,13 +246,13 @@ class MySqlDownloader:
         print('Attempting to download run log from WMU MySQL database...')
         self.cursor.execute('SHOW TABLES')
         table_names = self.cursor.fetchall() if table_names is None else table_names
-        download_path = MYSQL_DOWNLOAD_PATH if download_path is None else pathlib.Path(download_path)
+        download_path = PROJECT_DIR / MYSQL_DOWNLOAD_PATH if download_path is None else pathlib.Path(download_path)
 
         download_path.parent.mkdir(parents=True, exist_ok=True)
         if download_path.is_file():
             resp = input(inspect.cleandoc(
                 f'''HDF file already exists at
-                "{MYSQL_DOWNLOAD_PATH}".
+                "{PROJECT_DIR / MYSQL_DOWNLOAD_PATH}".
                 Do you want to re-download from WMU MySQL database? (y/n)
                 This will overwrite the existing file.
                 > '''
@@ -327,12 +327,12 @@ class ElogDownloader:
             Number of bytes to read from the webpage. If ``None``, the entire
             webpage is read, decoded, and saved. This is useful for testing.
         """
-        download_path = ELOG_DOWNLOAD_PATH if download_path is None else pathlib.Path(download_path)
+        download_path = PROJECT_DIR / ELOG_DOWNLOAD_PATH if download_path is None else pathlib.Path(download_path)
         if verbose:
             print(f'Attempting to download web content from\n"{ELOG_URL}"... ', end='', flush=True)
         web_request = urllib.request.urlopen(ELOG_URL, timeout=timeout)
         web_content = web_request.read(read_nbytes)
-        ELOG_DOWNLOAD_PATH.parent.mkdir(parents=True, exist_ok=True)
+        (PROJECT_DIR / ELOG_DOWNLOAD_PATH).parent.mkdir(parents=True, exist_ok=True)
         with open(download_path, 'wb') as file:
             file.write(web_content)
         if verbose:
