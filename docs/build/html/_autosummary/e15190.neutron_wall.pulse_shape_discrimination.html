@@ -43,11 +43,147 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.html#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PulseShapeDiscriminator</span></code></a>(AB[, max_workers])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.pulse_shape_discrimination.FastTotalFitter.html#e15190.neutron_wall.pulse_shape_discrimination.FastTotalFitter" title="e15190.neutron_wall.pulse_shape_discrimination.FastTotalFitter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FastTotalFitter</span></code></a>(total, cfast, particle, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator.html#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator" title="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FastTotalRansacEstimator</span></code></a>()</p></td>
+<td><p>Custom base estimator object for RANSAC.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorGamma.html#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorGamma" title="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorGamma"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FastTotalRansacEstimatorGamma</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorNeutron.html#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorNeutron" title="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorNeutron"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FastTotalRansacEstimatorNeutron</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.pulse_shape_discrimination.Gallery.html#e15190.neutron_wall.pulse_shape_discrimination.Gallery" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gallery</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.html#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PulseShapeDiscriminator</span></code></a>(AB[, max_workers])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.pulse_shape_discrimination.</span></span><span class="sig-name descname"><span class="pre">FastTotalRansacEstimator</span></span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Custom base estimator object for RANSAC.</p>
+<p>By default, RANSAC regressor in scikit-learn only uses linear regression.
+To use custom regressor, we need to construct a base estimator object.
+See
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RANSACRegressor.html">sklearn.linear_model.RANSACRegressor</a>
+for more details.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator.model">
+<span class="sig-name descname"><span class="pre">model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fast-total relation function.</p>
+<p>This function is currently just an empty function. When inheriting from
+this class, define this model to enable all other methods that depend on
+the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>array-like</em>) – The TOTAL values.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> – The predicted FAST values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimator.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coefficient of determination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array-like</em><em>, </em><em>shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Input data.</p></li>
+<li><p><strong>y</strong> (<em>array-like</em><em>, </em><em>shape</em><em> (</em><em>n_samples</em><em>,</em><em>)</em>) – Target values, or ground truth.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>score</strong> – The coefficient of determination. For model that perfectly predicts
+all true values, the score is 1. For model that always predicts the
+mean of all true values, the score is 0. Models with worse
+performance will have negative scores.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorGamma">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.pulse_shape_discrimination.</span></span><span class="sig-name descname"><span class="pre">FastTotalRansacEstimatorGamma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorGamma" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorGamma.model">
+<span class="sig-name descname"><span class="pre">model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorGamma.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fast-total relation for gammas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array_like</em>) – The TOTAL values.</p></li>
+<li><p><strong>p0</strong> (<em>float</em>) – The intercept.</p></li>
+<li><p><strong>p1</strong> (<em>float</em>) – The slope.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> – The predicted FAST values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorNeutron">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.pulse_shape_discrimination.</span></span><span class="sig-name descname"><span class="pre">FastTotalRansacEstimatorNeutron</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorNeutron" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorNeutron.model">
+<span class="sig-name descname"><span class="pre">model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.FastTotalRansacEstimatorNeutron.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fast-total relation for neutrons.</p>
+<p>Unlike gammas, whose fast-total relation is mostly linear, the observed
+fast-total relation of neutrons has non-linearity at low TOTAL light
+region. Hence, we fit the fast-total relation using piecewise function.
+When <code class="docutils literal notranslate"><span class="pre">TOTAL</span> <span class="pre">&gt;=</span> <span class="pre">x_switch</span></code>, we use linear function; when
+<code class="docutils literal notranslate"><span class="pre">TOTAL</span> <span class="pre">&lt;</span> <span class="pre">x_switch</span></code>, we quadratic function. At <code class="docutils literal notranslate"><span class="pre">TOTAL</span> <span class="pre">=</span> <span class="pre">x_switch</span></code>,
+the two functions are continuous and smooth. This removes the freedom of
+choosing the intercept and slope of the linear function, hence there are
+only three parameters, <code class="docutils literal notranslate"><span class="pre">a0</span></code>, <code class="docutils literal notranslate"><span class="pre">a1</span></code> and <code class="docutils literal notranslate"><span class="pre">a2</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array_like</em>) – The TOTAL values.</p></li>
+<li><p><strong>a0</strong> (<em>float</em>) – The intercept.</p></li>
+<li><p><strong>a1</strong> (<em>float</em>) – The slope.</p></li>
+<li><p><strong>a2</strong> (<em>float</em>) – The coefficient of the quadratic term.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> – The predicted FAST values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination._MainUtilities">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.pulse_shape_discrimination.</span></span><span class="sig-name descname"><span class="pre">_MainUtilities</span></span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination._MainUtilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Functions, classes and attributes for using this module as a script.</p>
+</dd></dl>
+
 </div>
 
 
@@ -85,7 +221,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

@@ -7,6 +7,7 @@
    :toctree: _autosummary
    :template: custom-module.rst
    :recursive:
+      e15190
 
 **********************************************
 Documentation for Data Analysis: E15190-E14030

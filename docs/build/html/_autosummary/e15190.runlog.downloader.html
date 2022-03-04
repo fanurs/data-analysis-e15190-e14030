@@ -36,6 +36,24 @@
             
   <div class="section" id="module-e15190.runlog.downloader">
 <span id="e15190-runlog-downloader"></span><h1>e15190.runlog.downloader<a class="headerlink" href="#module-e15190.runlog.downloader" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Module Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.runlog.downloader.MYSQL_DOWNLOAD_PATH.html#e15190.runlog.downloader.MYSQL_DOWNLOAD_PATH" title="e15190.runlog.downloader.MYSQL_DOWNLOAD_PATH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MYSQL_DOWNLOAD_PATH</span></code></a></p></td>
+<td><p>Local path where MySQL database is downloaded to as HDF5 file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.runlog.downloader.ELOG_DOWNLOAD_PATH.html#e15190.runlog.downloader.ELOG_DOWNLOAD_PATH" title="e15190.runlog.downloader.ELOG_DOWNLOAD_PATH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ELOG_DOWNLOAD_PATH</span></code></a></p></td>
+<td><p>Local path where ELOG is downloaded to as HTML file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.runlog.downloader.KEY_PATH.html#e15190.runlog.downloader.KEY_PATH" title="e15190.runlog.downloader.KEY_PATH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KEY_PATH</span></code></a></p></td>
+<td><p>Local path where secret key is stored.</p></td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Classes</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -53,19 +71,19 @@
 </table>
 <dl class="py data">
 <dt class="sig sig-object py" id="e15190.runlog.downloader.MYSQL_DOWNLOAD_PATH">
-<span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">MYSQL_DOWNLOAD_PATH</span></span><em class="property"> <span class="pre">=</span> <span class="pre">PosixPath('/home/fanurs/data-analysis-e15190-e14030/database/runlog/downloads/mysql_database.h5')</span></em><a class="headerlink" href="#e15190.runlog.downloader.MYSQL_DOWNLOAD_PATH" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">MYSQL_DOWNLOAD_PATH</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'database/runlog/downloads/mysql_database.h5'</span></em><a class="headerlink" href="#e15190.runlog.downloader.MYSQL_DOWNLOAD_PATH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Local path where MySQL database is downloaded to as HDF5 file.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="e15190.runlog.downloader.ELOG_DOWNLOAD_PATH">
-<span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">ELOG_DOWNLOAD_PATH</span></span><em class="property"> <span class="pre">=</span> <span class="pre">PosixPath('/home/fanurs/data-analysis-e15190-e14030/database/runlog/downloads/elog.html')</span></em><a class="headerlink" href="#e15190.runlog.downloader.ELOG_DOWNLOAD_PATH" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">ELOG_DOWNLOAD_PATH</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'database/runlog/downloads/elog.html'</span></em><a class="headerlink" href="#e15190.runlog.downloader.ELOG_DOWNLOAD_PATH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Local path where ELOG is downloaded to as HTML file.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="e15190.runlog.downloader.KEY_PATH">
-<span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">KEY_PATH</span></span><em class="property"> <span class="pre">=</span> <span class="pre">PosixPath('/home/fanurs/data-analysis-e15190-e14030/database/key_for_all.pub')</span></em><a class="headerlink" href="#e15190.runlog.downloader.KEY_PATH" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">e15190.runlog.downloader.</span></span><span class="sig-name descname"><span class="pre">KEY_PATH</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'database/key_for_all.pub'</span></em><a class="headerlink" href="#e15190.runlog.downloader.KEY_PATH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Local path where secret key is stored.</p>
 <p>This key is used to decrypt the credentials needed to connect to the MySQL. It
 should not be committed to the repository.</p>
@@ -263,7 +281,7 @@ global setting is used.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

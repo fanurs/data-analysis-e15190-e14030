@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>e15190.neutron_wall.pulse_shape_discrimination.Gallery &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.pulse_shape_discrimination.Gallery</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="e15190-neutron-wall-pulse-shape-discrimination-gallery">
+<h1>e15190.neutron_wall.pulse_shape_discrimination.Gallery<a class="headerlink" href="#e15190-neutron-wall-pulse-shape-discrimination-gallery" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.pulse_shape_discrimination.</span></span><span class="sig-name descname"><span class="pre">Gallery</span></span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.__init__" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_centroid_as_func_of_position" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_centroid_as_func_of_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_centroid_as_func_of_position</span></code></a>(psd_obj[, ax])</p></td>
+<td><p>Draw centroid as a function of position.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_cfast_total" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_cfast_total"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_cfast_total</span></code></a>(psd_obj, side[, cut, ax])</p></td>
+<td><p>Draw centered-fast v.s.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_figure_of_merits" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_figure_of_merits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_figure_of_merits</span></code></a>(psd_obj[, cut, ax])</p></td>
+<td><p>Draw figure of merit as functions of light_GM and position.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd1d" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_ppsd1d</span></code></a>(psd_obj[, cut, ax])</p></td>
+<td><p>Draw one-dimensional histogram of PPSD.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd2d" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_ppsd2d</span></code></a>(psd_obj[, cut, ax])</p></td>
+<td><p>Draw two-dimensional PPSD histogram.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_lightGM" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_lightGM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_ppsd_as_func_of_lightGM</span></code></a>(psd_obj[, cut, ax])</p></td>
+<td><p>Draw PPSD as a function of light_GM (geometric mean)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_position" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_ppsd_as_func_of_position</span></code></a>(psd_obj[, cut, ax])</p></td>
+<td><p>Draw PPSD as a function of position.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_vpsd2d" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_vpsd2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_vpsd2d</span></code></a>(psd_obj[, cut, ax])</p></td>
+<td><p>Draw two-dimensional VPSD plot.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.save_as_png" title="e15190.neutron_wall.pulse_shape_discrimination.Gallery.save_as_png"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_png</span></code></a>(psd_obj[, path, cut, show_plot, ...])</p></td>
+<td><p>Save a diagnostic plot to the gallery as a PNG file.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.save_as_png">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">save_as_png</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'light_GM</span> <span class="pre">&gt;</span> <span class="pre">3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.save_as_png" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a diagnostic plot to the gallery as a PNG file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em>, </em><em>default None</em>) – The path to save the plot. If None, the plot is saved to the default
+database.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default 'light_GM &gt; 3'</em>) – The cut to apply to the data when plotting. All panels in the figure
+will apply this cut, and potentially other cuts, joined by logical
+AND, except for the panel that draws the PPSD as a function of light
+GM.</p></li>
+<li><p><strong>show_plot</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, the plot will be shown in run time, i.e. the command
+<cite>plt.show()</cite> will be called.</p></li>
+<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>default True</em>) – If <cite>True</cite>, the plot will be saved to the database. <cite>False</cite> option is
+useful when users are using this function to inspect the plot
+without saving.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_cfast_total">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_cfast_total</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_cfast_total" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw centered-fast v.s. total.</p>
+<p>Centered-fast, or cfast, is defined as the residual of fast w.r.t. to
+the center line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>side</strong> (<em>str</em>) – The side of the bar, either ‘L’ or ‘R’.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The cut to apply to the data to be plotted. This has nothing to do
+with the actual data used for analysis.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_vpsd2d">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_vpsd2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_vpsd2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw two-dimensional VPSD plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The cut to apply to the data to be plotted. This has nothing to do
+with the actual data used for analysis.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>default None</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_centroid_as_func_of_position">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_centroid_as_func_of_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_centroid_as_func_of_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw centroid as a function of position.</p>
+<p>“Centroid curve” refers to the trajectory of centroids in the 2D VPSD
+plot when we vary the hit position. In this function, we will be
+plotting four curves in total - two for neutron and two for gamma. For
+each particle, one curve is plotting VPSD-L and the another is plotting
+VPSD-R.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>default None</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd2d">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_ppsd2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw two-dimensional PPSD histogram.</p>
+<p>The x-axis is the PPSD value, and the y-axis is the perpendicular-PPSD
+value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The cut to apply to the PSD object.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>default None</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_lightGM">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_ppsd_as_func_of_lightGM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_lightGM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw PPSD as a function of light_GM (geometric mean)</p>
+<p>This plot can give us a sense of how well can we trust the PPSD at low
+light_GM. The lower the light_GM value, the harder to separate neutrons
+and gammas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The cut to apply to the PSD object. It is suggested to use some low
+threshold, e.g. <code class="docutils literal notranslate"><span class="pre">light_GM</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>, so that we can inspect the
+relation as low as 1 MeVee; the default threshold for data analysis,
+however, is empirically established to be at least 3 MeVee or above.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>default None</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_position">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_ppsd_as_func_of_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd_as_func_of_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw PPSD as a function of position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The cut to apply to the PSD object.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>default None</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd1d">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_ppsd1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_ppsd1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw one-dimensional histogram of PPSD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The cut to apply to the PSD object.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>default None</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_figure_of_merits">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">draw_figure_of_merits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.Gallery.draw_figure_of_merits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw figure of merit as functions of light_GM and position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_obj</strong> (<em>PulseShapeDiscriminator instance</em>) – The PSD object to draw.</p></li>
+<li><p><strong>cut</strong> (<em>str</em><em>, </em><em>default None</em>) – The common cut to apply to the PSD object. Additional cuts are added
+when constructing each F.O.M. point: <code class="docutils literal notranslate"><span class="pre">-3</span> <span class="pre">&lt;</span> <span class="pre">ppsd</span> <span class="pre">&lt;</span> <span class="pre">4</span></code> and
+<code class="docutils literal notranslate"><span class="pre">-1</span> <span class="pre">&lt;</span> <span class="pre">ppsd_perp</span> <span class="pre">&lt;</span> <span class="pre">1</span></code>.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>default None</em>) – Default None, and <cite>plt.gca()</cite> is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.pulse_shape_discrimination.Gallery</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

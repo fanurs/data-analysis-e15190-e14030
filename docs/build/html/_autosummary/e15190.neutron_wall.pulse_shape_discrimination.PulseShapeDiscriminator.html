@@ -47,7 +47,7 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.__init__" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(AB[, max_workers])</p></td>
-<td><p></p></td>
+<td><p>Construct a class to perform pulse shape discrimination.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.cache_run" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.cache_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_run</span></code></a>(run[, tree_name])</p></td>
 <td><p>Read in the data from ROOT file and save relevant branches to an HDF5 file.</p></td>
@@ -55,70 +55,67 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_ranges</span></code>(low, upp, width[, step])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">denormalize_features</span></code>([df])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.denormalize_features" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.denormalize_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">denormalize_features</span></code></a>([df])</p></td>
+<td><p>Denormalize features.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">discrimination_using_pca</span></code>([normalize_psd_values])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extrapolate_linearly</span></code>(func, boundary)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.figure_of_merit" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.figure_of_merit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">figure_of_merit</span></code></a>(arr, **find_peaks_kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.figure_of_merit" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.figure_of_merit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">figure_of_merit</span></code></a>(arr, **find_peaks_kwargs)</p></td>
 <td><p>Calculate the figure-of-merit that quantifies the two-peak separation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.find_topN_peaks" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.find_topN_peaks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_topN_peaks</span></code></a>(arr[, n_peaks, bins, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.find_topN_peaks" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.find_topN_peaks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_topN_peaks</span></code></a>(arr[, n_peaks, bins, ...])</p></td>
 <td><p>Find the first-N highest peaks from the distribution of arr.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_two_2dpeaks</span></code>(x, y, **find_peaks_kwargs)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_two_2dpeaks</span></code>(x, y, **find_peaks_kwargs)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>()</p></td>
 <td><p>To calculate the pulse shape discrimination parameters.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_fast_total</span></code>(side[, position_range, ax, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit_fast_total" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit_fast_total"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_fast_total</span></code></a>(side[, position_range, ...])</p></td>
+<td><p>Fit and update <code class="docutils literal notranslate"><span class="pre">self.cfast_total</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_position_correction</span></code>([light_GM_cut])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_position_correction</span></code>([light_GM_cut])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.get_position" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.get_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_position</span></code></a>(df_time, pos_calib_params)</p></td>
+<td><p>Calculate the positions from time and calibration parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.normalize_features" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.normalize_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_features</span></code></a>([df])</p></td>
+<td><p>Normalize features.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_psd_values</span></code>(psd_column, ...)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_position</span></code>(df_time, pos_calib_params)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_features</span></code>([df])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_psd_values</span></code>(psd_column, ...)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.position_correction" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.position_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">position_correction</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.position_correction" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.position_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">position_correction</span></code></a>()</p></td>
 <td><p>A function that maps (vpsd_L, vpsd_R, pos) to (ppsd, ppsd_perp)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">preprocessing</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">preprocessing</span></code>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">randomize_integer_features</span></code>([seed])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.randomize_integer_features" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.randomize_integer_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randomize_integer_features</span></code></a>([seed])</p></td>
+<td><p>Randomize the integer columns in <code class="docutils literal notranslate"><span class="pre">self.df</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(run, bar[, from_cache, verbose])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(run, bar[, from_cache, verbose])</p></td>
 <td><p>Read in the data needed to do pulse shape discrimintion.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run_from_root_file</span></code>(run[, tree_name, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read_run_from_root_file" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read_run_from_root_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run_from_root_file</span></code></a>(run[, tree_name, ...])</p></td>
+<td><p>Read in the data from Daniele's ROOT file.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_distorted_fast_total</span></code>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_distorted_fast_total</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.remove_vetowall_coincidences" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.remove_vetowall_coincidences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_vetowall_coincidences</span></code></a>([df])</p></td>
+<td><p>Remove Veto Wall coincidences.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_vetowall_coincidences</span></code>()</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_parameters" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_parameters</span></code></a>([path])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_parameters" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_parameters</span></code></a>([path])</p></td>
 <td><p>Save pulse shape discrimination parameters as a JSON file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_to_gallery" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_to_gallery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_gallery</span></code></a>([path, cut, show_plot, save])</p></td>
-<td><p>Save a diagnostic plot to the gallery as a PNG file.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_hyperparameters</span></code>(args)</p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.value_assign" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.value_assign"><code class="xref py py-obj docutils literal notranslate"><span class="pre">value_assign</span></code></a>(side)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.value_assign" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.value_assign"><code class="xref py py-obj docutils literal notranslate"><span class="pre">value_assign</span></code></a>(side)</p></td>
 <td><p>Value-assign a PSD value to each entry.</p></td>
 </tr>
 </tbody>
@@ -136,7 +133,19 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">database_dir</span></code></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ft_breakpoint1</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ft_breakpoint2</span></code></p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">light_GM_range</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">min_samples_gamma</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">min_samples_neutron</span></code></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pos_range</span></code></p></td>
@@ -145,12 +154,83 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root_files_dir</span></code></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">x_switch_neutron</span></code></p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Construct a class to perform pulse shape discrimination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AB</strong> (<em>'A'</em><em> or </em><em>'B'</em>) – The neutron wall to use.</p></li>
+<li><p><strong>max_workers</strong> (<em>int</em><em>, </em><em>default 12</em>) – The maximum number of workers to use for parallelization. This value
+will be passed to the <cite>concurrent.futures.ThreadPoolExecutor</cite> for
+constructing <code class="docutils literal notranslate"><span class="pre">self.decompression_executor</span></code> and
+<code class="docutils literal notranslate"><span class="pre">self.interpretation_executor</span></code>. Each executor is assigned with a
+thread pool of size <code class="docutils literal notranslate"><span class="pre">max_workers</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator._cut_for_root_file_data">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">_cut_for_root_file_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator._cut_for_root_file_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string that specifies the first common cut.</p>
+<p>This cut is the first common cut that is applied to all the data before
+analysis. Their purpose is only to remove the events that are
+unphysical. Further analysis cuts will have to be applied separately for
+each bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>AB</strong> (<em>'A'</em><em> or </em><em>'B'</em>) – The neutron wall to use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read_run_from_root_file">
+<span class="sig-name descname"><span class="pre">read_run_from_root_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read_run_from_root_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in the data from Daniele’s ROOT file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – The run number.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>default None</em>) – The name of the tree to read. If None, the default tree name is
+automatically determined. An exception is raised if multiple objects
+are found in the ROOT file.</p></li>
+<li><p><strong>apply_cut</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to apply the first common cut to the data. If <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+<code class="docutils literal notranslate"><span class="pre">self._cut_for_root_file_data(self.AB)</span></code> is used as the cut.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.get_position">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_calib_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.get_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the positions from time and calibration parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_time</strong> (<em>pandas.DataFrame</em>) – The dataframe with columns <code class="docutils literal notranslate"><span class="pre">bar</span></code>, <code class="docutils literal notranslate"><span class="pre">time_L</span></code>, and <code class="docutils literal notranslate"><span class="pre">time_R</span></code>.</p></li>
+<li><p><strong>pos_calib_params</strong> (<em>panda.DataFrame</em>) – The calibration parameters. The index is bar number; the first
+column is the calibration offset; the second column is the
+calibration slope.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>positions</strong> – The calibrated positions in cm.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.1darray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.cache_run">
@@ -158,13 +238,47 @@
 <dd><p>Read in the data from ROOT file and save relevant branches to an HDF5 file.</p>
 <p>The data will be categorized according to bar number, because future
 retrieval by this class will most likely analyze only one bar at a time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – The run number.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>default None</em>) – The name of the tree to read. If None, the default tree name is
+automatically determined. An exception is raised if multiple objects
+are found in the ROOT file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator._read_single_run">
+<span class="sig-name descname"><span class="pre">_read_single_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator._read_single_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in the data from a single bar in a single run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – The run number.</p></li>
+<li><p><strong>bar</strong> (<em>int</em>) – The bar number.</p></li>
+<li><p><strong>from_cache</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to read the data from the cache. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the data is
+read from the ROOT file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – The dataframe with the data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read">
 <span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read in the data needed to do pulse shape discrimintion.</p>
-<p>The data will be read from the HDF5 file if it exists, otherwise they will be read in from the ROOT file (generated by Daniele’s framework).</p>
+<p>Attributes <code class="docutils literal notranslate"><span class="pre">self.bar</span></code> and <code class="docutils literal notranslate"><span class="pre">self.df</span></code> will be updated.  The data will
+be read from the HDF5 file if it exists, otherwise they will be read in
+from the ROOT file (generated by Daniele’s framework).</p>
 <dl class="simple">
 <dt>Parameters</dt><dd><dl class="simple">
 <dt>run<span class="classifier">int or list of ints</span></dt><dd><p>The run number(s) to read in. Most of the time, this will be a
@@ -181,6 +295,88 @@ created, overwriting any existing cache.</p>
 <dt>verbose<span class="classifier">bool, default False</span></dt><dd><p>Whether to print out the progress of the read in.</p>
 </dd>
 </dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.randomize_integer_features">
+<span class="sig-name descname"><span class="pre">randomize_integer_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.randomize_integer_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomize the integer columns in <code class="docutils literal notranslate"><span class="pre">self.df</span></code>.</p>
+<p>For each integer column, we add a uniform random number between -0.5 and
++0.5 to the values. This is done in-place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em>, </em><em>default None</em>) – The seed for the random number generator. If None, the randomization
+non-reproducible.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.normalize_features">
+<span class="sig-name descname"><span class="pre">normalize_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.normalize_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize features.</p>
+<p>Normalization is done such that the resulting variables have mean 0 and
+standard deviation 1. Under the hood, this is done by
+<code class="docutils literal notranslate"><span class="pre">sklearn.preprocessing.StandardScaler</span></code>. The normalization parameters
+are stored in <code class="docutils literal notranslate"><span class="pre">self.feature_scaler</span></code>. This allows for denormalization
+later on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas.DataFrame</em><em>, </em><em>default None</em>) – The dataframe to normalize. If None, the dataframe in <code class="docutils literal notranslate"><span class="pre">self.df</span></code>
+is used, and the normalization is done in-place.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>normed_df</strong> – The normalized dataframe.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.denormalize_features">
+<span class="sig-name descname"><span class="pre">denormalize_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.denormalize_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Denormalize features.</p>
+<p>Recovers the original values of the features from the normalized ones.
+This is done by applying the inverse transformation by
+<code class="docutils literal notranslate"><span class="pre">self.feature_scaler</span></code>. The attribute <code class="docutils literal notranslate"><span class="pre">self.feature_scaler</span></code> will also
+be deleted after this operation to prevent further denormalization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas.DataFrame</em><em>, </em><em>default None</em>) – The dataframe to denormalize. If None, the dataframe in <code class="docutils literal notranslate"><span class="pre">self.df</span></code>
+is used, and the denormalization is done in-place.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>denormed_df</strong> – The denormalized dataframe.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.remove_vetowall_coincidences">
+<span class="sig-name descname"><span class="pre">remove_vetowall_coincidences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.remove_vetowall_coincidences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove Veto Wall coincidences.</p>
+<p>This is done to effectively remove charged particles from the data.
+Currently, this is done by removing the entire event as long as there is
+any non-zero Veto Wall multiplicity. In the future, this could be
+further improved by removing only hits that fall within a certain solid
+angle from the point of contact of the veto wall.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas.DataFrame</em><em>, </em><em>default None</em>) – The dataframe to remove the Veto Wall coincidences from. If None,
+the dataframe in <code class="docutils literal notranslate"><span class="pre">self.df</span></code> is used in-place.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df_result</strong> – The dataframe with the Veto Wall coincidences removed.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -252,6 +448,29 @@ parameters for each peak.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit_fast_total">
+<span class="sig-name descname"><span class="pre">fit_fast_total</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">side</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">find_peaks_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.fit_fast_total" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit and update <code class="docutils literal notranslate"><span class="pre">self.cfast_total</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>side</strong> (<em>'L'</em><em> or </em><em>'R'</em>) – The side to fit.</p></li>
+<li><p><strong>position_range</strong> (<em>list of 2 floats</em><em>, </em><em>default None</em>) – The range of positions to fit . If None, use the default ranges.
+For left side, the range is [-100, -30]; for right side, the range
+is [30, 100].</p></li>
+<li><p><strong>find_peaks_kwargs</strong> (<em>dict</em><em>, </em><em>default None</em>) – The keyword arguments for <a class="reference internal" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.find_topN_peaks" title="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.find_topN_peaks"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_topN_peaks()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cfast_total</strong> – The fitted parameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.value_assign">
 <span class="sig-name descname"><span class="pre">value_assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">side</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.value_assign" title="Permalink to this definition">¶</a></dt>
 <dd><p>Value-assign a PSD value to each entry.</p>
@@ -269,8 +488,7 @@ provide a better PSD parameter that is built on top of this one-sided
 VPSD parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>side</strong> – ‘L’ or ‘R’
-The side of the NW bar to do the value-assignment.</p>
+<dd class="field-odd"><p><strong>side</strong> (<em>'L'</em><em> or </em><em>'R'</em>) – The side of the NW bar to do the value-assignment.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -301,6 +519,12 @@ we estimate it by first fitting a Gaussian around the peak, then take
 FWHM to be ~2.3548 times sigma, the standard deviation.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator._run_hash_str">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">_run_hash_str</span></span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator._run_hash_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string that uniquely identifies the runs.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_parameters">
 <span class="sig-name descname"><span class="pre">save_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_parameters" title="Permalink to this definition">¶</a></dt>
@@ -308,38 +532,10 @@ FWHM to be ~2.3548 times sigma, the standard deviation.</p>
 <p>By default, this function saves the parameters to the database as a JSON
 file. An example path would be:
 <cite>$PROJECT_DIR/database/calib_params/run-4082-4123-ha88b0/NWB-bar01.json</cite></p>
-<dl class="simple">
-<dt>Parameters</dt><dd><dl class="simple">
-<dt>path<span class="classifier">str or pathlib.Path, default None</span></dt><dd><p>The path to save the parameters. If None, the parameters will be
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em>, </em><em>default None</em>) – The path to save the parameters. If None, the parameters will be
 saved to the default database.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_to_gallery">
-<span class="sig-name descname"><span class="pre">save_to_gallery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'light_GM</span> <span class="pre">&gt;</span> <span class="pre">3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.pulse_shape_discrimination.PulseShapeDiscriminator.save_to_gallery" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a diagnostic plot to the gallery as a PNG file.</p>
-<dl class="simple">
-<dt>Parameters</dt><dd><dl class="simple">
-<dt>path<span class="classifier">str or pathlib.Path, default None</span></dt><dd><p>The path to save the plot. If None, the plot is saved to the
-default database.</p>
-</dd>
-<dt>cut<span class="classifier">str, default ‘light_GM &gt; 3’</span></dt><dd><p>The cut to apply to the data when plotting. All panels in the
-figure will apply this cut, and potentially other cuts, joined
-by logical AND, except for the panel that draws the PPSD as a
-function of light GM.</p>
-</dd>
-<dt>show_plot<span class="classifier">bool, default False</span></dt><dd><p>If True, the plot will be shown in run time, i.e. the command
-<cite>plt.show()</cite> will be called.</p>
-</dd>
-<dt>save<span class="classifier">bool, default True</span></dt><dd><p>If <cite>True</cite>, the plot will be saved to the database. <cite>False</cite>
-option is useful when users are using this function to inspect
-the plot without saving.</p>
-</dd>
-</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -383,7 +579,7 @@ the plot without saving.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2021, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
