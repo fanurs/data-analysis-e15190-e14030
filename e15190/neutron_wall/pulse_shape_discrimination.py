@@ -248,7 +248,7 @@ class PulseShapeDiscriminator:
 
     # some hyper-parameters for optimizing the fast-total fit
     ft_breakpoint1 = 1500.0 # TOTAL in raw ADC
-    ft_breakpoint2 = 2500.0 # TOTAL in raw ADC
+    ft_breakpoint2 = 2000.0 # TOTAL in raw ADC
     min_samples_gamma = 0.25 # the minimum percentage of inliers
     min_samples_neutron = 0.7 # the minimum percentage of inliers
     x_switch_neutron = 1300.0 # TOTAL in raw ADC
@@ -1862,6 +1862,10 @@ class _MainUtilities:
     """Functions, classes and attributes for using this module as a script."""
     @staticmethod
     def get_args():
+        def wrap(multi_indented_line, **kwargs):
+            line = multi_indented_line
+            return textwrap.fill(inspect.cleandoc(line), **kwargs)
+
         parser = argparse.ArgumentParser(
             description='Pulse shape discrimination for neutron wall',
             formatter_class=argparse.RawTextHelpFormatter,
@@ -1889,7 +1893,7 @@ class _MainUtilities:
         parser.add_argument(
             '-b', '--bars',
             nargs='+',
-            help=inspect.cleandoc('''
+            help=wrap('''
                 The bar number(s) to calibrate. If not specfiied, all bars,
                 including bar 1 to 24, will be analyzed. Dash "-" can be used to
                 specify ranges, e.g. "1-3 10-12" would make the program
@@ -1899,7 +1903,7 @@ class _MainUtilities:
         )
         parser.add_argument(
             '-c', '--no-cache',
-            help=inspect.cleandoc('''
+            help=wrap('''
                 When this option is given, the script will ignore the HDF5 cache
                 files. All data will be read from the ROOT files. New cache
                 files will then be created. By default, the script will use the
@@ -1909,7 +1913,7 @@ class _MainUtilities:
         )
         parser.add_argument(
             '-d', '--debug',
-            help=inspect.cleandoc('''
+            help=wrap('''
                 When this option is given, no output would be saved. This
                 includes both calibration parameters and gallery. The cached
                 data is not controlled by this option; for that, refer to "-c"
@@ -1919,7 +1923,7 @@ class _MainUtilities:
         )
         parser.add_argument(
             '-o', '--output',
-            help=inspect.cleandoc('''
+            help=wrap('''
                 The output directory. If not given, the default is
                 "$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination/".
             '''),
@@ -1933,45 +1937,48 @@ class _MainUtilities:
         parser.add_argument(
             '--ft-breakpoint1',
             type=float,
-            help=inspect.cleandoc('''
-                The breakpoint 1 for the fast-total fitting ranges. Default is
-                1500.0. From this breakpoint onward till the second breakpoint,
-                a smoother convolution is applied (due to lower statistics) to
-                make the peak finding more stable.
+            help=wrap(f'''
+                The breakpoint 1 for the fast-total fitting ranges.  From this
+                breakpoint onward till the second breakpoint, a smoother
+                convolution is applied (due to lower statistics) to make the
+                peak finding more stable. Default is
+                "{PulseShapeDiscriminator.ft_breakpoint1:.1f}".
             '''),
         )
         parser.add_argument(
             '--ft-breakpoint2',
             type=float,
-            help=inspect.cleandoc('''
-                The breakpoint 2 for the fast-total fitting ranges. Default is
-                2500.0. If gamma statistics is insufficient at high ADC,
-                reducing this value may improve the overall fit. No gamma peak
-                finding is performed after this breakpoint.
+            help=wrap(f'''
+                The breakpoint 2 for the fast-total fitting ranges. If gamma
+                statistics is insufficient at high ADC, reducing this value may
+                improve the overall fit. No gamma peak finding is performed
+                after this breakpoint. Default is
+                "{PulseShapeDiscriminator.ft_breakpoint2:.1f}".
             '''),
         )
         parser.add_argument(
             '--min-samples-gamma',
             type=float,
-            help=inspect.cleandoc('''
+            help=wrap(f'''
                 The minimum number of samples for gamma to pass a RANSAC fit.
-                Default is 0.25.
+                Default is "{PulseShapeDiscriminator.min_samples_gamma:.2f}".
             '''),
         )
         parser.add_argument(
             '--min-samples-neutron',
             type=float,
-            help=inspect.cleandoc('''
+            help=wrap(f'''
                 The minimum number of samples for neutron to pass a RANSAC fit.
-                Default is 0.70.
+                Default is "{PulseShapeDiscriminator.min_samples_neutron:.2f}".
             '''),
         )
         parser.add_argument(
             '--x-switch-neutron',
             type=float,
-            help=inspect.cleandoc('''
+            help=wrap(f'''
                 The switching point for neutron fast-total relation from
-                quadratic to linear. Default is 1300.0.
+                quadratic to linear. Default is
+                "{PulseShapeDiscriminator.x_switch_neutron:.1f}".
             '''),
         )
         args = parser.parse_args()
@@ -2019,6 +2026,7 @@ if __name__ == '__main__':
     """
     import argparse
     import inspect
+    import textwrap
     
     args = _MainUtilities.get_args()
 
