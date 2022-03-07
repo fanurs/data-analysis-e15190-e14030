@@ -373,7 +373,7 @@ class PulseShapeDiscriminator:
             f'NW{self.AB}_light_GM': f'NW{self.AB}.fGeoMeanSaturationCorrected',
              'VW_multi'            :  'VetoWall.fmulti',
         }
-        if self.decompression_exector is None:
+        if self.decompression_executor is None:
             self.decompression_executor = concurrent.futures.ThreadPoolExecutor(self.max_workers)
         if self.interpretation_executor is None:
             self.interpretation_executor = concurrent.futures.ThreadPoolExecutor(self.max_workers)
