@@ -1211,6 +1211,7 @@ class PulseShapeDiscriminator:
             },
         }
 
+        # quality metric for data and fits
         pars['score_of_data'] = {
             'L': {
                 'neutron': self.fitter['L']['neutron'].score_of_data,
@@ -1222,7 +1223,23 @@ class PulseShapeDiscriminator:
             },
         }
 
+        # fast-total relations as polynomials
+        pars['fast_total_polynomial'] = {
+            'L': {
+                'neutron': list(self.fitter['L']['neutron'].ransac.estimator_.par),
+                'gamma': list(self.fitter['L']['gamma'].ransac.estimator_.par),
+            },
+            'R': {
+                'neutron': list(self.fitter['R']['neutron'].ransac.estimator_.par),
+                'gamma': list(self.fitter['R']['gamma'].ransac.estimator_.par),
+            },
+        }
+
+
         # prepare fast-total relations into JSON serializable
+        # Here, we use fine grid of the relations so that any
+        # smooth interpolation would be able to reconstruct
+        # the fast-total relations without the analytic model.
         totals = np.arange(0, 4100 + 1e-9, 20.0)
         pars['fast_total'] = {
             'nonlinear_total_L': self.total_threshold['L'],
@@ -1838,7 +1855,6 @@ class Gallery:
         ax_low.set_xlim(-120, 120)
         ax_low.set_xlabel(f'NW{psd_obj.AB} hit position ' + r'$x$' + ' (cm)', color='navy')
         ax_low.set_ylabel('Figure-of-merit')
-
 
 
 
