@@ -24,8 +24,10 @@ std::array<double, 2> get_psd(
     NWPulseShapeDiscriminationParamReader& psd_reader,
     int bar, double total_L, double total_R, double fast_L, double fast_R, double pos
 );
-//New Work
-std::array<double,3>get_global_coordinates(NWBPositionCalibParamReader& nw_pcalib, int bar,double positionX);
+std::array<double,3> get_global_coordinates(
+    NWBPositionCalibParamReader& nw_pcalib,
+    int bar, double positionX
+);
 
 int main(int argc, char* argv[]) {
     // initialization and argument parsing
@@ -68,7 +70,6 @@ int main(int argc, char* argv[]) {
     // preparing progress bar
     std::setlocale(LC_NUMERIC, "");
     int total_n_entries = intree->GetEntries();
-    std::cout<<total_n_entries<<std::endl;
     int last_entry;
     if (argparser.n_entries < 0) {
         last_entry = total_n_entries - 1;
@@ -77,8 +78,8 @@ int main(int argc, char* argv[]) {
         last_entry = std::min(total_n_entries - 1, argparser.first_entry + argparser.n_entries - 1);
     }
     int n_entries = last_entry - argparser.first_entry + 1;
- 
-     srand( (unsigned)time( NULL ) );
+
+    srand( (unsigned)time( NULL ) );
 
     // main loop
     int ievt;
@@ -102,13 +103,16 @@ int main(int argc, char* argv[]) {
                 evt.NWB_time_L[m],
                 evt.NWB_time_R[m]
             );
+            std::array<double, 3> phitheta = get_global_coordinates(
+                nwb_pcalib,
+                evt.NWB_bar[m],
+                evt.NWB_pos[m]
+            );
+            evt.NWB_distance[m]=phitheta[0];
+            evt.NWB_theta[m]=phitheta[1];
+            evt.NWB_phi[m]=phitheta[2];
             
-            std::array<double,3>phitheta=get_global_coordinates(nwb_pcalib, evt.NWB_bar[m],evt.NWB_pos[m]);
-           evt.NWB_distance[m]=phitheta[0];
-           evt.NWB_theta[m]=phitheta[1];
-           evt.NWB_phi[m]=phitheta[2];
-            
-
+            // pulse shape discrimination
             std::array<double, 2> psd = get_psd(
                 nwb_psd_reader,
                 evt.NWB_bar[m],
@@ -120,7 +124,6 @@ int main(int argc, char* argv[]) {
             );
             evt.NWB_psd[m] = psd[0];
             evt.NWB_psd_perp[m] = psd[1];
-         
         }
 
         outtree->Fill();
@@ -136,12 +139,10 @@ int main(int argc, char* argv[]) {
 }
 
 double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R) {
-
     int p0 = nw_pcalib.get(bar, "p0");
     int p1 = nw_pcalib.get(bar, "p1");
     double pos = p0 + p1 * (time_L - time_R);
     return pos;
-    
 }
 
 std::array<double, 2> get_psd(
@@ -202,13 +203,25 @@ std::array<double, 2> get_psd(
 }
 
 
-std::array<double, 3> get_global_coordinates(NWBPositionCalibParamReader& nw_pcalib, int bar, double positionX) {
+std::array<double, 3> get_global_coordinates(
+    NWBPositionCalibParamReader& nw_pcalib,
+    int bar,
+    double positionX
+) {
 	double posx = positionX;
     
-    std::array<double, 3> L = {nw_pcalib.getL(bar, "L0"), nw_pcalib.getL(bar, "L1"), nw_pcalib.getL(bar, "L2")};
-    std::array<double, 3> X = {nw_pcalib.getX(bar, "X0"), nw_pcalib.getX(bar, "X1"), nw_pcalib.getX(bar, "X2")};
-    std::array<double, 3> Y = {nw_pcalib.getY(bar, "Y0"), nw_pcalib.getY(bar, "Y1"), nw_pcalib.getY(bar, "Y2")};
-    std::array<double, 3> Z = {nw_pcalib.getZ(bar, "Z0"), nw_pcalib.getZ(bar, "Z1"), nw_pcalib.getZ(bar, "Z2")};
+    std::array<double, 3> L = {
+        nw_pcalib.getL(bar, "L0"), nw_pcalib.getL(bar, "L1"), nw_pcalib.getL(bar, "L2")
+    };
+    std::array<double, 3> X = {
+        nw_pcalib.getX(bar, "X0"), nw_pcalib.getX(bar, "X1"), nw_pcalib.getX(bar, "X2")
+    };
+    std::array<double, 3> Y = {
+        nw_pcalib.getY(bar, "Y0"), nw_pcalib.getY(bar, "Y1"), nw_pcalib.getY(bar, "Y2")
+    };
+    std::array<double, 3> Z = {
+        nw_pcalib.getZ(bar, "Z0"), nw_pcalib.getZ(bar, "Z1"), nw_pcalib.getZ(bar, "Z2")
+    };
     
     double posy = (double) rand() / RAND_MAX - 0.5;
     double posz=(double) rand() / RAND_MAX - 0.5;

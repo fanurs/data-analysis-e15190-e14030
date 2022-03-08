@@ -52,7 +52,7 @@ public:
     std::map<std::pair<int, std::string>, double> X; // NW's principal components w.r.t L
     std::map<std::pair<int, std::string>, double> Y;
     std::map<std::pair<int, std::string>, double> Z;
-   
+
     NWBPositionCalibParamReader();
     ~NWBPositionCalibParamReader();
 
