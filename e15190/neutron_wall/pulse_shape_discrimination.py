@@ -16,7 +16,7 @@ import scipy.stats
 from sklearn import decomposition
 from sklearn.linear_model import RANSACRegressor
 from sklearn.preprocessing import StandardScaler
-import uproot 
+import uproot
 
 from e15190 import PROJECT_DIR
 from e15190.neutron_wall.position_calibration import NWCalibrationReader
@@ -1175,6 +1175,13 @@ class PulseShapeDiscriminator:
             'bar': self.bar,
         }
 
+        # the runs that were skipped in between
+        # this is really just a complement to the "runs"
+        # but this parameter is easier to inspect by humans
+        consec_runs = list(range(min(pars['runs']), max(pars['runs']) + 1))
+        pars['skipped_runs'] = sorted(set(consec_runs) - set(pars['runs']))
+
+        # hyperparameters used to fit pulse shape discrimination parameters
         pars['hyper_params'] = {
             'ft_breakpoint1': self.ft_breakpoint1,
             'ft_breakpoint2': self.ft_breakpoint2,
@@ -1998,7 +2005,17 @@ class _MainUtilities:
                 runs.extend(range(run_range[0], run_range[1] + 1))
             else:
                 raise ValueError(f'Unrecognized input: {run_str}')
-        args.runs = runs
+        good_mask = Query.are_good(runs)
+        good_runs = np.array(runs)[good_mask]
+        bad_runs = sorted(set(runs) - set(good_runs))
+        if len(bad_runs) > 0:
+            bad_runs_str = ', '.join([f'{run:04d}' for run in bad_runs])
+            print(wrap(f'''
+                The following runs will be skipped because they are "bad":
+                {bad_runs_str}
+                '''
+            ), flush=True)
+        args.runs = list(good_runs)
 
         # process the bars
         bars = []
@@ -2027,6 +2044,8 @@ if __name__ == '__main__':
     import argparse
     import inspect
     import textwrap
+
+    from e15190.runlog.query import Query
     
     args = _MainUtilities.get_args()
 
