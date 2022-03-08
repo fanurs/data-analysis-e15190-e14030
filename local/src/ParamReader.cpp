@@ -319,9 +319,10 @@ bool NWPulseShapeDiscriminationParamReader::load_single_bar(int run, int bar) {
         // read in JSON file
         std::ifstream file(filepath.string());
         if (!file.is_open()) {
+            // if file does not exist, skip
+            // raising an error is unnecessary because
+            // the correct JSON may exist in another directory
             continue;
-            // std::cerr << "Fail to open JSON file: " << filepath.string() << std::endl;
-            // exit(1);
         }
         Json json_buf;
         file >> json_buf;
