@@ -10,6 +10,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "TFolder.h"
 #include "Math/Interpolator.h"
 #include "TTree.h"
 #include "TTreeReader.h"
@@ -38,6 +39,7 @@ class NWBPositionCalibParamReader : public ParamReader<int> {
 public:
     const char AB = 'B';
     const char ab = tolower(AB);
+    std::filesystem::path project_dir = "";
     std::filesystem::path pcalib_reldir = "database/neutron_wall/position_calibration";
     std::string json_filename = "calib_params.json";
     std::filesystem::path pcalib_dir;
@@ -67,20 +69,24 @@ public:
     bool load(int run, bool extrapolate=true);
     void set_index(const std::string& index_name="bar");
     double get(int bar, const std::string& par);
-
     double getL(int bar, const std::string& par);
     double getX(int bar, const std::string& par);
     double getY(int bar, const std::string& par);
     double getZ(int bar, const std::string& par);
+    void write_metadata(TFolder* folder, bool relative_path=true);
 };
 
 class NWPulseShapeDiscriminationParamReader : public ParamReader<int> {
+private:
+    std::vector<int> not_found_bars;
 public:
     char AB;
     char ab;
     std::vector<int> bars;
+    std::filesystem::path project_dir = "";
     std::filesystem::path param_reldir = "database/neutron_wall/pulse_shape_discrimination/calib_params";
-    std::filesystem::path param_dir;
+    std::filesystem::path param_dir; // PROJECT_DIR / param_reldir
+    std::map<int, std::filesystem::path> param_paths; // bar -> full paths to the parameter JSON file
 
     std::unordered_map<int, Json> database; // bar -> json
 
@@ -104,5 +110,6 @@ public:
     void reconstruct_interpolators(int bar);
     void process_pca(int bar);
     bool load_single_bar(int run, int bar);
-    bool load(int run);
+    bool load(int run, bool ignore_not_found=false);
+    void write_metadata(TFolder* folder, bool relative_path=true);
 };

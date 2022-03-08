@@ -9,8 +9,10 @@
 
 #include <nlohmann/json.hpp>
 
+#include "TFolder.h"
 #include "Math/Interpolator.h"
 #include "Math/InterpolationTypes.h"
+#include "TNamed.h"
 #include "TTreeReaderValue.h"
 
 #include "ParamReader.h"
@@ -27,9 +29,10 @@ NWBPositionCalibParamReader::NWBPositionCalibParamReader() {
         std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
         exit(1);
     }
-    this->pcalib_dir = PROJECT_DIR / this->pcalib_reldir;
+    this->project_dir = PROJECT_DIR;
+    this->pcalib_dir = this->project_dir / this->pcalib_reldir;
     this->json_path = this->pcalib_dir / this->json_filename;
-    this->pca_path=PROJECT_DIR / this->pca_reldir/this->dat_filename;
+    this->pca_path = this->project_dir / this->pca_reldir / this->dat_filename;
 
     // read in the final calibration file (JSON)
     std::ifstream file(this->json_path.string());
@@ -187,6 +190,21 @@ double NWBPositionCalibParamReader::getZ(int bar, const std::string& par) {
     return this->Z[std::make_pair(bar, par)];
 }
 
+void NWBPositionCalibParamReader::write_metadata(TFolder* folder, bool relative_path) {
+    std::filesystem::path base_dir = (relative_path) ? this->project_dir : "/";
+    std::filesystem::path path;
+
+    path = std::filesystem::proximate(this->json_path, base_dir);
+    TNamed* json_path_data = new TNamed(path.string().c_str(), "");
+    folder->Add(json_path_data);
+
+    path = std::filesystem::proximate(this->pca_path, base_dir);
+    TNamed* pca_path_data = new TNamed(path.string().c_str(), "");
+    folder->Add(pca_path_data);
+
+    return;
+}
+
 /***********************************************/
 /*****NWPulseShapeDiscriminationParamReader*****/
 /***********************************************/
@@ -203,7 +221,8 @@ NWPulseShapeDiscriminationParamReader::NWPulseShapeDiscriminationParamReader(con
         std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
         exit(1);
     }
-    this->param_dir = PROJECT_DIR / this->param_reldir;
+    this->project_dir = std::filesystem::path(PROJECT_DIR);
+    this->param_dir = this->project_dir / this->param_reldir;
 }
 
 NWPulseShapeDiscriminationParamReader::~NWPulseShapeDiscriminationParamReader() { }
@@ -300,8 +319,9 @@ bool NWPulseShapeDiscriminationParamReader::load_single_bar(int run, int bar) {
         // read in JSON file
         std::ifstream file(filepath.string());
         if (!file.is_open()) {
-            std::cerr << "Fail to open JSON file: " << filepath.string() << std::endl;
-            exit(1);
+            continue;
+            // std::cerr << "Fail to open JSON file: " << filepath.string() << std::endl;
+            // exit(1);
         }
         Json json_buf;
         file >> json_buf;
@@ -313,6 +333,7 @@ bool NWPulseShapeDiscriminationParamReader::load_single_bar(int run, int bar) {
             found_run = true;
 
             // load in the parameters
+            this->param_paths[bar] = filepath;
             this->database[bar] = json_buf;
             this->reconstruct_interpolators(bar);
             this->process_pca(bar);
@@ -323,14 +344,37 @@ bool NWPulseShapeDiscriminationParamReader::load_single_bar(int run, int bar) {
     return found_run;
 }
 
-bool NWPulseShapeDiscriminationParamReader::load(int run) {
+bool NWPulseShapeDiscriminationParamReader::load(int run, bool ignore_not_found) {
     bool found_all_bars = true;
     for (int bar: this->bars) {
         if (!this->load_single_bar(run, bar)) {
             found_all_bars = false;
+            this->not_found_bars.push_back(bar);
         }
     }
+
+    if (!found_all_bars && !ignore_not_found) {
+        std::cerr << "Failed to load position calibration parameters for";
+        std::cerr << Form(" run-%04d, bar(s): ", run);
+        std::string delim = "";
+        for (int bar: this->not_found_bars) {
+            std::cerr << Form("%s%02d", delim.c_str(), bar);
+            delim = ", ";
+        }
+        std::cerr << std::endl;
+        exit(1);
+    }
+
     return found_all_bars;
 }
 
-
+void NWPulseShapeDiscriminationParamReader::write_metadata(TFolder* folder, bool relative_path) {
+    std::filesystem::path base_dir = (relative_path) ? this->project_dir : "/";
+    std::filesystem::path path;
+    for (const auto& [bar, fullpath] : this->param_paths) {
+        path = std::filesystem::proximate(fullpath, base_dir);
+        TNamed* data = new TNamed(path.string().c_str(), Form("%02d", bar));
+        folder->Add(data);
+    }
+    return;
+}

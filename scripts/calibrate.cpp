@@ -1,6 +1,5 @@
 // standard libraries
 #include <array>
-#include <clocale>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -11,6 +10,9 @@
 
 // CERN ROOT libraries
 #include "TError.h"
+#include "TFolder.h"
+#include "TNamed.h"
+#include "TROOT.h"
 
 // local libraries
 #include "ParamReader.h"
@@ -32,66 +34,37 @@ std::array<double,3> get_global_coordinates(
 int main(int argc, char* argv[]) {
     // initialization and argument parsing
     gErrorIgnoreLevel = kError; // ignore warnings
-    const char* PROJECT_DIR = getenv("PROJECT_DIR");
-    if (PROJECT_DIR == nullptr) {
-        std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
-        return 1;
-    }
-    std::filesystem::path project_dir(PROJECT_DIR);
+    std::filesystem::path project_dir = get_project_dir();
     ArgumentParser argparser(argc, argv);
 
-    // read in position calibration parameters
+    // read in parameter readers
     NWBPositionCalibParamReader nwb_pcalib;
     nwb_pcalib.load(argparser.run_num);
-
-    // read in pulse shape discrimination parameters
     NWPulseShapeDiscriminationParamReader nwb_psd_reader('B');
     nwb_psd_reader.load(argparser.run_num);
 
     // read in Daniele's ROOT files (Kuan's version)
-    std::ifstream local_paths_json_file(project_dir / "database/local_paths.json");
-    Json local_paths_json;
-    try {
-        local_paths_json_file >> local_paths_json;
-        local_paths_json_file.close();
-    }
-    catch (...) {
-        std::cerr << "Failed to read in $PROJECT_DIR/database/local_paths.json" << std::endl;
-        return 1;
-    }
-    std::filesystem::path inroot_path = local_paths_json["daniele_root_files_dir"].get<std::string>();
-    inroot_path /= Form("CalibratedData_%04d.root", argparser.run_num);
+    std::filesystem::path inroot_path = get_input_root_path(project_dir, argparser, "daniele_root_files_dir");
     TChain* intree = get_input_tree(inroot_path.string(), "E15190");
 
     // prepare output (calibrated) ROOT files
     TFile* outroot = new TFile(argparser.outroot_path.c_str(), "RECREATE");
     TTree* outtree = get_output_tree(outroot, "tree");
 
-    // preparing progress bar
-    std::setlocale(LC_NUMERIC, "");
-    int total_n_entries = intree->GetEntries();
-    int last_entry;
-    if (argparser.n_entries < 0) {
-        last_entry = total_n_entries - 1;
-    }
-    else {
-        last_entry = std::min(total_n_entries - 1, argparser.first_entry + argparser.n_entries - 1);
-    }
-    int n_entries = last_entry - argparser.first_entry + 1;
-
-    srand( (unsigned)time( NULL ) );
+    // save metadata into TFolder
+    TFolder* metadata = gROOT->GetRootFolder()->AddFolder("metadata", "");
+    metadata->Add(new TNamed(inroot_path.string().c_str(), "inroot_path"));
+    TFolder* position_param_paths = metadata->AddFolder("position_param_paths", "");
+    nwb_pcalib.write_metadata(position_param_paths);
+    TFolder* psd_param_paths = metadata->AddFolder("psd_param_paths", "");
+    nwb_psd_reader.write_metadata(psd_param_paths);
 
     // main loop
-    int ievt;
+    srand( (unsigned)time( NULL ) );
+    ProgressBar progress_bar(argparser, intree->GetEntries());
     Container& evt = container; // a shorter alias; see "calibrate.h"
-    for (ievt = argparser.first_entry; ievt <= last_entry; ++ievt) {
-        // progress bar
-        int iprogress = ievt - argparser.first_entry;
-        if (iprogress % 4321 == 0) {
-            std::cout << Form("\r> %6.2f", 1e2 * iprogress / n_entries) << "%" << std::flush;
-            std::cout << Form("%28s", Form("(%'d/%'d)", ievt, total_n_entries - 1)) << std::flush;
-        }
-
+    for (int ievt = argparser.first_entry; ievt <= progress_bar.last_entry; ++ievt) {
+        progress_bar.show(ievt);
         intree->GetEntry(ievt);
 
         // calibrations
@@ -128,10 +101,11 @@ int main(int argc, char* argv[]) {
 
         outtree->Fill();
     }
-    std::cout << "\r> 100.00%" << Form("%28s", Form("(%'d/%'d)", ievt - 1, total_n_entries - 1)) << std::endl;
+    progress_bar.terminate();
 
     // save output to file
     outroot->cd();
+    metadata->Write();
     outtree->Write();
     outroot->Close();
 

@@ -2,6 +2,7 @@
 
 // standard libraries
 #include <array>
+#include <clocale>
 #include <iostream>
 #include <string>
 #include <unistd.h>
@@ -61,8 +62,147 @@ struct Container {
     std::array<double, max_multi> NWB_psd;
     std::array<double, max_multi> NWB_psd_perp;
 };
-
 Container container;
+
+class ArgumentParser {
+public:
+    int run_num = 0;
+    std::string outroot_path = "";
+    int first_entry = 0;
+    int n_entries = -1; // negative value means all entries
+
+    ArgumentParser(int argc, char* argv[]) {
+        opterr = 0; // getopt() return '?' when getting errors
+
+        int opt;
+        while((opt = getopt(argc, argv, "hr:o:i:n:")) != -1) {
+            switch (opt) {
+                case 'h':
+                    this->print_help();
+                    exit(0);
+                case 'r':
+                    this->run_num = std::stoi(optarg);
+                    break;
+                case 'o':
+                    this->outroot_path = optarg;
+                    break;
+                case 'i':
+                    this->first_entry = std::stoi(optarg);
+                    break;
+                case 'n':
+                    this->n_entries = std::stoi(optarg);
+                    break;
+                case '?':
+                    if (optopt == 'r') {
+                        std::cerr << "Option -" << char(optopt) << " requires an argument" << std::endl;
+                    }
+                    else {
+                        std::cerr << "Unknown option -" << char(optopt) << std::endl;
+                    }
+                    exit(1);
+            }
+        }
+
+        // check for mandatory arguments
+        if (this->run_num == 0) {
+            std::cerr << "Option -r is mandatory" << std::endl;
+            exit(1);
+        }
+        if (this->outroot_path == "") {
+            std::cerr << "Option -o is mandatory" << std::endl;
+            exit(1);
+        }
+    }
+
+    void print_help() {
+        const char* msg = R"(
+        Mandatory arguments:
+            -r      HiRA run number (four-digit).
+            -o      ROOT file output path.
+
+        Optional arguments:
+            -h      Print help message.
+            -i      First entry to process. Default is 0.
+            -n      Number of entries to process. Default is all.
+                    If `n + i` is greater than the total number of entries, the
+                    program will safely stop after the last entry.
+        )";
+        std::cout << msg << std::endl;
+    }
+};
+
+class ProgressBar {
+public:
+    int total_n_entries; // total number of entries in the input ROOT file
+    int last_entry; // last entry number to process
+    int n_entries; // number of entries to process
+    ArgumentParser* argparser;
+
+    ProgressBar(ArgumentParser& argparser, int total_n_entries) {
+        this->argparser = &argparser;
+        this->total_n_entries = total_n_entries;
+        std::setlocale(LC_NUMERIC, "");
+        if (this->argparser->n_entries < 0) {
+            this->last_entry = this->total_n_entries - 1;
+        }
+        else {
+            this->last_entry = std::min(
+                this->total_n_entries - 1,
+                this->argparser->first_entry + this->argparser->n_entries - 1
+            );
+        }
+        this->n_entries = this->last_entry - this->argparser->first_entry + 1;
+    }
+
+    void show(int i_evt, int step=4321) {
+        int i_progress = i_evt - this->argparser->first_entry;
+        if (i_progress % step == 0) {
+            std::cout << Form("\r> %6.2f", 1e2 * i_progress / this->n_entries) << "%";
+            std::cout << Form("%30s", Form("i_evt: %'d/%'d", i_evt, this->last_entry));
+            std::cout << Form("%30s", Form("(total_nevts: %'d)", this->total_n_entries));
+            std::cout << std::flush;
+        }
+    }
+
+    void terminate() {
+        std::cout << "\r> 100.00%";
+        std::cout << Form("%30s", Form("i_evt: %'d/%'d", this->last_entry, this->last_entry));
+        std::cout << Form("%30s", Form("(total_nevts: %'d)", this->total_n_entries));
+        std::cout << std::endl << std::flush;
+    }
+};
+
+std::filesystem::path get_project_dir(std::string env_var="PROJECT_DIR") {
+    const char* project_dir_c_str = getenv(env_var.c_str());
+    if (project_dir_c_str == nullptr) {
+        std::cerr << "Environment variable $";
+        std::cerr << env_var;
+        std::cerr << " is not defined in current session" << std::endl;
+        exit(1);
+    }
+    std::filesystem::path project_dir(project_dir_c_str);
+    return project_dir;
+}
+
+std::filesystem::path get_input_root_path(
+    std::filesystem::path& project_dir,
+    ArgumentParser& argparser,
+    std::string json_key
+) {
+    std::ifstream local_paths_json_file(project_dir / "database/local_paths.json");
+    Json local_paths_json;
+    try {
+        local_paths_json_file >> local_paths_json;
+        local_paths_json_file.close();
+    }
+    catch (...) {
+        std::cerr << "Failed to read in \"database/local_paths.json\"" << std::endl;
+        exit(1);
+    }
+    std::filesystem::path inroot_path = local_paths_json[json_key].get<std::string>();
+    inroot_path /= Form("CalibratedData_%04d.root", argparser.run_num);
+    return inroot_path;
+}
 
 TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     TChain* chain = new TChain(tree_name.c_str());
@@ -201,69 +341,3 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
 
     return tree;
 }
-
-struct ArgumentParser {
-    int run_num = 0;
-    std::string outroot_path = "";
-    int first_entry = 0;
-    int n_entries = -1; // negative value means all entries
-
-    ArgumentParser(int argc, char* argv[]) {
-        opterr = 0; // getopt() return '?' when getting errors
-
-        int opt;
-        while((opt = getopt(argc, argv, "hr:o:i:n:")) != -1) {
-            switch (opt) {
-                case 'h':
-                    this->print_help();
-                    exit(0);
-                case 'r':
-                    this->run_num = std::stoi(optarg);
-                    break;
-                case 'o':
-                    this->outroot_path = optarg;
-                    break;
-                case 'i':
-                    this->first_entry = std::stoi(optarg);
-                    break;
-                case 'n':
-                    this->n_entries = std::stoi(optarg);
-                    break;
-                case '?':
-                    if (optopt == 'r') {
-                        std::cerr << "Option -" << char(optopt) << " requires an argument" << std::endl;
-                    }
-                    else {
-                        std::cerr << "Unknown option -" << char(optopt) << std::endl;
-                    }
-                    exit(1);
-            }
-        }
-
-        // check for mandatory arguments
-        if (this->run_num == 0) {
-            std::cerr << "Option -r is mandatory" << std::endl;
-            exit(1);
-        }
-        if (this->outroot_path == "") {
-            std::cerr << "Option -o is mandatory" << std::endl;
-            exit(1);
-        }
-    }
-
-    void print_help() {
-        const char* msg = R"(
-        Mandatory arguments:
-            -r      HiRA run number (four-digit).
-            -o      ROOT file output path.
-
-        Optional arguments:
-            -h      Print help message.
-            -i      First entry to process. Default is 0.
-            -n      Number of entries to process. Default is all.
-                    If `n + i` is greater than the total number of entries, the
-                    program will safely stop after the last entry.
-        )";
-        std::cout << msg << std::endl;
-    }
-};
