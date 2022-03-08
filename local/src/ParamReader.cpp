@@ -355,7 +355,7 @@ bool NWPulseShapeDiscriminationParamReader::load(int run, bool ignore_not_found)
     }
 
     if (!found_all_bars && !ignore_not_found) {
-        std::cerr << "Failed to load position calibration parameters for";
+        std::cerr << "Failed to load pulse shape discrimination calibration parameters for";
         std::cerr << Form(" run-%04d, bar(s): ", run);
         std::string delim = "";
         for (int bar: this->not_found_bars) {
