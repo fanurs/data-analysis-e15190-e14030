@@ -23,7 +23,7 @@ Several remarks:
 4. For runs that do not belong to any run ranges, that implies no position calibration was done for them. Users may choose to extrapolate from the closest run range.
 5. Similarly, not all runs in a run range are good for physics, or even exist. The boundaries of these run ranges are defined at where calibration parameters have undergone some statistically significant changes. Even if there were some junk runs within a particular run range, it does not necesssarily split the run range into two. An example would be `run_range = [100, 120]`, and assume that `run = 109` does not exist. But as long as the calibration parameters in `[100, 108]` are similar to those in `[110, 120]`, we would still group both sets of runs into one, sharing the same parameters (averages).
 6. The calibration was done assuming a simple linear relation with the time difference of PMTs:
-```python
-time_difference = time_left - time_right # nanosecond
-position = parameters[0] + parameters[1] * time_difference # centimeter
-```
+    ```python
+    time_difference = time_left - time_right # nanosecond
+    position = parameters[0] + parameters[1] * time_difference # centimeter
+    ```
