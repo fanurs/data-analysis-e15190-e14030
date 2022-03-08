@@ -10,10 +10,9 @@ import time
 from e15190 import PROJECT_DIR
 
 EXECUTABLE = 'calibrate.exe'
-OUTPUT_DIR = PROJECT_DIR / 'database/root_files'
-MAX_WORKERS = 4
+OUTPUT_DIR = 'database/root_files' # relative to $PROJECT_DIR
 
-def single_job(run, output_directory=OUTPUT_DIR):
+def single_job(run, output_directory):
     outroot_path = output_directory / f'run-{run:04d}.root'
     log_path = f'./logs/run-{run:04d}.log'
     cmd = f'./{EXECUTABLE} -r {run} -o {outroot_path} |& tee {log_path}'
@@ -32,7 +31,7 @@ def main():
     args = get_arguments()
     n_runs = len(args.runs)
     n_runs_done = 0
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=args.cores) as executor:
         jobs = []
         for run in args.runs:
             print(textwrap.fill(f'Submitting job for run-{run}'))
@@ -59,21 +58,22 @@ def get_arguments():
     )
     parser.add_argument(
         '-o', '--outdir',
-        default=OUTPUT_DIR,
+        default=PROJECT_DIR / OUTPUT_DIR,
         help=inspect.cleandoc(f'''
             Output directory for the calibrated root files.
 
-            By default, the output directory is {str(OUTPUT_DIR)}.
+            By default, the output directory is $PROJECT_DIR/{str(OUTPUT_DIR)}.
         '''),
     )
     parser.add_argument(
         '-c', '--cores',
-        default=MAX_WORKERS,
+        default=4,
+        type=int,
         help=inspect.cleandoc(f'''
             Number of cores to use. Please do not use more than 8 cores, as this
             might cause issues for other users.
 
-            By default, the number of cores is {MAX_WORKERS}.
+            By default, the number of cores is 4.
         '''),
     )
     args = parser.parse_args()
@@ -92,6 +92,13 @@ def get_arguments():
 
     # process the output directory
     args.outdir = pathlib.Path(args.outdir).resolve()
+
+    # warn if cores too many
+    if args.cores > 8:
+        print('WARNING: Using too many cores might cause issues for other users.')
+        response = input('Are you sure you want to continue? [y/n]')
+        if response != 'y':
+            exit(1)
 
     # print out message
     print(f'Running calibrate.exe in parallel ({args.cores} cores) on runs:')
