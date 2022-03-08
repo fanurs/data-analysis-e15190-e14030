@@ -1,3 +1,4 @@
+#%%
 import collections
 import pathlib
 
@@ -33,11 +34,11 @@ class ElogQuery:
             useful when the run batches are re-determined and we want the new
             run batches to be saved into a CSV file.
         """
-        self.path = PROJECT_DIR / 'database/runlog/elog_runs_filtered.h5'
+        self.path = 'database/runlog/elog_runs_filtered.h5' # relative to PROJECT_DIR
 
         self.df = None
         """The Elog database pandas dataframe."""
-        with pd.HDFStore(self.path, 'r') as file:
+        with pd.HDFStore(PROJECT_DIR / self.path, 'r') as file:
             self.df = file['runs']
             self.df.sort_values('run', inplace=True, ignore_index=True)
         
@@ -59,7 +60,7 @@ class ElogQuery:
         self.df_batches = None
         """A summary of batch properties rather than run properties."""
 
-        self.run_batches_path = PROJECT_DIR / 'database/runlog/run_batches.csv'
+        self.run_batches_path = 'database/runlog/run_batches.csv' # relative to $PROJECT_DIR
 
         if update_run_batches:
             self.determine_run_batches()
@@ -216,7 +217,7 @@ class ElogQuery:
             The path to the CSV file. If ``None``, the function uses
             :py:attr:`run_batches_path`.
         """
-        filepath = pathlib.Path(filepath or self.run_batches_path)
+        filepath = pathlib.Path(filepath or PROJECT_DIR / self.run_batches_path)
         self.df_batches.to_csv(filepath)
 
     def load_run_batches(self, filepath=None):
@@ -228,7 +229,7 @@ class ElogQuery:
             The path to the CSV file. If ``None``, the function uses
             :py:attr:`run_batches_path`.
         """
-        filepath = pathlib.Path(filepath or self.run_batches_path)
+        filepath = pathlib.Path(filepath or PROJECT_DIR / self.run_batches_path)
         self.df_batches = pd.read_csv(filepath)
         self.df_batches.set_index('ibatch', drop=True, inplace=True)
 
@@ -583,6 +584,41 @@ class Query:
             Batch number (0-indexed).
         """
         return Query.elog.df.loc[ibatch]
+
+    @staticmethod
+    def is_good(run):
+        """Returns whether a given run is good.
+
+        Parameters
+        ----------
+        run : int
+            Run number.
+        
+        Returns
+        -------
+        is_good_ : bool
+            Whether the run is good. Not good would mean this run should be
+            skipped in data analysis.
+        """
+        return run in Query.elog.df.run.to_list()
+    
+    @staticmethod
+    def are_good(runs):
+        """Returns whether a list of runs are good.
+
+        Parameters
+        ----------
+        runs : list
+            List of runs.
+        
+        Returns
+        -------
+        are_good_ : list of bool
+            Whether the runs are good. Bad would mean the runs should be skipped
+            in data analysis.
+        """
+        all_good_runs = Query.elog.df.run.to_list()
+        return [run in all_good_runs for run in runs]
 
     @staticmethod
     def get_batch(ibatch):
