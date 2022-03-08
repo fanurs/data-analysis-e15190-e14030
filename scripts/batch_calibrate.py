@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import argparse
 import concurrent.futures
-import functools
 import inspect
 import pathlib
 import subprocess
+import textwrap
 import time
 
 from e15190 import PROJECT_DIR
@@ -12,14 +12,21 @@ from e15190 import PROJECT_DIR
 EXECUTABLE = 'calibrate.exe'
 OUTPUT_DIR = PROJECT_DIR / 'database/root_files'
 MAX_WORKERS = 4
-subprocess.run = functools.partial(subprocess.run, capture_output=True, shell=True, text=True)
 
 def single_job(run, output_directory=OUTPUT_DIR):
     outroot_path = output_directory / f'run-{run:04d}.root'
-    log_path = f'./logs/run-{run}.log'
-    cmd = f'./{EXECUTABLE} -r {run} -o {outroot_path} 2>&1 tee {log_path}'
-    subprocess.run(cmd)
-    return f'run-{run:04d} Done'
+    log_path = f'./logs/run-{run:04d}.log'
+    cmd = f'./{EXECUTABLE} -r {run} -o {outroot_path} |& tee {log_path}'
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        shell=True,
+        executable='/bin/bash',
+    )
+    if result.stderr != '':
+        print(f'Error in run-{run:04d}: {result.stderr}', flush=True)
+    return f'run-{run:04d}.root: ' + result.stdout.split('\n')[-2] # last line
 
 def main():
     args = get_arguments()
@@ -28,13 +35,13 @@ def main():
     with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
         jobs = []
         for run in args.runs:
-            print(f'Submitting job for run-{run}')
+            print(textwrap.fill(f'Submitting job for run-{run}'))
             jobs.append(executor.submit(single_job, run, args.outdir))
             time.sleep(2.0)
 
         for job in concurrent.futures.as_completed(jobs):
             n_runs_done += 1
-            print(job.result(), f' [{n_runs_done}/{n_runs}]')
+            print(job.result(), f' [n_jobs: {n_runs_done}/{n_runs}]')
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Running calibrate.exe in parallel')
@@ -63,7 +70,8 @@ def get_arguments():
         '-c', '--cores',
         default=MAX_WORKERS,
         help=inspect.cleandoc(f'''
-            Number of cores to use.
+            Number of cores to use. Please do not use more than 8 cores, as this
+            might cause issues for other users.
 
             By default, the number of cores is {MAX_WORKERS}.
         '''),
