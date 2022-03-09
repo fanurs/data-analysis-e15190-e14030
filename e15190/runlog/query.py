@@ -1,6 +1,6 @@
-#%%
 import collections
 import pathlib
+import os
 
 import numpy as np
 import pandas as pd
@@ -248,6 +248,11 @@ class ElogQuery:
         indices = pd.MultiIndex.from_arrays(indices, names=['ibatch', 'irun'])
         self.df.set_index(indices, inplace=True)
     
+class ElogQueryGallery(ElogQuery):
+    def __init__(self):
+        super().__init__()
+        self.database_dir = 'database/runlog/interactive_plots/' # relative to $PROJECT_DIR
+
     def get_figure_reaction_overview(self, append_trigger_rate=True, dim=480):
         showlegend_first_only = {56: True, 140: True}
         def routine(fig, df, rc):
@@ -262,7 +267,8 @@ class ElogQuery:
                 # prepare unified properties of batch
                 first_entry = subdf.iloc[0]
                 target = first_entry['target']
-                energy = int(first_entry['beam'].split()[1]) # e.g. Ca48 140 MeV/u
+                # energy = int(first_entry['beam'].split()[1]) # e.g. Ca48 140 MeV/u
+                energy = first_entry['beam_energy']
                 shadow_bar = first_entry['shadow_bar']
 
                 # visualize target, beam energy and shadow bar info
@@ -315,8 +321,6 @@ class ElogQuery:
             dim = dict(width=1280, height=720)
         fig.update_layout(
             title='<b><i>Overview of reaction systems in E15190-E14030</i></b>',
-            title_x=0.5,
-            title_xanchor='center',
             margin=dict(l=60, r=20, t=60, b=50),
             **dim,
             font_family='Cambria',
@@ -329,7 +333,7 @@ class ElogQuery:
                 x=1,
             ),
         )
-        return self.append_trigger_rate(fig, self.df) if append_trigger_rate else fig
+        return self.append_trigger_rate(fig) if append_trigger_rate else fig
 
     def append_trigger_rate(self, fig):
         def routine(fig, df, rc):
@@ -368,7 +372,7 @@ class ElogQuery:
         )
         return fig
 
-    def append_nw_pos_calib_params(self, AB, fig, ignore_batches=True):
+    def append_nw_pos_calib_params(self, AB, fig, bars=None, ignore_batches=False):
         ab = AB.lower()
         def get_calib_params(run):
             path = pathlib.Path(
@@ -452,7 +456,8 @@ class ElogQuery:
 
         # create slider step
         steps = []
-        bars = sorted(set([_bar for (_, _bar, _) in itraces.keys()]))
+        if bars is None:
+            bars = sorted(set([_bar for (_, _bar, _) in itraces.keys()]))
         for bar in bars:
             visibilities = [_data.visible for _data in fig.data]
             for (_, _bar, _), itrace in itraces.items():
@@ -497,6 +502,27 @@ class ElogQuery:
         )
         return fig
 
+    def save_html_to_fishtank(self, key, chmod=0o775):
+        """Save figure as HTML file to be hosted via Fishtank server.
+
+        Parameters
+        ----------
+        key : str
+            "overview" or "pos-calib".
+        chmod : octal, default 0o775
+            The unix permission needed to make it accessible from the web.
+            Fishtank specifically requires it to be 0o775, which is the default
+            value.
+        """
+        fig = self.get_figure_reaction_overview(append_trigger_rate=False, dim=720)
+        if key == 'overview':
+            fig = self.append_trigger_rate(fig)
+        if key == 'pos-calib':
+            fig = self.append_nw_pos_calib_params('B', fig)
+        path = PROJECT_DIR / self.database_dir / f'plotly_{key}.html'
+        fig.write_html(str(path))
+        os.chmod(path, chmod)
+    
 class Query:
     """A class of query methods for the database.
 
