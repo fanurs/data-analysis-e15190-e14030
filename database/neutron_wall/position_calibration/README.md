@@ -1,11 +1,11 @@
 # Neutron wall position calibration
 
-Currently, only NWB is calibrated. We have switched to using the (anti-)shadows of VetoWall bars rather than just the neutron wall edges for calibration.
+Currently, only Neutron Wall (NW) B is calibrated. To quickly inspect the overall result of position calibration, visit [infographics](https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html?view=pos-calib).
 
-To quickly inspect the result of position calibration, visit [infographics](https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html?view=pos-calib).
 
-## Structure of [`calib_params.json`](database/neutron_wall/position_calibration/calib_params.json)
-This is the file that always gives the latest position calibration parameters. The first-level keys are bar numbers, ranging from 1 to 24 for NWB. Each entry (each bar) contains multiple run ranges as well as the corresponding calibration parameters. A _hypothetical example_ that contains only bar-26 and bar-27 is given below:
+## How to use the calibration parameters?
+
+The file [`calib_params.json`](database/neutron_wall/position_calibration/calib_params.json) always gives the latest position calibration parameters. The first-level keys are bar numbers, ranging from 1 to 24 for NWB. Each entry (each bar) contains multiple run ranges as well as the corresponding calibration parameters. A _hypothetical example_ that contains only bar-26 and bar-27 is given below:
 ```json
 {
     "26": [
@@ -31,4 +31,14 @@ Several remarks:
     position = parameters[0] + parameters[1] * time_difference # centimeter
     ```
 
-Finally, [calib_params.dat](database/neutron_wall/position_calibration/calib_params.dat) offers the same information but with a different presentation.
+Finally, [`calib_params.dat`](database/neutron_wall/position_calibration/calib_params.dat) offers the same information but with a different presentation.
+
+## Methodology
+We have switched to using the (anti-)shadows of Veto Wall (VW) bars rather than just the neutron wall edges for calibration. This new approach is much more robust as there are many more VW bars (> 20), whereas the NW edges have only two. Also, NW edges, by definition, always suffer from some fuzziness that make them difficult to be pinpointed accurately. Below is a figure demonstrating how the VW bar (anti-)shadows are used for position calibration:<br>
+<img width="800" alt="image" src="https://user-images.githubusercontent.com/21100851/157473846-5f6ae07b-977c-4fc5-893a-b941ee159572.png"><br>
+When extracting the positions of VW bar shadows, we do it in two iterations - one on the even number VW bars, another on the odd number VW bars. This is to leave some gaps between the shadows, so that an algorithm can easily pick up the shadow peaks.
+
+Lastly, we present the geometric coverage we simulated with 3D modeling for reference:<br>
+<img height="400" alt="image" src="https://user-images.githubusercontent.com/21100851/157476510-8f98edf5-a7da-41b6-ba56-af19e5b3404e.png">
+<img height="400" alt="image" src="https://user-images.githubusercontent.com/21100851/157476153-a8e3cd58-d1ae-4540-9e3e-fd59cfdef753.png">
+
