@@ -17,9 +17,10 @@ Useful links
 ============
 
 - `GitHub repository <https://github.com/Fanurs/data-analysis-e15190-e14030>`__
-- `Experiment homepage <https://groups.nscl.msu.edu/hira/15190-14030/index.htm>`__
+- `Plotly: Infographics <https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html>`__
 - `Run log (WMU) <http://neutronstar.physics.wmich.edu/runlog/index.php?op=list>`__
-- `Plotly: Experimental runs <https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html>`__
+- `Experiment homepage (original) <https://groups.nscl.msu.edu/hira/15190-14030/index.htm>`__
+- :doc:`API reference <./_autosummary/e15190>`
 - :ref:`modindex`
 
 Documentation

@@ -46,7 +46,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery" title="e15190.runlog.query.ElogQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ElogQuery</span></code></a>([load_run_batches, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query" title="e15190.runlog.query.Query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Query</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.runlog.query.ElogQueryGallery.html#e15190.runlog.query.ElogQueryGallery" title="e15190.runlog.query.ElogQueryGallery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ElogQueryGallery</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query" title="e15190.runlog.query.Query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Query</span></code></a>()</p></td>
 <td><p>A class of query methods for the database.</p></td>
 </tr>
 </tbody>
@@ -135,6 +138,42 @@ basic query interface for users who are not familiar with pandas.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>ibatch</strong> (<em>int</em>) – Batch number (0-indexed).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.is_good">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">is_good</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.is_good" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether a given run is good.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run</strong> (<em>int</em>) – Run number.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>is_good_</strong> – Whether the run is good. Not good would mean this run should be
+skipped in data analysis.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.are_good">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">are_good</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.are_good" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether a list of runs are good.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>runs</strong> (<em>list</em>) – List of runs.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>are_good_</strong> – Whether the runs are good. Bad would mean the runs should be skipped
+in data analysis.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of bool</p>
 </dd>
 </dl>
 </dd></dl>

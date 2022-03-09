@@ -1,7 +1,10 @@
-Some interactive plots that may be useful:
-- [:chart_with_upwards_trend: Plotly: NWB position calibration parameters](https://groups.nscl.msu.edu/hira/fanurs/progress/20211014.html)
+# Neutron wall position calibration
 
-## Structure of [`calib_params.json`](https://github.com/Fanurs/data-analysis-e15190-e14030/blob/main/database/neutron_wall/position_calibration/calib_params.json)
+Currently, only NWB is calibrated. We have switched to using the (anti-)shadows of VetoWall bars rather than just the neutron wall edges for calibration.
+
+To quickly inspect the result of position calibration, visit [infographics](https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html?view=pos-calib).
+
+## Structure of [`calib_params.json`](database/neutron_wall/position_calibration/calib_params.json)
 This is the file that always gives the latest position calibration parameters. The first-level keys are bar numbers, ranging from 1 to 24 for NWB. Each entry (each bar) contains multiple run ranges as well as the corresponding calibration parameters. A _hypothetical example_ that contains only bar-26 and bar-27 is given below:
 ```json
 {
@@ -27,3 +30,5 @@ Several remarks:
     time_difference = time_left - time_right # nanosecond
     position = parameters[0] + parameters[1] * time_difference # centimeter
     ```
+
+Finally, [calib_params.dat](database/neutron_wall/position_calibration/calib_params.dat) offers the same information but with a different presentation.

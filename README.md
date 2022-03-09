@@ -7,9 +7,9 @@
 # Data Analysis: E15190-E14030
 **Useful links**
 - [:closed_book: Documentation (API reference)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html) <a href="https://www.sphinx-doc.org/"><img src="https://img.shields.io/badge/Made%20with-Sphinx-1f425f.svg" alt="Sphinx"></a>
-- [:radioactive: Experiment homepage](https://groups.nscl.msu.edu/hira/15190-14030/index.htm)
+- [:bar_chart: Infographics](https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html) <a href="https://plotly.com/"><img src="https://img.shields.io/badge/Made%20with-Plotly-3c4d70" alt="Plotly"></a>
 - [:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list) <a href="https://www.djangoproject.com/"><img src="https://img.shields.io/badge/Made%20with-Django-0c4b33" alt="Django"></a>
-- [:chart_with_upwards_trend: Experimental runs](https://groups.nscl.msu.edu/hira/fanurs/progress/20210615.html) <a href="https://plotly.com/"><img src="https://img.shields.io/badge/Made%20with-Plotly-3c4d70" alt="Plotly"></a>
+- [:radioactive: Experiment homepage (original)](https://groups.nscl.msu.edu/hira/15190-14030/index.htm)
 
 **Background**
 
