@@ -156,11 +156,15 @@ class MySqlDownloader:
                 f'''Key is not found at
                 "{str(key_path)}"
                 If the key has been provided to you, please check if the path is
-                correct.  Otherwise, contact the owner of this repository for
+                correct. Otherwise, contact the owner of this repository for
                 more help.
                 '''))
         with open(key_path, 'r') as f:
-            secret_key = f.readline().encode('utf-8')
+            lines = f.readlines()
+        for line in lines:
+            if line[0] == '#' or len(line) == 0:
+                continue
+            secret_key = line
 
         # get credential
         credential_path = PROJECT_DIR / 'database/runlog/mysql_login_credential.json'
