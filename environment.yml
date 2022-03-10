@@ -42,6 +42,7 @@ dependencies:
    - autopep8
    - pytest>=6.2.4
    - sphinx=4.2.0
+   - django>=2.2.5
 
    # C++ libraries
    - nlohmann_json=3.9.1
