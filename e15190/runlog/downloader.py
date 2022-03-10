@@ -16,7 +16,7 @@ MYSQL_DOWNLOAD_PATH = 'database/runlog/downloads/mysql_database.h5'
 ELOG_DOWNLOAD_PATH = 'database/runlog/downloads/elog.html'
 """Local path where ELOG is downloaded to as HTML file."""
 
-KEY_PATH = 'database/key_for_all.pub'
+KEY_PATH = '.key_for_all.pub'
 """Local path where secret key is stored.
 
 This key is used to decrypt the credentials needed to connect to the MySQL. It
