@@ -1,11 +1,11 @@
 # The `e15190.runlog` module
 
-> Currently, only the Elog is being processed fully.
+> Currently, only the Elog is being fully processed.
 
 
 ## First-timer must-do's
 
-To enable to runlog module, some files have to be created locally to [`database/`](database) directory. These files are not being tracked by git for various reasons, e.g. confidentiality, huge binary files, etc. Fortunately, all the files can easily be reproduced by following the instructions below. Make sure you have activated the conda environment.
+To enable to runlog module, some files have to be created locally to [`database`](/database/) directory. These files are not being tracked by git for various reasons, e.g. confidentiality, huge binary files, etc. Fortunately, all these files can easily be reproduced by following the instructions below. Make sure you have activated the conda environment before you proceed.
 
 1. Go to this directory:
     ```console
@@ -24,7 +24,7 @@ To enable to runlog module, some files have to be created locally to [`database/
     Data cleansing the ELOG...
     Cleansed runs and events have been saved to "$PROJECT_DIR/database/runlog/cleansed/elog.h5"
     Cleansed runs dataframe has been saved to "$PROJECT_DIR/database/runlog/cleansed/elog_runs.csv"
-    Cleansed events has been saved to "$PROJECT_DIRdatabase/runlog/cleansed/elog_events.csv"
+    Cleansed events has been saved to "$PROJECT_DIR/database/runlog/cleansed/elog_events.csv"
     Filtered elog runs have been saved to "$PROJECT_DIR/database/runlog/elog_runs_filtered.h5"
     Filtered elog runs have been saved to "$PROJECT_DIR/database/runlog/elog_runs_filtered.csv"
     ```
