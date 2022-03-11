@@ -7,8 +7,8 @@ from e15190 import PROJECT_DIR
 from e15190.runlog.downloader import MYSQL_DOWNLOAD_PATH, ELOG_DOWNLOAD_PATH
 from e15190.utilities import tables
 
-CLEANSED_DIR = PROJECT_DIR / 'database/runlog/cleansed'
-CLEANSED_DIR.mkdir(parents=True, exist_ok=True)
+CLEANSED_DIR = 'database/runlog/cleansed'
+(PROJECT_DIR / CLEANSED_DIR).mkdir(parents=True, exist_ok=True)
 
 class ElogCleanser:
     def __init__(self, elog_path=None):
@@ -61,7 +61,7 @@ class ElogCleanser:
         Most entries are being preserved, i.e. minimal filtering is done except
         for those that are labeled as "junk" or simply corrupted.
         """
-        with open(self.elog_path, 'r') as file:
+        with open(PROJECT_DIR / self.elog_path, 'r') as file:
             self.runs = pd.read_html(file)[4]
 
         # re-labeling
@@ -120,7 +120,7 @@ class ElogCleanser:
         verbose : bool, default True
             Whether to print the progress.
         """
-        output_dir = CLEANSED_DIR if output_dir is None else pathlib.Path(output_dir)
+        output_dir = PROJECT_DIR / CLEANSED_DIR if output_dir is None else pathlib.Path(output_dir)
         df_runs = self.runs if df_runs is None else df_runs
         df_events = self.events if df_events is None else df_events
 
