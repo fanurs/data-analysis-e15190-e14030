@@ -1,2 +1,27 @@
-*.html linguist-vendored=true
-tests/*/*.py linguist-vendored=true
+##############################################
+# files to ignore when counting languages
+##############################################
+# docs/
+docs/build/html/*.html linguist-vendored
+docs/build/_autosummary/*.html linguist-vendored
+docs/build/html/*.js linguist-vendored
+docs/build/html/_static/*.js linguist-vendored
+docs/build/html/_static/*.css linguist-vendored
+docs/source/conf.py linguist-vendored
+
+# database/
+database/runlog/downloads/elog.html linguist-vendored
+
+# tests/
+tests/__init__.py linguist-vendored
+tests/microball/*.py linguist-vendored
+tests/neutron_wall/*.py linguist-vendored
+tests/utilities/*.py linguist-vendored
+
+
+
+##############################################
+# files to correct the language
+##############################################
+database/utilities/ipyhtml_widgets/image_displayer_slider.html.mako linguist-language=HTML
+database/utilities/ipyhtml_widgets/image_displayer_button.html.mako linguist-language=HTML

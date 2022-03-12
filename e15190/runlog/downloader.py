@@ -342,3 +342,8 @@ class ElogDownloader:
         if verbose:
             print()
             print('Done!')
+
+
+if __name__ == '__main__':
+    elog_downloader = ElogDownloader()
+    elog_downloader.download()

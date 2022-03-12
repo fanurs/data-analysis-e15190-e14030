@@ -57,7 +57,7 @@ This repository is written mainly in Python 3.8 and C++20 (`-std=c++2a` in GCC 9
 - [**`build.py`**](build.py): Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.
 
 ## 3. Testing framework
-We are using the [`pytest`](https://docs.pytest.org/) framework. To test everything, simply activate the conda environment, go to the project directory and type:
+We are using the [`pytest`](https://docs.pytest.org/) framework. To run *all* the tests, simply activate the conda environment, go to the project directory and type:
 ```console
 pytest
 ```
