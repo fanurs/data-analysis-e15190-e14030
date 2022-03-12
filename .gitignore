@@ -23,6 +23,7 @@ docs/source/_build/*
 
 # local files
 .vscode/
+env_*/
 env_e15190/
 local/etc
 dev*.py
