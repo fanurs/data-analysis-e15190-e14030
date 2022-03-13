@@ -129,8 +129,8 @@ def get_arguments():
     # process the output directory
     args.outdir = pathlib.Path(args.outdir).resolve()
     if not args.outdir.exists():
-        response = input(f'Output directory "{args.outdir}" does not exist.\nCreate it? [y/n] ')
-        if response != 'y':
+        response = input(f'Output directory "{args.outdir}" does not exist.\nCreate it? [Y/n] ')
+        if response != 'Y':
             exit(1)
         args.outdir.mkdir(parents=True, exist_ok=True)
         print(f'Created output directory "{args.outdir}"')
@@ -138,8 +138,8 @@ def get_arguments():
     # warn if cores too many
     if args.cores > 8:
         print('WARNING: Using too many cores might cause issues for other users.')
-        response = input('Are you sure you want to continue? [y/n]')
-        if response != 'y':
+        response = input('Are you sure you want to continue? [Y/n]')
+        if response != 'Y':
             exit(1)
 
     # print out message
