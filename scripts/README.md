@@ -7,19 +7,19 @@ This is the script that is used to calibrate or re-calibrate all the data in "Da
 > Starting from March 10, 2022, the ROOT installation under conda envrionment has failed to compile any C++ scripts (issue #12), even though both PyROOT and [Cling](https://github.com/root-project/cling) are still working fine. If you are *not* on Fishtank, your conda environment may still work, so you can skip to the [usage section](#usage).
 > 
 > The current solution is that when compiling or running `calibrate.cpp`, please turn off conda environment by `conda deactivate` and use the system-wide installation of `root/gnu/6.24.02`:
-> ```bash
-> (env_e15190) $ cd scripts/
-> (env_e15190) $ conda deactivate
-> (base) $ conda deactivate            # if you have installed g++ or ROOT here
-> $ source config.sh
+> ```console
+> (env_e15190) user@server $ cd scripts/
+> (env_e15190) user@server $ conda deactivate
+> (base) user@server $ conda deactivate            # if you have installed g++ or ROOT here
+> user@server $ source config.sh
 > Loading root/gnu/6.24.02
 >   Loading requirement: gnu/gcc/9.3
-> $ root -l
+> user@server $ root -l
 > root [0] 
 > ```
 > If you are using the terminal within VS Code, you may see a slightly different message:
-> ```bash
-> $ source config.sh
+> ```console
+> user@server $ source config.sh
 > The command "module load" is not available.
 > Using hard-coded paths instead.
 > ```
