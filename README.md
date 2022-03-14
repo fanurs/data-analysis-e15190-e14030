@@ -24,6 +24,7 @@ This decision was made after considering the fact that all major authors of the 
 1. [PEP 8 style guide](#4-pep-8-style-guide)
 
 ## 1. Installation
+### Local installation with conda
 If you are not familiar with conda, more detailed instructions can be found at [Installation (detailed version)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/manualdoc/installation.html).
 1. Git clone the repository:
 ```console
@@ -43,6 +44,16 @@ conda activate ./env_e15190/
 ```console
 echo $PROJECT_DIR
 ```
+
+### Using Docker image
+Instead of installing ROOT, we can directly use the official Docker image by ROOT at https://hub.docker.com/r/rootproject/root. The usage is the same as any Docker image.
+
+**Singularity**<br>
+On Fishtank or HPCC, only [Singularity](https://sylabs.io/) is available due to safety concerns (Docker gives user too much privilege access). To use `singularity` with the ROOT's image:
+```console
+singularity shell docker://rootproject/root
+```
+See https://sylabs.io/guides/2.6/user-guide/singularity_and_docker.html for more usages. Also, might want to define your environment variables `SINGULARITY_CACHEDIR` and `SINGULARITY_TMPDIR` if you don't want to save everything to your home directory. See more at https://sylabs.io/guides/3.3/user-guide/build_env.html.
 
 ## 2. Structure of the repository
 This repository is developed in Python 3.8 and C++17 (`-std=c++17` in GCC 9.3.0).
