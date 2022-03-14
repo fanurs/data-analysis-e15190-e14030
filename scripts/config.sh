@@ -2,9 +2,18 @@
 
 export PROJECT_DIR=`cd ../; pwd`
 
+# When using Singularity, ROOT's Docker image
+if [ -n $SINGULARITY_NAME ]; then
+    echo "Detected Singularity container"
+    return 0
+fi
+
+# When using local ROOT installations
 if command -v module; then
+    # e.g. when on a regular non-VS Code terminal
     module load root/gnu/6.24.02
 else
+    # typically happens when running from VS Code terminal
     echo "The command \"module load\" is not available."
     echo "Using hard-coded paths instead."
 
