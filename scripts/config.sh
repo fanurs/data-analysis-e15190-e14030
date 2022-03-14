@@ -1,9 +1,15 @@
 #!/bin/bash
 
+if [ ! -z $CONDA_PREFIX ]; then
+    echo "Detected conda environment"
+    echo "ERROR: config.sh should not be used together with conda environment"
+    return 1
+fi
+
 export PROJECT_DIR=`cd ../; pwd`
 
 # When using Singularity, ROOT's Docker image
-if [ -n $SINGULARITY_NAME ]; then
+if [ ! -z $SINGULARITY_NAME ]; then
     echo "Detected Singularity container"
     return 0
 fi
