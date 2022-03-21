@@ -29,6 +29,11 @@ local/etc
 dev*.py
 scratch/
 
+# pytest related
+.database*
+.coverage
+tests/*.html
+
 # local database
 database/local_paths.json
 database/root_files
