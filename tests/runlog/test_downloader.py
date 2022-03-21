@@ -1,13 +1,59 @@
 import pytest
 
 from pathlib import Path
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 import pandas as pd
 
 from e15190.runlog import downloader
+from .. import conftest
 
+class TestElogDownloader:
+    @pytest.fixture(scope='class', autouse=True)
+    def setup_teardown(self):
+        pass
+
+        yield
+
+        rel_path = Path(downloader.ElogDownloader.DOWNLOAD_PATH)
+        rel_path = Path(*rel_path.parts[1:])
+        if not conftest.copy_from_default_database(rel_path):
+            dl = downloader.ElogDownloader()
+            dl.download()
+
+    def test___init__(self):
+        dl = downloader.ElogDownloader()
+        assert isinstance(dl, downloader.ElogDownloader)
+    
+    @pytest.mark.parametrize(
+        'path',
+        [None, Path(TemporaryDirectory().name) / 'dummy/tmp.html']
+    )
+    def test_download(self, path):
+        dl = downloader.ElogDownloader()
+        nbytes = 1024
+        path = dl.download(path, read_nbytes=nbytes)
+        assert Path(path).stat().st_size == pytest.approx(nbytes)
+        with open(path, 'r') as file:
+            assert '<html>' in file.read()
+
+@pytest.mark.skipif(True, reason='MySQL download is not actively being used')
 class TestMySqlDownloader:
+    @pytest.fixture(scope='class', autouse=True)
+    def setup_teardown(self):
+        rel_path = Path(downloader.MySqlDownloader.CREDENTIAL_PATH)
+        rel_path = Path(*rel_path.parts[1:])
+        if not conftest.copy_from_default_database(rel_path):
+            raise FileNotFoundError(f'Credential file for MySQL not found: "{str(rel_path)}"')
+
+        yield
+
+        rel_path = Path(downloader.MySqlDownloader.DOWNLOAD_PATH)
+        rel_path = Path(*rel_path.parts[1:])
+        if not conftest.copy_from_default_database(rel_path):
+            with downloader.MySqlDownloader(auto_connect=True) as dl:
+                dl.download()
+
     def test___init__(self):
         dl = downloader.MySqlDownloader(auto_connect=False)
         assert isinstance(dl, downloader.MySqlDownloader)
@@ -89,7 +135,7 @@ class TestMySqlDownloader:
     
     @pytest.mark.parametrize(
         'path',
-        [None, NamedTemporaryFile(suffix='.h5').name]
+        [None, Path(TemporaryDirectory().name) / 'dummy/tmp.h5']
     )
     def test_download_fresh(self, path):
         with downloader.MySqlDownloader(auto_connect=True) as dl:
@@ -109,9 +155,8 @@ class TestMySqlDownloader:
             assert '/runinfo' not in file.keys()
             assert '/runbeamintensity' not in file.keys()
     
-    def test_download_file_already_exist(self, capsys, monkeypatch):
-        path = NamedTemporaryFile(suffix='.h5').name
-        path = Path(path)
+    def test_download_file_already_exist(self, capsys, tmp_path, monkeypatch):
+        path = tmp_path / 'tmp.h5'
         path.touch(exist_ok=True)
 
         monkeypatch.setattr('builtins.input', lambda _: 'y')
@@ -132,30 +177,13 @@ class TestMySqlDownloader:
         assert 'converting and saving' not in stdout.lower()
         assert 'all tables have been saved' not in stdout.lower()
     
-    def test_download_auto_disconnect(self, capsys):
-        path = NamedTemporaryFile(suffix='.h5').name
+    def test_download_auto_disconnect(self, capsys, tmp_path):
         dl = downloader.MySqlDownloader(auto_connect=False)
         dl.connect()
         stdout = capsys.readouterr().out
         assert 'established' in stdout
 
+        path = tmp_path / 'tmp.h5'
         dl.download(download_path=path, table_names=['vendors'], auto_disconnect=True)
         stdout = capsys.readouterr().out
         assert 'closed' in stdout
-
-class TestElogDownloader:
-    def test___init__(self):
-        dl = downloader.ElogDownloader()
-        assert isinstance(dl, downloader.ElogDownloader)
-    
-    @pytest.mark.parametrize(
-        'path',
-        [None, NamedTemporaryFile(suffix='.html').name]
-    )
-    def test_download(self, path):
-        dl = downloader.ElogDownloader()
-        nbytes = 1024
-        path = dl.download(path, read_nbytes=nbytes)
-        assert Path(path).stat().st_size == pytest.approx(nbytes)
-        with open(path, 'r') as file:
-            assert '<html>' in file.read()

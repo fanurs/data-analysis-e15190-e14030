@@ -10,6 +10,61 @@ pymysql.install_as_MySQLdb() # WMU uses MySQL
 
 from e15190.utilities import key_manager
 
+class ElogDownloader:
+    DOWNLOAD_PATH = '$DATABASE_DIR/runlog/downloads/elog.html'
+    URL = 'http://neutronstar.physics.wmich.edu/runlog/index.php?op=list'
+
+    def __init__(self):
+        """Initialize the ElogDownloader.
+
+        The Elog is viewable at
+        http://neutronstar.physics.wmich.edu/runlog/index.php?op=list
+        """
+        pass
+
+    def download(
+        self,
+        download_path=None,
+        verbose=True,
+        timeout=3,
+        read_nbytes=None,
+    ):
+        """Downloads the runlog from the webpage.
+
+        Parameters
+        ----------
+        download_path : str, default None
+            File path to the Excel file. If ``None``, the file is saved at
+            ``$DATABASE_DIR/runlog/downloads/elog.html``.
+        verbose : bool, default True
+            Whether to print the progress of downloading.
+        timeout : int, default 3
+            Timeout in seconds for the request.
+        read_nbytes : int, default None
+            Number of bytes to read from the webpage. If ``None``, the entire
+            webpage is read, decoded, and saved. This is useful for testing.
+
+        Returns
+        -------
+        download_path : pathlib.Path
+            Path to the downloaded HTML file.
+        """
+        if download_path is None:
+            download_path = os.path.expandvars(self.DOWNLOAD_PATH)
+        download_path = Path(download_path)
+        download_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if verbose:
+            print(f'Attempting to download web content from\n"{self.URL}"... ', end='', flush=True)
+        web_request = urllib.request.urlopen(self.URL, timeout=timeout)
+        web_content = web_request.read(read_nbytes)
+        with open(download_path, 'wb') as file:
+            file.write(web_content)
+        if verbose:
+            print()
+            print('Done!')
+        return download_path
+
 class MySqlDownloader:
     """This class downloads the MySQL database from WMU.
     
@@ -27,7 +82,7 @@ class MySqlDownloader:
     >>>     df = dl.get_table('runtarget')
     """
     CREDENTIAL_PATH = '$DATABASE_DIR/runlog/mysql_login_credential.json'
-    MYSQL_DOWNLOAD_PATH = '$DATABASE_DIR/runlog/downloads/mysql_database.h5'
+    DOWNLOAD_PATH = '$DATABASE_DIR/runlog/downloads/mysql_database.h5'
 
     def __init__(self, auto_connect=False, verbose=True):
         """Constructor for :py:class:`MySqlDownloader`.
@@ -194,7 +249,7 @@ class MySqlDownloader:
         self.cursor.execute('SHOW TABLES')
         table_names = self.cursor.fetchall() if table_names is None else table_names
         if download_path is None:
-            download_path = os.path.expandvars(self.MYSQL_DOWNLOAD_PATH)
+            download_path = os.path.expandvars(self.DOWNLOAD_PATH)
         download_path = Path(download_path)
 
         download_path.parent.mkdir(parents=True, exist_ok=True)
@@ -246,61 +301,6 @@ class MySqlDownloader:
         else:
             if verbose:
                 print('No connection found. Nothing to disconnect.')
-
-class ElogDownloader:
-    ELOG_DOWNLOAD_PATH = '$DATABASE_DIR/runlog/downloads/elog.html'
-    ELOG_URL = 'http://neutronstar.physics.wmich.edu/runlog/index.php?op=list'
-
-    def __init__(self):
-        """Initialize the ElogDownloader.
-
-        The Elog is viewable at
-        http://neutronstar.physics.wmich.edu/runlog/index.php?op=list
-        """
-        pass
-
-    def download(
-        self,
-        download_path=None,
-        verbose=True,
-        timeout=3,
-        read_nbytes=None,
-    ):
-        """Downloads the runlog from the webpage.
-
-        Parameters
-        ----------
-        download_path : str, default None
-            File path to the Excel file. If ``None``, the file is saved at
-            ``$DATABASE_DIR/runlog/downloads/elog.html``.
-        verbose : bool, default True
-            Whether to print the progress of downloading.
-        timeout : int, default 3
-            Timeout in seconds for the request.
-        read_nbytes : int, default None
-            Number of bytes to read from the webpage. If ``None``, the entire
-            webpage is read, decoded, and saved. This is useful for testing.
-
-        Returns
-        -------
-        download_path : pathlib.Path
-            Path to the downloaded HTML file.
-        """
-        if download_path is None:
-            download_path = os.path.expandvars(self.ELOG_DOWNLOAD_PATH)
-        download_path = Path(download_path)
-        download_path.parent.mkdir(parents=True, exist_ok=True)
-
-        if verbose:
-            print(f'Attempting to download web content from\n"{self.ELOG_URL}"... ', end='', flush=True)
-        web_request = urllib.request.urlopen(self.ELOG_URL, timeout=timeout)
-        web_content = web_request.read(read_nbytes)
-        with open(download_path, 'wb') as file:
-            file.write(web_content)
-        if verbose:
-            print()
-            print('Done!')
-        return download_path
 
 if __name__ == '__main__': # pragma: no cover
     elog_downloader = ElogDownloader()
