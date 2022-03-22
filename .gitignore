@@ -36,7 +36,6 @@ tests/*.html
 
 # local database
 database/local_paths.json
-database/root_files
 database/neutron_wall/position_calibration/cache
 database/neutron_wall/position_calibration/gallery
 database/neutron_wall/position_calibration/calib_params
