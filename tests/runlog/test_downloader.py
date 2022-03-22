@@ -17,9 +17,7 @@ class TestElogDownloader:
 
         rel_path = Path(downloader.ElogDownloader.DOWNLOAD_PATH)
         rel_path = Path(*rel_path.parts[1:])
-        if not conftest.copy_from_default_database(rel_path):
-            dl = downloader.ElogDownloader()
-            dl.download()
+        conftest.copy_from_default_database(rel_path, not_found_ok=False)
 
     def test___init__(self):
         dl = downloader.ElogDownloader()
@@ -37,14 +35,13 @@ class TestElogDownloader:
         with open(path, 'r') as file:
             assert '<html>' in file.read()
 
-@pytest.mark.skipif(True, reason='MySQL download is not actively being used')
+@pytest.mark.skip(reason='MySQL download is not actively being used')
 class TestMySqlDownloader:
     @pytest.fixture(scope='class', autouse=True)
     def setup_teardown(self):
         rel_path = Path(downloader.MySqlDownloader.CREDENTIAL_PATH)
         rel_path = Path(*rel_path.parts[1:])
-        if not conftest.copy_from_default_database(rel_path):
-            raise FileNotFoundError(f'Credential file for MySQL not found: "{str(rel_path)}"')
+        conftest.copy_from_default_database(rel_path, not_found_ok=False)
 
         yield
 
@@ -52,7 +49,7 @@ class TestMySqlDownloader:
         rel_path = Path(*rel_path.parts[1:])
         if not conftest.copy_from_default_database(rel_path):
             with downloader.MySqlDownloader(auto_connect=True) as dl:
-                dl.download()
+                dl.download() # will take a while (~300 MB)
 
     def test___init__(self):
         dl = downloader.MySqlDownloader(auto_connect=False)
