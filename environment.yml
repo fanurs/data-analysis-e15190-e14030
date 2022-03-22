@@ -17,6 +17,7 @@ dependencies:
    - pytables>=3.6.1
    - tabulate>=0.8.9
    - pandas>=1.1.0
+   - lxml>=4.6.3
    - pymysql>=1.0.1
    - uproot>=4.0.7
    - root=6.22.6
@@ -38,10 +39,10 @@ dependencies:
 
    # miscellaneous
    - cryptography=3.4.7
-   - lxml>=4.6.3
    - autopep8
    - pytest>=6.2.4
    - coverage=6.3.2
+   - snakeviz=2.0.1
    - sphinx=4.2.0
    - django>=2.2.5
 
