@@ -10,7 +10,6 @@
 
 // CERN ROOT libraries
 #include "TError.h"
-#include "TFolder.h"
 #include "TNamed.h"
 #include "TROOT.h"
 

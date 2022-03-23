@@ -1,0 +1,30 @@
+# python related temporary files
+__pycache__/
+.ipynb_checkpoints/
+
+# confidential 
+*.pub
+
+# data files (usually huge or reproducible)
+wmu_mysql_database.h5
+*.pkl
+*.h5
+
+# object files, binaries, etc.
+*.o
+*.so
+*.exe
+
+# documentation
+docs/*
+
+# local files
+.vscode/
+env_*/
+local/etc
+dev*.py
+scratch/
+notebooks/
+
+# local database
+database/*

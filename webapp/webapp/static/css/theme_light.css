@@ -1,0 +1,8 @@
+:root{
+  --sidebar-background-color: hsl(0, 0%, 90%);
+  --sidebar-color: hsl(0, 0%, 10%);
+  --sidebar-background-color-hover: var(--sidebar-color);
+  --sidebar-color-hover: var(--sidebar-background-color);
+  --mainframe-background-color: white;
+  --mainframe-color: black;
+}
