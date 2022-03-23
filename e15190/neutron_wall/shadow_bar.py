@@ -12,6 +12,7 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from scipy.special import erf
+from scipy.ndimage import gaussian_filter1d
 from e15190 import PROJECT_DIR
 from e15190.utilities import fast_histogram as fh
 from e15190.runlog.query import Query
@@ -23,9 +24,14 @@ class ShadowBar:
     light_GM_range = [5.0, 500.0]  # MeVee
     pos_range = [-120.0, 120.0]  # cm
     psd = [0.5, 2]
-    theta_b=[40,48]
-    theta_f=[32,40]
-
+    #theta_b=[40,48]
+    theta_b=[38,50]
+    #theta_f=[32,40]
+    theta_f=[29,41]
+    nbins1=40
+    energy_bin=15
+    energy_range=[30,120]
+    
     def __init__(self, AB, max_workers=8):
         """Initialize the :py:class:`ShadowBar` class.
 
@@ -129,12 +135,12 @@ class ShadowBar:
 
         if apply_cut:
             df = df.query(self._cut_for_root_file_data(self.AB))
-
+        
         # calculate TOF from NW{self.AB}_time - FA_time_min
         df[f'NW{self.AB}_tof'] = df.eval(f'NW{self.AB}_time - FA_time_min')
         # calculate kinetic energy from TOF and NW{self.AB}_distance
         df[f'NW{self.AB}_energy'] = np.power(
-            df[f'NW{self.AB}_distance']/df[f'NW{self.AB}_tof'], 2)*0.5*939.565420*(1.0/9.0)*0.01
+            df[f'NW{self.AB}_distance']/df[f'NW{self.AB}_tof'], 2)*0.5*939.5654133*(1.0/9.0)*0.01
         # drop branches that won't be used,
         # e.g. NW{self.AB}_distance, NW{self.AB}_time, FA_time_min
         df.drop([f'NW{self.AB}_distance', f'NW{self.AB}_time',
@@ -303,12 +309,13 @@ class ShadowBar:
         self.df.drop('VW_multi', axis=1, inplace=True)
 
     def gate_on_tof(self):
-        self.df = self.df.query('tof>0 & tof<250')
-        self.df.drop('tof', axis=1, inplace=True)
+        self.df = self.df.query('tof>20 & tof<100')
+        # self.df.drop('tof', axis=1, inplace=True)
 
     def preprocessing(self):
-        self.remove_vetowall_coincidences()
         self.gate_on_tof()
+        self.remove_vetowall_coincidences()
+        
 
     def make_space_above(ax, topmargin=1):
         """ increase figure size to make topmargin (in inches) space for 
@@ -322,9 +329,9 @@ class ShadowBar:
         fig.set_figheight(figh)
 
     def fit_energy_range(self, ene, background_position):
-        subdf = self.df[(self.df['energy'] > ene-10) &
-                        (self.df['energy'] < ene+10)]
-
+        subdf = self.df[(self.df['energy'] > ene-0.5*self.energy_bin) &
+                        (self.df['energy'] < ene+0.5*self.energy_bin)]
+        
         if background_position == 'F':
             subdf = subdf[(subdf['theta'] > self.theta_f[0]) & (subdf['theta'] < self.theta_f[1])]
         elif background_position == 'B':
@@ -337,10 +344,10 @@ class ShadowBar:
         ax.set_ylabel(r'Density')
         if background_position == 'F':
             y, x, _ = ax.hist(subdf['theta'], range=[
-                              self.theta_f[0], self.theta_f[1]], bins=50, histtype='step', density='true')
+                              self.theta_f[0], self.theta_f[1]], bins=self.nbins1, histtype='step')
         elif background_position == 'B':
             y, x, _ = ax.hist(subdf['theta'], range=[
-                              self.theta_b[0], self.theta_b[1]], bins=50, histtype='step', density='true')
+                              self.theta_b[0], self.theta_b[1]], bins=self.nbins1, histtype='step')
         else:
             print('shadow_bar position is not correct')
         x = 0.5 * (x[1:] + x[:-1])
@@ -353,31 +360,30 @@ class ShadowBar:
             return k0 + k1 * x
 
         def f_dip1(x, A, x_L, x_R, s_L, s_R):
-            return A*(-erf((x-x_L)/(s_L)) + erf((x-x_R)/(s_R)))
+            return A*(1.0+0.5*erf(-(x-x_L)/(np.sqrt(2)*s_L))+0.5*erf((x-x_R)/(np.sqrt(2)*s_R)))
 
         param = Parameters()
-        # backward angles
+        
         if background_position == 'B':
-            param.add('k0', value=1, min=-2.0, max=2.0)
-            param.add('k1', value=1, min=-2.0, max=2.0)
-            param.add('A', value=10, min=-10.0, max=40.0)
+            param.add('k0', value=200)
+            param.add('k1', value=1)
+            param.add('A', value=50)
             param.add('x_L', value=42, min=40.0, max=44.0)
             param.add('x_R', value=45, min=44.0, max=48.0)
-            param.add('s_L', value=1, min=0.0, max=2.0)
-            param.add('s_R', value=1, min=0.0, max=2.0)
+            param.add('s_L', value=0.38, min=0.31, max=0.45)
+            param.add('s_R', value=0.38, min=0.31, max=0.45)
 
         # forward angles
         elif background_position == 'F':
-            param.add('k0', value=1, min=-2.0, max=2.0)
-            param.add('k1', value=1, min=-2.0, max=2.0)
-            param.add('A', value=10, min=-10.0, max=40.0)
+            param.add('k0', value=200)
+            param.add('k1', value=1)
+            param.add('A', value=50)
             param.add('x_L', value=34, min=30.0, max=35.0)
             param.add('x_R', value=37, min=35.0, max=40.0)
-            param.add('s_L', value=1, min=0.0, max=2.0)
-            param.add('s_R', value=1, min=0.0, max=2.0)
+            param.add('s_L', value=0.38, min=0.31, max=0.45)
+            param.add('s_R', value=0.38, min=0.31, max=0.45)
         else:
             print('shadow_bar position is not correct')
-
         gmodel = Model(f_kin1)+Model(f_dip1)
         w = np.divide(
             1,
@@ -385,40 +391,92 @@ class ShadowBar:
             where=(y_err != 0),
             out=np.zeros(len(y_err)),
         )
-        result = gmodel.fit(y, param, x=x, weights=w, calc_covar=True,
+        result = gmodel.fit(y, param, x=x, weights=w, scale_covar=False,calc_covar=True,
                             method='least_squares', nan_policy='propagate')
-        #result = gmodel.fit(y,param,x=x,weights=w,calc_covar=True)
+        
         print(result.fit_report())
-
-        # calcualte the 1-sigma error bar for kinematic part of model at each x
-        # def y_error(x,k0,k1,delko,delk1,covk0k1):
-        #     return np.sqrt(np.exp(-x/k1)**2*delko**2+(k0*x*np.exp(-x/k1)/k1**2)**2*delk1**2+2*k0*x*(np.exp(-x/k1))**2/k1**2*covk0k1)
-        # err_y=y_error(x,result.params['k0'].value,result.params['k1'].value,result.params['k0'].stderr,result.params['k1'].stderr,covar1[0,1])
-
         return result
+    def fit_scaled_hist(self, background_position, x, y, y_err):
+        def f_dipc(x, B, x_L, x_R, s_L, s_R):
+            return B+ (1.0-B)*(1.0+0.5*erf(-(x-x_L)/(np.sqrt(2)*s_L))+0.5*erf((x-x_R)/(np.sqrt(2)*s_R)))
+        param = Parameters()
+        
+        if background_position == 'B':
+            param.add('B', value=0.5,min=0.01,max=1.0)
+            param.add('x_L', value=42, min=40.0, max=44.0)
+            param.add('x_R', value=45, min=44.0, max=48.0)
+            param.add('s_L', value=0.38, min=0.31, max=0.45)
+            param.add('s_R', value=0.38, min=0.31, max=0.45)
+            
+        # forward angles
+        elif background_position == 'F':
+            param.add('B', value=0.5,min=0.01,max=1.0)
+            param.add('x_L', value=34, min=30.0, max=35.0)
+            param.add('x_R', value=37, min=35.0, max=40.0)
+            param.add('s_L', value=0.38, min=0.31, max=0.45)
+            param.add('s_R', value=0.38, min=0.31, max=0.45)
 
+        else:
+            print('shadow_bar position is not correct')
+        gmodel = Model(f_dipc)
+        w = np.divide(
+            1,
+            y_err,
+            where=(y_err != 0),
+            out=np.zeros(len(y_err)),
+        )
+        result = gmodel.fit(y, param, x=x, weights=w, scale_covar=False,calc_covar=True,
+                            method='least_squares', nan_policy='propagate')
+        
+        print(result.fit_report())
+        return result
+    def scaled_histogram(self,result,x,y,y_err):
+        def f_kin1(x, k0, k1):
+            return k0 + k1 * x
+        param = Parameters()
+        param.add('k0', value=200)
+        param.add('k1', value=1)
+        index_l,=np.where(x<result.params['x_L'].value)
+        index_r,=np.where(x>result.params['x_R'].value)
+        print(index_l[-1],index_r[0])
+        x2=np.hstack((x[0:index_l[-1]:1],x[index_r[0]:-1:1]))
+        y2=np.hstack((y[0:index_l[-1]:1],y[index_r[0]:-1:1]))
+        y2_err=np.hstack((y_err[0:index_l[-1]:1],y_err[index_r[0]:-1:1]))
+        
+        w2= np.divide(
+            1,
+            y2_err,
+            where=(y2_err != 0),
+            out=np.zeros(len(y2_err)),
+        )
+        gmodel1=Model(f_kin1)
+        result1=gmodel1.fit(y2,param,x=x2,weights=w2,scale_covar=False,calc_covar=True,method='least_square',nan_policy='propagate')
+        return x,y/gmodel1.eval(result1.params,x=x),y_err/gmodel1.eval(result1.params,x=x),result1
     def calculate_background(self, result, x, y):
         # evaluate components
         comps = result.eval_components(x=x)
         covar1 = result.covar
 
-        def y_error(x, delko, delk1, covk0k1):
-            return np.sqrt(delko**2+(x*delk1)**2+2*x*covk0k1)
+        def y_error(x, dela,delb,delc,covab,covac,covbc,):
+            return np.sqrt(dela**2+delb**2+(x*delc)**2+2*covab+2*x*covac+2*x*covbc)
+        
         err_y = y_error(
-            x, result.params['k0'].stderr, result.params['k1'].stderr, covar1[0, 1])
-
-        # upper and lower components of kinematic function
-        upper_kin = comps['f_kin1']+err_y
-        lower_kin = comps['f_kin1']-err_y
+            x, result.params['A'].stderr,result.params['k0'].stderr, result.params['k1'].stderr, covar1[2,0],covar1[2,1],covar1[0, 1])
+        
+        upper_kin = result.params['A'].value+comps['f_kin1']+err_y
+        lower_kin = result.params['A'].value+comps['f_kin1']-err_y
 
         # eval 1-sigma uncertainty of the best fit
         dely = result.eval_uncertainty(x=x)
-        background = np.amin(result.best_fit/comps['f_kin1'])
-        background_upper = np.amin((result.best_fit+dely)/upper_kin)
-        background_lower = np.amin((result.best_fit-dely)/lower_kin)
-        background_err_ul = background_upper-background
-        background_err_ll = background-background_lower
-        return err_y, background*1e2, 1e2*0.50*(background_err_ul+background_err_ll)
+        ratio=result.best_fit/(result.params['A'].value+comps['f_kin1'])
+       
+        ratio_lower=(result.best_fit-dely)/lower_kin
+        ratio_upper=(result.best_fit+dely)/upper_kin
+        yy=np.where(np.abs(x-0.5*(result.params['x_L'].value+result.params['x_R'].value))<=12.0/self.nbins1)
+        bg=ratio[yy[0][0]]
+        bg_l=ratio_lower[yy[0][0]]
+        bg_u=ratio_upper[yy[0][0]]
+        return err_y, bg*1e2, 1e2*0.50*(bg_u-bg_l)
 
     def _draw_Energy_vs_lightGM(self, ax):
         # two-dimensional histogram
@@ -434,27 +492,84 @@ class ShadowBar:
 
         ax.set_ylabel('Energy (MeV)')
         ax.set_xlabel('G.M. light (MeVee)')
+    def _draw_theta_vs_tof(self, ax):
+        # two-dimensional histogram
+        h = fh.plot_histo2d(
+            ax.hist2d,
+            self.df['theta'], self.df['tof'],
+            range=[[20,60], [0,100]],
+            bins=[100, 100],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        # design
 
+        ax.set_ylabel('tof (ns)')
+        ax.set_xlabel('Theta (degree)')
+
+    def _draw_tof_vs_ene(self, ax):
+        # two-dimensional histogram
+        h = fh.plot_histo2d(
+            ax.hist2d,
+            self.df['tof'], self.df['energy'],
+            range=[[0,150], [0,300]],
+            bins=[150, 300],
+            cmap=mpl.cm.jet,
+            norm=mpl.colors.LogNorm(vmin=1),
+        )
+        # design
+        print(self.df['tof'],self.df['energy'])
+        ax.set_ylabel('ene (MeV)')
+        ax.set_xlabel('tof (ns)')
     def _draw_counts_vs_theta(self, ene, ax):
-        subdf = self.df[(self.df['energy'] > ene-10) &
-                        (self.df['energy'] < ene+10)]
+        subdf = self.df[(self.df['energy'] > ene-0.5*self.energy_bin) &
+                        (self.df['energy'] < ene+0.5*self.energy_bin)]
         # one-dimensional histogram
         h = fh.plot_histo1d(
             ax.hist,
             subdf['theta'],
-            range=[25, 55],
+            range=[20, 60],
             bins=150,
             histtype='step',
-            density='true',
         )
-        # design
-
+        
         ax.set_xlabel('theta (degree)')
         ax.set_ylabel('Counts')
+    
+    def _draw_counts_vs_psd(self, ene, ax):
+        subdf = self.df[(self.df['energy'] > ene-0.5*self.energy_bin) &
+                        (self.df['energy'] < ene+0.5*self.energy_bin)]
+        # one-dimensional histogram
+        h = fh.plot_histo1d(
+            ax.hist,
+            subdf['psd'],
+            range=[-1, 10],
+            bins=1000,
+            histtype='step',
+        )
+        
+        # design
+        # print(len(subdf['psd']))
+        ax.set_xlabel('psd')
+        ax.set_ylabel('Counts')
 
+    def _draw_phi_vs_theta(self,ax):
+        hrange = [[20, 60], [-30, 30]]
+        hbins = [1000, 1000]
+        h =  fh.plot_histo2d(
+            ax.hist2d,
+            self.df['theta'],
+            self.df['phi'],
+            range=hrange,
+            bins=hbins,
+            cmap=mpl.cm.jet,
+        ) 
+        plt.colorbar(h[3], ax=ax, pad=-0.02, fraction=0.08, aspect=50.0)
+        ax.set_xlabel('\theta (degree)')
+        ax.set_ylabel('\phi (degree)')
     def _draw_counts_vs_position(self, ene, ax):
-        subdf = self.df[(self.df['energy'] > ene-10) &
-                        (self.df['energy'] < ene+10)]
+        subdf = self.df[(self.df['energy'] > ene-0.5*self.energy_bin) &
+                        (self.df['energy'] < ene+0.5*self.energy_bin)]
         # one-dimensional histogram
         h = fh.plot_histo1d(
             ax.hist,
@@ -462,41 +577,65 @@ class ShadowBar:
             range=[-110, 110],
             bins=220,
             histtype='step',
-            density='true',
+            
         )
-        # design
-
         ax.set_xlabel('position (cm)')
         ax.set_ylabel('Counts')
 
     def _draw_fitfunction_vs_theta(self, x, y, result, err_y, ax):
         comps = result.eval_components(x=x)
         # upper and lower components of kinematic function
-        upper_kin = comps['f_kin1']+err_y
-        lower_kin = comps['f_kin1']-err_y
+        upper_kin = result.params['A'].value+comps['f_kin1']+err_y
+        lower_kin = result.params['A'].value+comps['f_kin1']-err_y
+    
         dely = result.eval_uncertainty(x=x)
-        ax.plot(x, y)
+        ax.errorbar(x, y,yerr=err_y,fmt='o')
         ax.plot(x, result.best_fit)
         ax.plot(x, result.best_fit-dely, 'r--')
         ax.plot(x, result.best_fit+dely, 'm--')
-        ax.plot(x, comps['f_kin1'], 'g--')
+        ax.plot(x, result.params['A'].value+comps['f_kin1'], 'g--')
         ax.fill_between(x, result.best_fit-dely,
                         result.best_fit+dely, color='#888888')
         ax.plot(x, upper_kin, 'y--', label='upper limit')
         ax.plot(x, lower_kin, 'c--', label='lower limit')
         ax.set_ylabel(r'$Y_\mathrm{data}$')
         ax.set_xlabel(r'Lab $\theta$ (deg)')
-
+        ax.legend()
+    def _draw_components(self, x, y, err_y, result, ax):
+        comps = result.eval_components(x=x)
+        ax.plot(x, comps['f_kin1'], 'r--')
+        ax.plot(x,comps['f_dip1'],'g--')
+        ax.plot(x,result.best_fit,'b--')
+        ax.errorbar(x,y,yerr=err_y,fmt='o')
+    def _draw_scaled_histo(self, x, y, y_err,result_s, ax):
+        ax.errorbar(x, y,
+            yerr=y_err,
+            fmt='o')
+        ax.set_xlabel('Theta (degree)')
+        ax.set_ylabel('Spectrum/fit')
+        ax.plot(x,result_s.best_fit)
+        
+    def _draw_histo_fit(self,x,y,y_err,result1,ax):
+        def f_kin1(x, k0, k1):
+            return k0 + k1 * x
+        gmodel=Model(f_kin1)
+        ax.errorbar(x, y,
+            yerr=y_err,
+            fmt='o')
+        ax.set_xlabel('Theta (degree)')
+        ax.set_ylabel('Counts')
+        hires_x = np.linspace(x[0], x[-1], 200)
+        ax.plot(hires_x,gmodel.eval(result1.params,x=hires_x),'r--')
     def _draw_background(self, x, y, result, err_y, ax):
         comps = result.eval_components(x=x)
-        upper_kin = comps['f_kin1']+err_y
-        lower_kin = comps['f_kin1']-err_y
+        upper_kin = result.params['A'].value+comps['f_kin1']+err_y
+        lower_kin = result.params['A'].value+comps['f_kin1']-err_y
         dely = result.eval_uncertainty(x=x)
 
-        background = np.amin(result.best_fit/comps['f_kin1'])
+        background = np.amin(result.best_fit/(result.params['A'].value+comps['f_kin1']))
         background_upper = np.amin((result.best_fit+dely)/upper_kin)
         background_lower = np.amin((result.best_fit-dely)/lower_kin)
-        ax.plot(x, result.best_fit/comps['f_kin1'], 'r--', label='normalized')
+        ax.plot(x, result.best_fit/(result.params['A'].value+comps['f_kin1']), 'r--', label='normalized')
         ax.plot(x, (result.best_fit-dely)/lower_kin,
                 'c--', label='lower limit')
         ax.plot(x, (result.best_fit+dely)/upper_kin,
@@ -510,6 +649,34 @@ class ShadowBar:
         ax.axhline(background_lower, linestyle='dashed', color='cyan',
                    label='%.1f%%' % (1e2*background_lower))
 
+    def save_to_gallery_scaled(self, sf, background_position, ene,x,y,y_err,result1, x1, y1, err_y1,result_s, path=None, show_plot=False, save=True):
+        filename = '%s+%s_%.02d_MeV_bar_%02d_%s_ene_%.02d_scaled.png' % (
+            sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position, ene)
+        
+        if path is None:
+            path = self.database_dir / 'gallery'/'coupland'/filename
+        elif isinstance(path, str):
+            path = pathlib.Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        fig, ax = plt.subplots(ncols=2, nrows=1, figsize=(
+            10, 10), constrained_layout=True)
+        fig.suptitle(
+            '%s+%s_%.02d_MeV_bar_%02d_%s_ene_%.02d' % (
+            sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position, ene))
+        
+
+        rc = (0)
+        self._draw_histo_fit(x,y,y_err,result1,ax[rc])
+        rc = (1)
+        self._draw_scaled_histo(x1,y1,err_y1,result_s,ax[rc])
+        plt.draw()
+        if save:
+            fig.savefig(path, dpi=500, bbox_inches='tight')
+        if show_plot:
+            plt.show()
+        else:
+            plt.close()
     def save_to_gallery(self, sf, background_position, ene, x, y, result, err_y, path=None, show_plot=False, save=True):
         """Save a diagnostic plot to the gallery as a PNG file.
 
@@ -530,12 +697,12 @@ class ShadowBar:
                 option is useful when users are using this function to inspect
                 the plot without saving.
         """
-        #filename = f'{self._run_hash_str}-NW{self.AB}-bar{self.bar:02d}.png'
+        
         filename = '%s+%s_%.02d_MeV_bar_%02d_%s_ene_%.02d.png' % (
             sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position, ene)
-        # filename=f'Ca48Sn124_bar_{self.bar}_{background_position}_{ene}.png'
+        
         if path is None:
-            path = self.database_dir / 'gallery' / filename
+            path = self.database_dir / 'gallery'/filename
         elif isinstance(path, str):
             path = pathlib.Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -547,10 +714,10 @@ class ShadowBar:
             sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position, ene))
 
         rc = (0, 0)
-        # self._draw_Energy_vs_lightGM(ax[rc])
-        self._draw_counts_vs_position(ene, ax[rc])
-        rc = (0, 1)
         self._draw_counts_vs_theta(ene, ax[rc])
+        
+        rc = (0, 1)
+        self._draw_components(x,y,err_y,result,ax[rc])
 
         rc = (1, 0)
         self._draw_fitfunction_vs_theta(x, y, result, err_y, ax[rc])
@@ -567,27 +734,44 @@ class ShadowBar:
 
     def fit(self, background_position, path=None):
         self.preprocessing()
-        fig, ax = plt.subplots(figsize=(10, 7))
-        self._draw_Energy_vs_lightGM(ax)
         sf = Query.get_run_info(self.df['run'].iloc[0])
+
+        
         filename = '%s+%s_%.02d_MeV_bar_%02d_%s.txt' % (
             sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position)
+        
         if path is None:
-            path = self.database_dir / 'gallery' / filename
+            path = self.database_dir / 'gallery'/filename
         elif isinstance(path, str):
             path = pathlib.Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
+ 
 
-        with open(path, 'w') as file:
+        filename1 = '%s+%s_%.02d_MeV_bar_%02d_%s.dat' % (
+            sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position)
+        filename2 = '%s+%s_%.02d_MeV_bar_%02d_%s.info' % (
+            sf['beam'], sf['target'], sf['beam_energy'], self.bar, background_position)
+
+        with open(self.database_dir / 'gallery'/filename1, 'w') as file1, open(self.database_dir / 'gallery'/filename2, 'w') as file2, open(path, 'w') as file:
             file.write('{} {} {} {} \n'.format(
                 "bar", "energy", "background", "error"))
-
-            for ene in np.arange(20, 110, 20):
+            file1.write('{} {} {} {} \n'.format(
+                 "bar", "energy", "background", "error"))
+            file2.write('{} {} {} {} {} {} {} \n'.format(
+                 "bar", "energy", "A", "x0","x1","s0","s1"))
+            for ene in np.arange(self.energy_range[0],self.energy_range[1], self.energy_bin):
                 x, y, y_err = self.fit_energy_range(ene, background_position)
+                #first method
                 result = self.fit_parameters(background_position, x, y, y_err)
                 err_y, bg, bg_err = self.calculate_background(
                     self.fit_parameters(background_position, x, y, y_err), x, y)
                 self.save_to_gallery(sf, background_position, ene, x, y,
                                      result, err_y, path=None, show_plot=False, save=True)
-                file.write('{} {} {} {} \n'.format(self.bar, ene, bg, bg_err))
+                file1.write('{} {} {} {} \n'.format(self.bar, ene, bg, bg_err))
+                #coupland version
+                x1,y1,y1_err,result1=self.scaled_histogram(result,x,y,y_err)
+                result_s=self.fit_scaled_hist(background_position,x1,y1,y1_err)
+                self.save_to_gallery_scaled(sf, background_position, ene,x,y,y_err,result1, x1, y1, y1_err, result_s, path=None, show_plot=False, save=True)
+                file.write('{} {} {} {} \n'.format(self.bar, ene, result_s.params['B'].value*100, result_s.params['B'].stderr*100))
+                file2.write('{} {} {} {} {} {} {} \n'.format(self.bar, ene, result.params['A'].value, result.params['x_L'].value, result.params['x_R'].value,result.params['x_L'].stderr,result.params['x_R'].stderr))
 'Done'
