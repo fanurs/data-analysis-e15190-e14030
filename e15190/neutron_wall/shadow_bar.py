@@ -29,7 +29,7 @@ class ShadowBar:
     #theta_f=[32,40]
     theta_f=[29,41]
     nbins1=40
-    energy_bin=15
+    energy_bin=20
     energy_range=[30,120]
     
     def __init__(self, AB, max_workers=8):
@@ -74,7 +74,18 @@ class ShadowBar:
             f'NW{AB}_psd <{self.psd[1]}',
         ]
         return ' & '.join([f'({c.strip()})' for c in cuts])
-
+    @staticmethod
+    def infer_tree_name(uproot_file):
+        names=list(set(key.split(';')[0] for key in uproot_file.keys()))
+        candidate=None
+        n_candidates=0
+        for name in names:
+            if 'TTree' in str(type(uproot_file[name])):
+                n_candidates +=1
+                candidate=name
+            if n_candidates>1:
+                return None
+        return candidate 
     def read_run_from_root_file(self, run, tree_name=None, apply_cut=True):
         """Read in single run from ROOT file.
 
@@ -105,13 +116,10 @@ class ShadowBar:
         # determine the tree_name
         if tree_name is None:
             with uproot.open(str(path)) as file:
-                objects = list(set(key.split(';')[0] for key in file.keys()))
-            if len(objects) == 1:
-                tree_name = objects[0]
-            else:
-                raise Exception(f'Multiple objects found in {path}')
-
+                tree_name=self.infer_tree_name(file)
+        
         # load in the data
+        
         branches = [
             'MB_multi',
             'VW_multi',
