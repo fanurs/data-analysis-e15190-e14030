@@ -33,3 +33,7 @@ def copy_from_default_database(rel_path, not_found_ok=True):
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(src, dst)
     return True
+
+from . import generate_sample_roots as gsr
+if not gsr.Sample1.root_exists():
+    gsr.Sample1.generate()
