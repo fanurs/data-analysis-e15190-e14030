@@ -13,7 +13,7 @@ from e15190.neutron_wall.cache import RunCache
 
 @pytest.fixture
 def runs():
-    return [2048, 4096]
+    return [2048, 2222, 4096, 4444]
 
 @pytest.fixture
 def io_directories(runs):
@@ -28,7 +28,6 @@ def io_directories(runs):
 @pytest.fixture
 def run_cache(io_directories):
     return RunCache(
-        'B',
         str(Path(io_directories[0].name) / r'CalibratedData_{run:04d}.root'),
         str(Path(io_directories[1].name) / r'run-{run:04d}.db'),
         max_workers=1,
@@ -37,13 +36,10 @@ def run_cache(io_directories):
 class TestRunCache:
     def test___init__(self):
         rc = RunCache(
-            'B',
             r'../CalibratedData_{run:04d}.root',
             r'run-{run:04d}.db',
             max_workers=-1,
         )
-        assert rc.AB == 'B'
-        assert rc.ab == 'b'
         assert rc.SRC_PATH_FMT == r'../CalibratedData_{run:04d}.root'
         assert rc.CACHE_PATH_FMT == r'run-{run:04d}.db'
         assert rc.max_workers == -1
@@ -81,7 +77,7 @@ class TestRunCache:
             assert all(df.columns == ['i_evt', 'multi_0', 'multi_1', 'x_1', 'y_1'])
             assert 0 not in set(df['multi_1']) # CAUTION!
 
-        for run in set(np.random.choice(range(1000, 10000), size=3, replace=False)) - set(runs):
+        for run in set(np.random.choice(range(1000, 10000), size=5, replace=False)) - set(runs):
             with pytest.raises(FileNotFoundError):
                 rc.read_run_from_root(run, ['i_evt'])
         
@@ -137,6 +133,18 @@ class TestRunCache:
                 assert len(df_sqlite) == len(df)
                 assert all(df_sqlite.columns == df.columns)
                 assert np.allclose(df_sqlite.to_numpy(), df.to_numpy())
+    
+    def test_save_run_to_sqlite_mkdir(self, io_directories, runs):
+        rc = RunCache(
+            str(Path(io_directories[0].name) / r'CalibratedData_{run:04d}.root'),
+            str(Path(io_directories[1].name) / 'dummy' / r'run-{run:04d}.db'),
+            max_workers=1,
+        )
+        for run in runs:
+            df = rc.read_run_from_root(run, ['i_evt', 'multi_0', 'x_0', 'multi_1'])
+            path = rc.save_run_to_sqlite(run, df)
+            assert 'dummy' in str(path)
+            assert f'run-{run:04d}' in str(path)
 
     def test_read_run_from_sqlite(self, run_cache, runs):
         rc = run_cache
@@ -158,40 +166,120 @@ class TestRunCache:
             df_sqlite = rc.read_run_from_sqlite(run, sql_cmd='WHERE multi_1 > 0')
             assert 0 not in set(df_sqlite['multi_1'])
     
-    def test_read_single_run(self, run_cache, runs):
+    def test_read_run(self, run_cache, runs):
         rc = run_cache
 
         # when no cache yet
         for run in runs:
             assert not Path(rc.CACHE_PATH_FMT.format(run=run)).is_file()
-            df = rc.read_single_run(run, ['i_evt', 'multi_0', 'x_0', 'multi_1'])
+            df = rc.read_run(run, ['i_evt', 'multi_0', 'x_0', 'multi_1'])
             assert 0 not in set(df['multi_0'])
         
         # when cache has been created
         for run in runs:
             assert Path(rc.CACHE_PATH_FMT.format(run=run)).is_file()
-            df = rc.read_single_run(run, ['i_evt', 'multi_1', 'x_1'])
+            df = rc.read_run(run, ['i_evt', 'multi_1', 'x_1'])
             assert 'multi_0' in df.columns
             assert 'x_1' not in df.columns
         
-    def test_read_single_run_cache_options(self, run_cache, runs):
+    def test_read_run_cache_options(self, run_cache, runs):
         rc = run_cache
 
         # when no cache yet
         for run in runs:
-            df = rc.read_single_run(run, ['i_evt', 'multi_0', 'x_0', 'multi_1'], save_cache=False)
+            df = rc.read_run(run, ['i_evt', 'multi_0', 'x_0', 'multi_1'], save_cache=False)
             assert all(df.columns == ['i_evt', 'multi_0', 'x_0', 'multi_1'])
 
         # there should be still no cache
         for run in runs:
-            df = rc.read_single_run(run, ['i_evt', 'multi_1', 'x_1'])
+            df = rc.read_run(run, ['i_evt', 'multi_1', 'x_1'])
             assert 'multi_0' not in df.columns
             assert 'multi_1' in df.columns
             assert 'x_1' in df.columns
         
         # cache has been create, but we don't read from it
         for run in runs:
-            df = rc.read_single_run(run, ['i_evt', 'multi_0', 'x_0'], from_cache=False)
+            df = rc.read_run(run, ['i_evt', 'multi_0', 'x_0'], from_cache=False)
             assert 'multi_0' in df.columns
             assert 'x_0' in df.columns
             assert 'multi_1' not in df.columns
+        
+        # see if cache has been overwritten
+        for run in runs:
+            df = rc.read_run(run, None)
+            assert 'multi_0' in df.columns
+            assert 'x_0' in df.columns
+            assert 'multi_1' not in df.columns
+
+    def test_read(self, run_cache, runs):
+        rc = run_cache
+
+        df_single = dict()
+        for run in runs:
+            df_single[run] = rc.read_run(run, ['i_evt', 'multi_0', 'x_0', 'multi_1'])
+        df = rc.read(runs, None)
+        assert len(df) == sum([len(df_single[run]) for run in runs])
+        assert all(df.columns == ['i_evt', 'multi_0', 'x_0', 'multi_1'])
+        assert np.allclose(df['x_0'], np.ravel([df_single[run]['x_0'] for run in runs]))
+        assert list(df.index) == list(range(len(df)))
+        assert 0 in set(df['multi_1'])
+        assert 'run' not in df.columns
+
+        # test single run
+        df = rc.read(runs[0], None)
+        assert np.allclose(df.to_numpy(), df_single[runs[0]].to_numpy())
+
+    def test_read_options(self, run_cache, runs, capsys):
+        rc = run_cache
+        branches = ['i_evt', 'multi_0', 'x_0', 'multi_1']
+
+        # test sql_cmd
+        df = rc.read(runs, branches, sql_cmd='WHERE multi_1 > 0')
+        assert 0 not in set(df['multi_1'])
+
+        # test drop_columns
+        df = rc.read(runs, branches, drop_columns=['i_evt', 'multi_1'])
+        assert all(df.columns == ['multi_0', 'x_0'])
+
+        # test reset_index = False
+        df = rc.read(runs, branches, reset_index=False)
+        assert sum([True for i in list(df.index) if i == 0]) == len(runs)
+
+        # test insert_run_column = True
+        df = rc.read(runs, branches, insert_run_column=True)
+        assert list(df.columns).index('run') == 0
+
+        # test verbose = True
+        rc.read(runs, branches, verbose=True)
+        stdout = capsys.readouterr().out
+        assert len(stdout.split('\n')) == len(runs) + 1
+        for run in runs:
+            assert f'reading run {run}' in stdout.lower()
+    
+    def test_read_options_that_dont_affect_cache(self, run_cache, runs):
+        rc = run_cache
+        run = runs[0]
+
+        # sql_cmd
+        df = rc.read(
+            run,
+            ['i_evt', 'multi_0', 'multi_1', 'x_1', 'y_1'],
+            sql_cmd='WHERE multi_0 > 0',
+            from_cache=True,
+            save_cache=True,
+        )
+        assert 0 not in set(df['multi_0'])
+        df = rc.read_run_from_sqlite(run)
+        assert 0 in set(df['multi_0'])
+
+        # drop_columns
+        df = rc.read(
+            run,
+            ['i_evt', 'multi_0', 'multi_1', 'x_1', 'y_1'],
+            drop_columns=['i_evt'],
+            from_cache=True,
+            save_cache=True,
+        )
+        assert 'i_evt' not in df.columns
+        df = rc.read_run_from_sqlite(run)
+        assert 'i_evt' in df.columns

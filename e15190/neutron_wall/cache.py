@@ -1,18 +1,18 @@
 import concurrent.futures
-from pathlib import Path
 import os
+from pathlib import Path
+from typing import Union
 
+import duckdb as dk
 import pandas as pd
 import sqlite3
 import uproot
 
 class RunCache:
-    def __init__(self, AB, src_path_fmt, cache_path_fmt, max_workers=8):
+    def __init__(self, src_path_fmt, cache_path_fmt, max_workers=8):
         """
         Parameters
         ----------
-        AB : 'A' or 'B'
-            Neutron wall A or B.
         src_path_fmt : str with 'run' specifier
             The format of the path to the ROOT file, e.g.
             ``'/home/user/data/CalibratedData_{run:04d}.root'``.
@@ -23,8 +23,6 @@ class RunCache:
             The maximum number of thread pool executor workers to use for
             decompression and interpretation of ROOT files by Uproot.
         """
-        self.AB = AB.upper()
-        self.ab = AB.lower()
         self.SRC_PATH_FMT = src_path_fmt
         self.CACHE_PATH_FMT = cache_path_fmt
         self.max_workers = max_workers
@@ -89,7 +87,7 @@ class RunCache:
         return df
     
     @staticmethod
-    def _get_table_name(run):
+    def _get_table_name(run) -> str:
         return f'run{run:04d}'
 
     def save_run_to_sqlite(self, run, df) -> Path:
@@ -111,18 +109,19 @@ class RunCache:
         """
         path = Path(os.path.expandvars(self.CACHE_PATH_FMT.format(run=run)))
         path.unlink(missing_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(str(path)) as conn:
             df.to_sql(self._get_table_name(run), con=conn, index=False)
         return path
     
-    def read_run_from_sqlite(self, run, sql_cmd=''):
+    def read_run_from_sqlite(self, run, sql_cmd='') -> Union[pd.DataFrame, None]:
         path = Path(os.path.expandvars(self.CACHE_PATH_FMT.format(run=run)))
-        if not path.exists():
-            return False
+        if not path.is_file():
+            return
         with sqlite3.connect(str(path)) as conn:
             return pd.read_sql(f'SELECT * FROM {self._get_table_name(run)} {sql_cmd}', con=conn)
 
-    def read_single_run(
+    def read_run(
         self,
         run,
         branches,
@@ -168,9 +167,90 @@ class RunCache:
         df = None
         if from_cache:
             df = self.read_run_from_sqlite(run, sql_cmd=sql_cmd)
-        if df is None or df is False:
+        if df is None:
             df = self.read_run_from_root(run, branches, tree_name=tree_name)
             if save_cache:
                 self.save_run_to_sqlite(run, df)
+            df = dk.query(f'SELECT * FROM df {sql_cmd}').df()
         return df
     
+    def read(
+        self,
+        runs,
+        branches,
+        sql_cmd='',
+        drop_columns=None,
+        tree_name=None,
+        from_cache=True,
+        save_cache=True,
+        reset_index=True,
+        insert_run_column=False,
+        verbose=False,
+    ) -> pd.DataFrame:
+        """Read in multiple runs (multiple files) from Daniele's ROOT files.
+
+        It is user's responsibility to ensure that the resultant dataframe fits
+        into memory. Use ``sql_cmd`` to select only the rows of interest. This
+        filter is applied to the single-run dataframes before being concatenated
+        into the final dataframe, keeping the memory usage minimal.
+
+        The entries and columns that are being cached are not affected by
+        ``sql_cmd`` and ``drop_columns``. These options only take place when
+        constructing the final dataframe and loading to memory.
+
+        Parameters
+        ----------
+        runs : list of int or int
+            The run numbers.
+        branches : dict of str:str or list of str
+            If dict, old_br_name -> new_br_name. If list, branch names remain
+            the same. If the function is reading from cache, this option is ignored.
+        sql_cmd : str, default ''
+            The SQL command to be appended after 'SELECT * FROM table_name'. This
+            option is ignored when reading from ROOT files.
+        drop_columns : list of str, default None
+            The columns to be dropped from the dataframe for each run. This is
+            executed after ``pandas_query``. This has no effect on the columns
+            that are being cached.
+        tree_name : str, default None
+            The name of the tree to read. If None, the tree name is inferred.
+        from_cache : bool, default True
+            If True, the function attempts to read from cache. If False, cache
+            will be ignored, and the runs will be read from ROOT files.
+        save_cache : bool, default True
+            If True, the runs are saved to the cache after reading from ROOT
+            files.
+        reset_index : bool, default True
+            If True, the index of the dataframe is reset.
+        insert_run_column : bool, default False
+            If True, a column 'run' is inserted into the dataframe as first column.
+        verbose : bool, default False
+            If True, print the progress of the function.
+
+        Returns
+        -------
+        df : pandas.DataFrame
+            The concatenated dataframe of all runs.
+        """
+        if isinstance(runs, int):
+            runs = [runs]
+        df = None
+        for run in runs:
+            if verbose:
+                print(f'Reading run {run}...')
+            df_run = self.read_run(
+                run,
+                branches,
+                sql_cmd=sql_cmd,
+                tree_name=tree_name,
+                from_cache=from_cache,
+                save_cache=save_cache,
+            )
+            if insert_run_column:
+                df_run.insert(0, 'run', run)
+            if drop_columns is not None:
+                df_run = df_run.drop(drop_columns, axis=1)
+            df = pd.concat([df, df_run], axis=0)
+        if reset_index:
+            df.reset_index(drop=True, inplace=True)
+        return df
