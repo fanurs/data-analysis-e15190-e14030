@@ -90,7 +90,7 @@ class RunCache:
     def _get_table_name(run) -> str:
         return f'run{run:04d}'
 
-    def save_run_to_sqlite(self, run, df) -> Path:
+    def save_run_to_sqlite(self, run, df : pd.DataFrame) -> Path:
         """Save the run as a dataframe in sqlite database.
 
         This is primarily used as cache for future use.
@@ -111,7 +111,7 @@ class RunCache:
         path.unlink(missing_ok=True)
         path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(str(path)) as conn:
-            df.to_sql(self._get_table_name(run), con=conn, index=False)
+            df.to_sql(self._get_table_name(run), con=conn)
         return path
     
     def read_run_from_sqlite(self, run, sql_cmd='') -> Union[pd.DataFrame, None]:
@@ -119,7 +119,8 @@ class RunCache:
         if not path.is_file():
             return
         with sqlite3.connect(str(path)) as conn:
-            return pd.read_sql(f'SELECT * FROM {self._get_table_name(run)} {sql_cmd}', con=conn)
+            df = pd.read_sql(f'SELECT * FROM {self._get_table_name(run)} {sql_cmd}', con=conn)
+        return df.set_index(['entry', 'subentry'], drop=True)
 
     def read_run(
         self,
@@ -171,7 +172,15 @@ class RunCache:
             df = self.read_run_from_root(run, branches, tree_name=tree_name)
             if save_cache:
                 self.save_run_to_sqlite(run, df)
+            
+            # duckdb query does not preserve the index (yet, hopefully)
+            # so we set indices as regular columns before query, and then drop
+            # them after query
+            index_names = df.index.names
+            for i, iname in enumerate(index_names):
+                df[iname] = df.index.get_level_values(i)
             df = dk.query(f'SELECT * FROM df {sql_cmd}').df()
+            df = df.set_index(index_names, drop=True)
         return df
     
     def read(
@@ -183,7 +192,7 @@ class RunCache:
         tree_name=None,
         from_cache=True,
         save_cache=True,
-        reset_index=True,
+        reset_index=False,
         insert_run_column=False,
         verbose=False,
     ) -> pd.DataFrame:
@@ -220,8 +229,13 @@ class RunCache:
         save_cache : bool, default True
             If True, the runs are saved to the cache after reading from ROOT
             files.
-        reset_index : bool, default True
-            If True, the index of the dataframe is reset.
+        reset_index : bool, default False
+            If False, the original index is kept. The original index comes from
+            uproot, where there is a two-level index of (entry, subentry). Entry
+            enumerates the triggered events and is identical to the entry number
+            in the ROOT file. Subentry enumerates the event multiplicity of a
+            single event/entry in a detector, e.g. microBall multiplicity. If
+            True, new single-level index starting from 0 is used.
         insert_run_column : bool, default False
             If True, a column 'run' is inserted into the dataframe as first column.
         verbose : bool, default False

@@ -131,8 +131,9 @@ class TestRunCache:
                 table = tables[0][0]
                 df_sqlite = pd.read_sql(f'SELECT * FROM "{table}"', conn)
                 assert len(df_sqlite) == len(df)
-                assert all(df_sqlite.columns == df.columns)
-                assert np.allclose(df_sqlite.to_numpy(), df.to_numpy())
+                assert set(df.columns).issubset(set(df_sqlite.columns))
+                assert set(df_sqlite.columns) - set(df.columns) == {'entry', 'subentry'}
+                assert np.allclose(df_sqlite[df.columns].to_numpy(), df.to_numpy())
     
     def test_save_run_to_sqlite_mkdir(self, io_directories, runs):
         rc = RunCache(
@@ -158,6 +159,7 @@ class TestRunCache:
             df_sqlite = rc.read_run_from_sqlite(run)
             assert len(df_sqlite) == len(df)
             assert all(df_sqlite.columns == df.columns)
+            assert df_sqlite.index.names == df.index.names
             assert np.allclose(df_sqlite.to_numpy(), df.to_numpy())
             assert 0 in set(df_sqlite['multi_1'])
         for run in _runs:
@@ -174,6 +176,7 @@ class TestRunCache:
             assert not Path(rc.CACHE_PATH_FMT.format(run=run)).is_file()
             df = rc.read_run(run, ['i_evt', 'multi_0', 'x_0', 'multi_1'])
             assert 0 not in set(df['multi_0'])
+            assert ['entry', 'subentry'] == list(df.index.names)
         
         # when cache has been created
         for run in runs:
@@ -181,6 +184,7 @@ class TestRunCache:
             df = rc.read_run(run, ['i_evt', 'multi_1', 'x_1'])
             assert 'multi_0' in df.columns
             assert 'x_1' not in df.columns
+            assert ['entry', 'subentry'] == list(df.index.names)
         
     def test_read_run_cache_options(self, run_cache, runs):
         rc = run_cache
@@ -221,7 +225,7 @@ class TestRunCache:
         assert len(df) == sum([len(df_single[run]) for run in runs])
         assert all(df.columns == ['i_evt', 'multi_0', 'x_0', 'multi_1'])
         assert np.allclose(df['x_0'], np.ravel([df_single[run]['x_0'] for run in runs]))
-        assert list(df.index) == list(range(len(df)))
+        assert {'entry', 'subentry'} == set(df.index.names)
         assert 0 in set(df['multi_1'])
         assert 'run' not in df.columns
 
@@ -241,9 +245,11 @@ class TestRunCache:
         df = rc.read(runs, branches, drop_columns=['i_evt', 'multi_1'])
         assert all(df.columns == ['multi_0', 'x_0'])
 
-        # test reset_index = False
-        df = rc.read(runs, branches, reset_index=False)
-        assert sum([True for i in list(df.index) if i == 0]) == len(runs)
+        # test reset_index = True
+        df = rc.read(runs, branches, reset_index=True)
+        assert 'entry' not in df.index.names
+        assert 'subentry' not in df.index.names
+        assert all(df.index == range(len(df)))
 
         # test insert_run_column = True
         df = rc.read(runs, branches, insert_run_column=True)
