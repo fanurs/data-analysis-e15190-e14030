@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Dict, Literal
 
 import duckdb as dk
 import matplotlib as mpl
@@ -29,6 +29,7 @@ class LightOutputCalibrator:
         self.AB = AB.upper()
         self.ab = self.AB.lower()
         self.df = None
+        self.light_info = dict()
 
     @staticmethod
     def _get_daniele_root_files_dir(json_path=None) -> Path:
@@ -67,11 +68,6 @@ class LightOutputCalibrator:
                 f'NW{self.AB}.ffastRight'                   : f'NW{self.AB}_fast_R',
                 f'NW{self.AB}.fTimeLeft'                    : f'NW{self.AB}_time_L',
                 f'NW{self.AB}.fTimeRight'                   : f'NW{self.AB}_time_R',
-                f'NW{self.AB}.fGeoMeanSaturationCorrected'  : f'NW{self.AB}_light_GM_sat',
-                f'NW{self.AB}.fLeftSaturationCorrected'     : f'NW{self.AB}_total_L_sat',
-                f'NW{self.AB}.fRightSaturationCorrected'    : f'NW{self.AB}_total_R_sat',
-                f'NW{self.AB}.ffastLeftSaturationCorrected' : f'NW{self.AB}_fast_L_sat',
-                f'NW{self.AB}.ffastRightSaturationCorrected': f'NW{self.AB}_fast_R_sat',
             },
             **kw,
         )
@@ -116,8 +112,8 @@ class LightOutputCalibrator:
     
     @staticmethod
     def get_light_from_adc(adc, pos, a, b, c, d, e):
-        result = adc / (a + b * pos + c * pos**2)
-        result = d + result * (4.196 * e)
+        result = 4.196 * adc / (a + b * pos + c * pos**2)
+        result = d + result * e
         return result
     
     @staticmethod
@@ -139,30 +135,6 @@ class LightOutputCalibrator:
         df = pd.read_csv(path, delim_whitespace=True, comment='#')
         return df.set_index('bar', drop=True)
 
-    def apply_light_output(self, df=None) -> pd.DataFrame:
-        update_self = (df is None)
-        if update_self:
-            df = self.df
-        df_par = self.read_light_calib_params()
-
-        bar = f'NW{self.AB}_bar'
-        total_L = f'NW{self.AB}_total_L'
-        total_R = f'NW{self.AB}_total_R'
-        pos = f'NW{self.AB}_pos'
-        light_GM = f'NW{self.AB}_light_GM'
-
-        df_result = None
-        for b, df_bar in df.groupby(bar):
-            df_bar[light_GM] = self.get_light_from_adc(
-                np.sqrt(df_bar[total_L] * df_bar[total_R]),
-                df_bar[pos],
-                *df_par.loc[b],
-            )
-            df_result = pd.concat([df_result, df_bar], axis=0)
-        if update_self:
-            self.df = df_result
-        return df_result
-
     @staticmethod
     def _randomize_columns(df, columns, seed=None):
         if isinstance(columns, str):
@@ -182,9 +154,8 @@ class LightOutputCalibrator:
         self.df = self.convert_64_to_32(self.df)
 
     def analyze_log_of_light_ratio(self, light: Literal['total', 'fast'], bars=None, verbose=False):
-        if bars is None:
-            bars = sorted(self.df[f'NW{self.AB}_bar'].unique())
-        
+        """
+        """
         df = self.df.query(' & '.join([
             f'NW{self.AB}_{light}_L < 3500',
             f'NW{self.AB}_{light}_R < 3500',
@@ -195,7 +166,9 @@ class LightOutputCalibrator:
             f'NW{self.AB}_{light}_R',
         ]]
 
-        self.bar_info = {light: dict()}
+        self.light_info.setdefault(light, dict())
+        if bars is None:
+            bars = range(1, 25)
         for bar in bars:
             if verbose:
                 print(f'Analyzing bar-{bar:02d}...', flush=True)
@@ -203,11 +176,12 @@ class LightOutputCalibrator:
                 SELECT * FROM df
                 WHERE NW{self.AB}_bar == {bar}
             ''').df()
-            self.bar_info[light][bar] = self._analyze_log_of_light_ratio_per_bar(
+            self.light_info[light].setdefault(bar, dict())
+            self.light_info[light][bar].update(self._analyze_log_of_light_ratio_per_bar(
                 df_bar[f'NW{self.AB}_pos'],
                 df_bar[f'NW{self.AB}_{light}_L'],
                 df_bar[f'NW{self.AB}_{light}_R'],
-            )
+            ))
         
     @staticmethod
     def _analyze_log_of_light_ratio_per_bar(pos, light_L, light_R):
@@ -219,46 +193,89 @@ class LightOutputCalibrator:
             'gain_ratio': llr.gain_ratio,
         }
     
-    def gain_matching(self, light: Literal['total', 'fast'], bars=None):
+    @staticmethod
+    def saturation_recovering(
+        light_info: Dict[int, Dict[str, float]],
+        bar_arr, pos, light_L, light_R,
+        bars=None,
+        threshold=4090,
+    ):
+        # populate scalars array
+        scalars = np.zeros(len(bar_arr))
         if bars is None:
-            bars = sorted(self.df[f'NW{self.AB}_bar'].unique())
-        
-        gain_ratios = np.zeros(len(self.df))
+            bars = range(1, 25)
         for bar in bars:
-            gain_ratio = self.bar_info[light][bar]['gain_ratio'][0]
-            mask = (self.df[f'NW{self.AB}_bar'] == bar)
-            gain_ratios += mask * gain_ratio
+            att_length = light_info[bar]['attenuation_length'][0]
+            gain_ratio = light_info[bar]['gain_ratio'][0]
+            scalars += (bar_arr == bar) * np.exp((2 / att_length) * pos + np.log(gain_ratio))
+
+        # apply scalars conditionally to recover saturation
+        recovered_light_L = np.where(
+            (light_L > threshold) & (light_R < threshold) & (scalars > 1e-8),
+            np.clip(light_R / scalars, threshold, None),
+            light_L,
+        )
+        recovered_light_R = np.where(
+            (light_R > threshold) & (light_L < threshold) & (scalars > 1e-8),
+            np.clip(light_L / scalars, threshold, None),
+            light_R,
+        )
+        return recovered_light_L, recovered_light_R
+    
+    @staticmethod
+    def gain_matching(
+        light_info: Dict[int, Dict[str, float]],
+        bar_arr, light_L, light_R,
+        bars=None,
+    ):
+        gain_ratios = np.zeros(len(bar_arr))
+        if bars is None:
+            bars = range(1, 25)
+        for bar in bars:
+            gain_ratio = light_info[bar]['gain_ratio'][0]
+            gain_ratios += (bar_arr == bar) * gain_ratio
         gain_ratios += (gain_ratios < 1e-6) * 1.0
 
-        self.df[f'NW{self.AB}_{light}_gain_L'] = self.df[f'NW{self.AB}_{light}_L'] * gain_ratios
-        self.df[f'NW{self.AB}_{light}_gain_R'] = self.df[f'NW{self.AB}_{light}_R'] / gain_ratios
-        self.df = self.convert_64_to_32(self.df)
+        matched_light_L = light_L * gain_ratios
+        matched_light_R = light_R / gain_ratios
+        return matched_light_L, matched_light_R
     
-    def saturation_correction(self, light: Literal['total', 'fast'], bars=None, threshold=4090):
-        if bars is None:
-            bars = sorted(self.df[f'NW{self.AB}_bar'].unique())
-        
-        scalars = np.zeros(len(self.df))
-        for bar in bars:
-            att_length = self.bar_info[light][bar]['attenuation_length'][0]
-            gain_ratio = self.bar_info[light][bar]['gain_ratio'][0]
-            mask = (self.df[f'NW{self.AB}_bar'] == bar)
-            scalars += mask * np.exp((2 / att_length) * self.df[f'NW{self.AB}_pos'] + np.log(gain_ratio))
-        scalars += (scalars < 1e-6) * 1.0
-        
-        light_L = np.where(
-            np.array(self.df[f'NW{self.AB}_{light}_L']) > threshold & np.array(self.df[f'NW{self.AB}_{light}_R'] < threshold),
-            self.df[f'NW{self.AB}_{light}_R'] / scalars,
-            self.df[f'NW{self.AB}_{light}_L'],
+    def add_corrected_light(self, light: Literal['total', 'fast'], bars=None):
+        light_L = self.df[f'NW{self.AB}_{light}_L']
+        light_R = self.df[f'NW{self.AB}_{light}_R']
+
+        light_L, light_R = self.saturation_recovering(
+            self.light_info[light],
+            self.df[f'NW{self.AB}_bar'],
+            self.df[f'NW{self.AB}_pos'],
+            light_L, light_R,
+            bars,
         )
-        light_R = np.where(
-            np.array(self.df[f'NW{self.AB}_{light}_R']) > threshold & np.array(self.df[f'NW{self.AB}_{light}_L'] < threshold),
-            self.df[f'NW{self.AB}_{light}_L'] * scalars,
-            self.df[f'NW{self.AB}_{light}_R'],
+
+        light_L, light_R = self.gain_matching(
+            self.light_info[light],
+            self.df[f'NW{self.AB}_bar'],
+            light_L, light_R,
+            bars,
         )
-        self.df[f'NW{self.AB}_{light}_sat_L'] = light_L
-        self.df[f'NW{self.AB}_{light}_sat_R'] = light_R
-        self.df = self.convert_64_to_32(self.df)
+
+        self.df[f'NW{self.AB}_{light}_L_corrected'] = light_L
+        self.df[f'NW{self.AB}_{light}_R_corrected'] = light_R
+        self.convert_64_to_32(self.df)
+    
+    def add_calibrated_light(self):
+        """Calibrate geometric mean of corrected total ADCs into MeVee"""
+        df_par = self.read_light_calib_params()
+        df_pars = df_par.loc[self.df[f'NW{self.AB}_bar']]
+        self.df[f'NW{self.AB}_light_GM'] = self.get_light_from_adc(
+            np.sqrt(self.df[f'NW{self.AB}_total_L_corrected'] * self.df[f'NW{self.AB}_total_R_corrected']),
+            np.array(self.df[f'NW{self.AB}_pos']),
+            np.array(df_pars.a),
+            np.array(df_pars.b),
+            np.array(df_pars.c),
+            np.array(df_pars.d),
+            np.array(df_pars.e),
+        )
 
 
 
@@ -609,3 +626,8 @@ class _Benchmark:
             plt.show()
 
         assert np.max(np.abs(diff)) < 2
+
+
+
+if __name__ == '__main__':
+    pass
