@@ -9,7 +9,6 @@ import sys
 
 import matplotlib as mpl
 mpl_default_backend = mpl.get_backend()
-mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -46,6 +45,7 @@ class NWBPositionCalibrator:
         stdout_path=None,
         recalculate_vw_shadows=False,
     ):
+        mpl.use('Agg')
         self.verbose = verbose
         self.stdout_path = stdout_path
         self.AB = 'B'
