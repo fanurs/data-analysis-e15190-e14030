@@ -1,3 +1,4 @@
+import inspect
 import json
 import os
 from pathlib import Path
@@ -15,15 +16,13 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from scipy import interpolate
 
+from e15190.runlog.query import Query
 from e15190.neutron_wall.position_calibration import NWCalibrationReader
 from e15190.neutron_wall.cache import RunCache
-from e15190.utilities import fast_histogram as fh, peak_finder, slicer
+from e15190.utilities import fast_histogram as fh, misc, peak_finder, slicer, tables
 
 class LightOutputCalibrator:
     DATABASE_DIR = '$DATABASE_DIR/neutron_wall/light_output_calibration'
-    CACHE_DIR = '$DATABASE_DIR/neutron_wall/light_output_calibration/cache/'
-    GALLERY_DIR = '$DATABASE_DIR/neutron_wall/light_output_calibration/gallery/'
-    CALIB_PARAMS_DIR = '$DATABASE_DIR/neutron_wall/light_output_calibration/calib_params/'
 
     def __init__(self, AB: Literal['A', 'B']):
         self.AB = AB.upper()
@@ -42,7 +41,7 @@ class LightOutputCalibrator:
         """Update ``self.df``"""
         rc = RunCache(
             src_path_fmt=str(self._get_daniele_root_files_dir() / r'CalibratedData_{run:04d}.root'),
-            cache_path_fmt=str(Path(os.path.expandvars(self.CACHE_DIR)) / r'run-{run:04d}.db'),
+            cache_path_fmt=str(Path(os.path.expandvars(self.DATABASE_DIR)) / r'cache/run-{run:04d}.db'),
         )
 
         kw = dict(
@@ -57,8 +56,9 @@ class LightOutputCalibrator:
         )
         kw.update(kwargs)
 
+        self.runs = [runs] if isinstance(runs, int) else runs
         self.df = rc.read(
-            runs,
+            self.runs,
             {
                 'VetoWall.fmulti'                           : 'VW_multi',
                 f'NW{self.AB}.fnumbar'                      : f'NW{self.AB}_bar',
@@ -212,12 +212,12 @@ class LightOutputCalibrator:
         # apply scalars conditionally to recover saturation
         recovered_light_L = np.where(
             (light_L > threshold) & (light_R < threshold) & (scalars > 1e-8),
-            np.clip(light_R / scalars, threshold, None),
+            light_R / scalars,
             light_L,
         )
         recovered_light_R = np.where(
             (light_R > threshold) & (light_L < threshold) & (scalars > 1e-8),
-            np.clip(light_L / scalars, threshold, None),
+            light_L * scalars,
             light_R,
         )
         return recovered_light_L, recovered_light_R
@@ -276,6 +276,56 @@ class LightOutputCalibrator:
             np.array(df_pars.d),
             np.array(df_pars.e),
         )
+
+
+
+class ParamIO:
+    @classmethod
+    def save_params(cls, calib):
+        path = ParamIO.get_path(calib)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        bar_info = dict()
+        if path.is_file():
+            bar_info = cls.df_to_dict(cls.read(path))
+        for bar, info in calib.light_info['total'].items():
+            bar_info[bar] = {
+                'bar': bar,
+                'att_length': info['attenuation_length'][0],
+                'att_length_err': info['attenuation_length'][1],
+                'gain_ratio': info['gain_ratio'][0],
+                'gain_ratio_err': info['gain_ratio'][1],
+            }
+        bar_info = dict(sorted(bar_info.items(), key=lambda x: x[0]))
+        df = pd.DataFrame(bar_info).T
+        tables.to_fwf(
+            df,
+            path,
+            comment=inspect.cleandoc(f'''
+            # NW{calib.AB}
+            # run(s): {calib.runs}
+            # units:
+            #     att_length: cm
+            #     gain_ratio: unitless
+            '''),
+        )
+
+    @staticmethod
+    def read(path):
+        return pd.read_csv(path, delim_whitespace=True, comment='#')
+    
+    @staticmethod
+    def df_to_dict(df):
+        df.set_index('bar', inplace=True, drop=True)
+        return {bar: dict(bar=bar, **df.loc[bar]) for bar in df.index}
+
+    @staticmethod
+    def get_path(calib):
+        path = Path(os.path.expandvars(calib.DATABASE_DIR)) / 'calib_params'
+        if len(calib.runs) == 1:
+            path /= f'run-{calib.runs[0]:04d}.dat'
+        else:
+            path /= f'{misc.runs_hash(calib.runs)}.dat'
+        return path
 
 
 
@@ -629,5 +679,98 @@ class _Benchmark:
 
 
 
+class _MainUtilities:
+    @staticmethod
+    def get_args():
+        parser = argparse.ArgumentParser(
+            description='Calibrate the light output for neutron wall.',
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+        parser.add_argument(
+            'AB',
+            type=str,
+            choices=['A', 'B'],
+            help='"A" or "B". This selects "NWA" or "NWB".',
+        )
+        parser.add_argument(
+            'runs',
+            nargs='+',
+            help=inspect.cleandoc('''
+                Runs to calibrate.
+
+                Consecutive runs can be specified as a range. Here is an
+                example:
+                    > ./light_output_calibration.py B 8-10 11 20 2-5
+                This will calibrate the runs 8, 9, 10, 11, 20, 2, 3, 4, 5, on
+                NWB.
+            '''),
+        )
+        parser.add_argument(
+            '-b', '--bars',
+            nargs='+',
+            help=misc.MainUtilities.wrap('''
+                The bar number(s) to calibrate. If not specified, all bars from
+                bar 1 to 24 will be analyzed. Similar to "runs", dash can be
+                used to specify ranges.
+            '''),
+            default=['1-24'],
+        )
+        parser.add_argument(
+            '-c', '--no-cache',
+            help=misc.MainUtilities.wrap('''
+                When this option is given, the script will ignore the caches.
+                All data will hence be read from the (Daniele's) ROOT files. New
+                cache files will then be created, overwritting the old ones.
+            '''),
+            action='store_true',
+        )
+        parser.add_argument(
+            '-d', '--debug',
+            help=misc.MainUtilities.wrap('''
+                When this option is given, no output would be saved. This
+                includes both calibration parameters and gallery. The cache
+                files, however, will still be updated.
+            '''),
+            action='store_true',
+        )
+        parser.add_argument(
+            '-o', '--output',
+            help=misc.MainUtilities.wrap('''
+                The output directory for resultant ROOT files. If not given, the default is
+                "$DATABASE_DIR/neutron_wall/light_output_calibration/".
+            '''),
+            default="$DATABASE_DIR/neutron_wall/light_output_calibration/",
+        )
+        parser.add_argument(
+            '-s', '--silence',
+            help='To silent all status messages.',
+            action='store_true',
+        )
+        args = parser.parse_args()
+        args.runs = misc.MainUtilities.parse_runs(
+            args.runs,
+            Query.are_good,
+            verbose=(not args.silence),
+        )
+        args.bars = misc.MainUtilities.parse_bars(args.bars)
+        return args
+
 if __name__ == '__main__':
-    pass
+    import argparse
+    args = _MainUtilities.get_args()
+
+    calib = LightOutputCalibrator(args.AB)
+    for run in args.runs:
+        calib.read(
+            run,
+            from_cache=(not args.no_cache),
+            verbose=(not args.silence),
+        )
+        calib.add_position()
+        calib.randomize_ADC()
+        calib.analyze_log_of_light_ratio(
+            'total',
+            bars=args.bars,
+            verbose=(not args.silence),
+        )
+        ParamIO.save_params(calib)
