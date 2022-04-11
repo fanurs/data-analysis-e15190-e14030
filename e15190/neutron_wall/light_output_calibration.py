@@ -189,6 +189,7 @@ class LightOutputCalibrator:
         llr.fit_linear()
         llr.fit_wavy()
         return {
+            'llr': llr,
             'attenuation_length': llr.attenuation_length,
             'gain_ratio': llr.gain_ratio,
         }
@@ -282,7 +283,7 @@ class LightOutputCalibrator:
 class ParamIO:
     @classmethod
     def save_params(cls, calib):
-        path = ParamIO.get_path(calib)
+        path = ParamIO.get_path(calib, subdir='calib_params')
         path.parent.mkdir(parents=True, exist_ok=True)
         bar_info = dict()
         if path.is_file():
@@ -319,8 +320,8 @@ class ParamIO:
         return {bar: dict(bar=bar, **df.loc[bar]) for bar in df.index}
 
     @staticmethod
-    def get_path(calib):
-        path = Path(os.path.expandvars(calib.DATABASE_DIR)) / 'calib_params'
+    def get_path(calib, subdir):
+        path = Path(os.path.expandvars(calib.DATABASE_DIR)) / subdir
         if len(calib.runs) == 1:
             path /= f'run-{calib.runs[0]:04d}.dat'
         else:
@@ -596,7 +597,32 @@ class LogOfLightRatioPlotter:
         )
         return ax
 
+    @staticmethod
+    def save_plots(calib, verbose=True):
+        import matplotlib as mpl
+        mpl.use('Agg')
+        directory = Path(os.path.expandvars(calib.DATABASE_DIR)) / 'gallery'
+        if len(calib.runs) == 1:
+            run_title = f'run-{calib.runs[0]:04d}'
+            directory /= f'{run_title}/'
+        else:
+            run_title = f'{misc.run_hash(calib.runs)}'
+            directory /= f'{run_title}/'
+            run_title = run_title.split('-h')[0]
+        directory.mkdir(parents=True, exist_ok=True)
 
+        for bar, info in calib.light_info['total'].items():
+            if verbose:
+                print(f'Plotting NW{calib.AB}-{bar:02d}...')
+            path = directory / f'NW{calib.AB}-bar{bar:02d}.png'
+            
+            fig, ax = plt.subplots(figsize=(5, 4), facecolor='white', constrained_layout=True)
+            llr = LogOfLightRatioPlotter(info['llr'])
+            llr.plot(ax=ax, wavy_fit=True, linear_fit=True)
+            ax.set_title(f'{run_title} NW{calib.AB}-{bar:02d}')
+            fig.savefig(path, dpi=200, bbox_inches='tight')
+            plt.draw()
+            plt.close(fig)
 
 class _Benchmark:
     """A development class to check if the code gives identical result to Daniele's framework."""
@@ -759,18 +785,24 @@ if __name__ == '__main__':
     import argparse
     args = _MainUtilities.get_args()
 
+    LightOutputCalibrator.DATABASE_DIR = args.output
     calib = LightOutputCalibrator(args.AB)
     for run in args.runs:
-        calib.read(
-            run,
-            from_cache=(not args.no_cache),
-            verbose=(not args.silence),
-        )
-        calib.add_position()
-        calib.randomize_ADC()
-        calib.analyze_log_of_light_ratio(
-            'total',
-            bars=args.bars,
-            verbose=(not args.silence),
-        )
-        ParamIO.save_params(calib)
+        try:
+            calib.read(
+                run,
+                from_cache=(not args.no_cache),
+                verbose=(not args.silence),
+            )
+            calib.add_position()
+            calib.randomize_ADC()
+            calib.analyze_log_of_light_ratio(
+                'total',
+                bars=args.bars,
+                verbose=(not args.silence),
+            )
+            if not args.debug:
+                ParamIO.save_params(calib)
+                LogOfLightRatioPlotter.save_plots(calib)
+        except Exception as err:
+            print(f'Error in run {run}:\n{err}')
