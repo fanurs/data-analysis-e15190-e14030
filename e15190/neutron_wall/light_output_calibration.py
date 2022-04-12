@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numdifftools as nd
 import numpy as np
 import pandas as pd
+import ruptures as rpt
 from sklearn.linear_model import RANSACRegressor
 from sklearn.decomposition import PCA
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -279,11 +280,10 @@ class LightOutputCalibrator:
         )
 
 
-
 class ParamIO:
     @classmethod
     def save_params(cls, calib):
-        path = ParamIO.get_path(calib, subdir='calib_params')
+        path = ParamIO.get_path(calib.runs, subdir='calib_params')
         path.parent.mkdir(parents=True, exist_ok=True)
         bar_info = dict()
         if path.is_file():
@@ -320,14 +320,87 @@ class ParamIO:
         return {bar: dict(bar=bar, **df.loc[bar]) for bar in df.index}
 
     @staticmethod
-    def get_path(calib, subdir):
-        path = Path(os.path.expandvars(calib.DATABASE_DIR)) / subdir
-        if len(calib.runs) == 1:
-            path /= f'run-{calib.runs[0]:04d}.dat'
+    def get_path(runs, subdir):
+        path = Path(os.path.expandvars(LightOutputCalibrator.DATABASE_DIR)) / subdir
+        if len(runs) == 1:
+            path /= f'run-{runs[0]:04d}.dat'
         else:
-            path /= f'{misc.runs_hash(calib.runs)}.dat'
+            path /= f'{misc.runs_hash(runs)}.dat'
         return path
+    
+    @staticmethod
+    def get_good_runs(min_run=None, max_run=None):
+        min_run = min_run or 0
+        max_run = max_run or 9999
 
+        runs = np.array(list(range(min_run, max_run + 1)))
+        return list(runs[Query.are_good(runs)])
+    
+    @classmethod
+    def get_df_bars(cls, bars=None, runs=None, not_found_okay=True):
+        bars = bars or range(1, 25)
+        df_bars = {bar: [] for bar in bars}
+        runs = runs or ParamIO.get_good_runs()
+        for run in runs:
+            path = cls.get_path([run], subdir='calib_params')
+            if not path.is_file():
+                if not not_found_okay:
+                    raise FileNotFoundError(f'{path} does not exist')
+                continue
+            df_run = cls.read(path)
+            df_run = df_run.set_index('bar', drop=True)
+            for bar, holder in df_bars.items():
+                holder.append([run, *df_run.loc[bar]])
+        for bar, holder in df_bars.items():
+            df_bars[bar] = pd.DataFrame(holder, columns=['run', *df_run.columns])
+        return df_bars
+    
+    @staticmethod
+    def median50_average(x):
+        x = np.array(x)
+        mid_range = np.quantile(x, [0.25, 0.75])
+        mask = (x > mid_range[0]) & (x < mid_range[1])
+        if sum(mask) == 0:
+            return np.mean(x)
+        return np.mean(x[mask])
+
+    @staticmethod
+    def median50_std(x):
+        x = np.array(x)
+        mid_range = np.quantile(x, [0.25, 0.75])
+        mask = (x > mid_range[0]) & (x < mid_range[1])
+        if sum(mask) < 4:
+            return np.std(x)
+        return np.std(x[mask])
+    
+    @classmethod
+    def create_breakpoint_df(cls, df_bar):
+        data = np.array(df_bar[['att_length', 'gain_ratio']].values)
+        cpd = rpt.KernelCPD('rbf', min_size=1).fit(data)
+        bp_indices = cpd.predict(pen=1.0)
+        
+        df_bp = []
+        prev_i = 0
+        for i_bp in bp_indices:
+            rows = df_bar.iloc[prev_i:i_bp]
+            att_length = cls.median50_average(rows['att_length'])
+            gain_ratio = cls.median50_average(rows['gain_ratio'])
+            att_length_std = cls.median50_std(rows['att_length'])
+            gain_ratio_std = cls.median50_std(rows['gain_ratio'])
+            df_bp.append([
+                min(rows.run), max(rows.run),
+                att_length, att_length_std,
+                gain_ratio, gain_ratio_std,
+            ])
+            prev_i = i_bp
+        return pd.DataFrame(
+            df_bp,
+            columns=[
+                'run_start', 'run_stop',
+                'att_length', 'att_length_std',
+                'gain_ratio', 'gain_ratio_std',
+            ],
+        )
 
 
 class LogOfLightRatio:
@@ -523,7 +596,6 @@ class LogOfLightRatio:
         return log_light_ratio - (self.wavy_fit(pos) - self.linear_fit(pos))
 
 
-
 class LogOfLightRatioPlotter:
     def __init__(self, llr):
         self.llr = llr
@@ -624,6 +696,7 @@ class LogOfLightRatioPlotter:
             plt.draw()
             plt.close(fig)
 
+
 class _Benchmark:
     """A development class to check if the code gives identical result to Daniele's framework."""
     def __init__(self):
@@ -702,7 +775,6 @@ class _Benchmark:
             plt.show()
 
         assert np.max(np.abs(diff)) < 2
-
 
 
 class _MainUtilities:
