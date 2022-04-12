@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Literal
+import warnings
 
 import duckdb as dk
 import matplotlib as mpl
@@ -193,6 +194,7 @@ class LightOutputCalibrator:
             'llr': llr,
             'attenuation_length': llr.attenuation_length,
             'gain_ratio': llr.gain_ratio,
+            'log_light_ratio_spread': llr.log_light_ratio_spread,
         }
     
     @staticmethod
@@ -295,6 +297,7 @@ class ParamIO:
                 'att_length_err': info['attenuation_length'][1],
                 'gain_ratio': info['gain_ratio'][0],
                 'gain_ratio_err': info['gain_ratio'][1],
+                'log_light_ratio_spread': info['log_light_ratio_spread'],
             }
         bar_info = dict(sorted(bar_info.items(), key=lambda x: x[0]))
         df = pd.DataFrame(bar_info).T
@@ -307,6 +310,7 @@ class ParamIO:
             # units:
             #     att_length: cm
             #     gain_ratio: unitless
+            #     log_light_ratio_spread: unitless
             '''),
         )
 
@@ -374,7 +378,7 @@ class ParamIO:
         return np.std(x[mask])
     
     @classmethod
-    def create_breakpoint_df(cls, df_bar):
+    def create_breakpoint_for_bar(cls, df_bar):
         data = np.array(df_bar[['att_length', 'gain_ratio']].values)
         cpd = rpt.KernelCPD('rbf', min_size=1).fit(data)
         bp_indices = cpd.predict(pen=1.0)
@@ -401,6 +405,32 @@ class ParamIO:
                 'gain_ratio', 'gain_ratio_std',
             ],
         )
+    
+    @classmethod
+    def create_breakpoint_for_bars(cls, df_bars):
+        result = None
+        for bar, df_bar in df_bars.items():
+            normalize = lambda x: (x - x.mean()) / x.std()
+            df_bar_norm = df_bar.copy()
+            df_bar_norm['att_length'] = normalize(df_bar['att_length'])
+            df_bar_norm['gain_ratio'] = normalize(df_bar['gain_ratio'])
+
+            cuts = ['run < 3000', 'run > 3999']
+            dfs_bp_bar = None
+            for cut in cuts:
+                df = df_bar_norm.query(cut)
+                df_bp = cls.create_breakpoint_for_bar(df)
+                df_bp.insert(0, 'bar', bar)
+                dfs_bp_bar = pd.concat([dfs_bp_bar, df_bp])
+            
+            denormalize = lambda x, x_orig: x * x_orig.std() + x_orig.mean()
+            dfs_bp_bar['att_length'] = denormalize(dfs_bp_bar['att_length'], df_bar['att_length'])
+            dfs_bp_bar['gain_ratio'] = denormalize(dfs_bp_bar['gain_ratio'], df_bar['gain_ratio'])
+            dfs_bp_bar['att_length_std'] *= df_bar['att_length'].std()
+            dfs_bp_bar['gain_ratio_std'] *= df_bar['gain_ratio'].std()
+
+            result = pd.concat([result, dfs_bp_bar])
+        return result
 
 
 class LogOfLightRatio:
@@ -563,15 +593,32 @@ class LogOfLightRatio:
         return np.exp(intercept)
 
     @property
-    def attenuation_length(self):
+    def attenuation_length_from_wavy(self):
         """In unit of centimeter"""
-        x = np.linspace(-50, 50, 1000)
+        x = np.linspace(-25, 25, 1000)
         slopes = self.get_wavy_slopes(x)
         att_lengths = self.slope_to_attenuation_length(slopes)
         return (
             np.mean(att_lengths),
-            np.std(att_lengths) / np.sqrt(len(att_lengths)),
+            np.std(att_lengths),
         )
+
+    @property
+    def attenuation_length_from_linear(self):
+        """In unit of centimeter"""
+        slope = self.linear_fit(1) - self.linear_fit(0)
+        return (
+            self.slope_to_attenuation_length(slope),
+            0.0
+        )
+    
+    @property
+    def attenuation_length(self):
+        wavy = self.attenuation_length_from_wavy
+        linear = self.attenuation_length_from_linear
+        if np.allclose(wavy[0], linear[0], rtol=0.05):
+            return wavy
+        return (linear[0], wavy[1])
     
     @property
     def gain_ratio(self):
@@ -579,13 +626,19 @@ class LogOfLightRatio:
         intercept = self.wavy_fit(0)
         xf, yf = self.flatten(0, intercept / self.y_scale)
         yf2, yf_err = self._gpr.predict([[xf]], return_std=True)
-        assert np.isclose(yf, yf2, atol=1e-6)
+        if not np.isclose(yf, yf2, atol=1e-6):
+            warnings.warn(f'GPR slope is not close to the linear slope at x = 0 cm')
         intercept_err = abs(intercept * yf_err / yf)
 
         gain_ratio = self.intercept_to_gain_ratio(intercept)
         gain_ratio_err = float(np.exp(gain_ratio) * intercept_err)
 
         return gain_ratio, gain_ratio_err
+    
+    @property
+    def log_light_ratio_spread(self):
+        y = self.df.query('x > -0.05 & x < 0.05').y
+        return np.std(y) * self.y_scale
 
     def add_straightened_xy(self):
         dy = self._wavy_fit(self.df.x) - self._linear_fit(self.df.x)
@@ -660,7 +713,11 @@ class LogOfLightRatioPlotter:
         ax.axhline(0, color='gray', linestyle='dotted', linewidth=0.6)
         ax.axvline(0, color='gray', linestyle='dotted', linewidth=0.6)
         ax.annotate(
-            r'$\lambda = {:.1f} \pm {:.1f}$ cm'.format(*self.llr.attenuation_length) + '\n' + r'$g_R / g_L = {:.2f} \pm {:.2f}$'.format(*self.llr.gain_ratio),
+            '\n'.join([
+            r'$\lambda = {:.1f} \pm {:.1f}$ cm'.format(*self.llr.attenuation_length),
+            r'$g_R / g_L = {:.2f} \pm {:.2f}$'.format(*self.llr.gain_ratio),
+            r'$\sigma_y = {:.2f}$'.format(self.llr.log_light_ratio_spread),
+            ]),
             (0.05, 0.95),
             xycoords='axes fraction',
             ha='left',
@@ -692,7 +749,7 @@ class LogOfLightRatioPlotter:
             llr = LogOfLightRatioPlotter(info['llr'])
             llr.plot(ax=ax, wavy_fit=True, linear_fit=True)
             ax.set_title(f'{run_title} NW{calib.AB}-{bar:02d}')
-            fig.savefig(path, dpi=200, bbox_inches='tight')
+            fig.savefig(path, dpi=150, bbox_inches='tight')
             plt.draw()
             plt.close(fig)
 
