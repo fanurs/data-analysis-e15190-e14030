@@ -240,7 +240,7 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchAddress("NWB.fTimeMean",                    &container.NWB_time[0]);
     chain->SetBranchAddress("NWB.fTimeLeft",                    &container.NWB_time_L[0]);
     chain->SetBranchAddress("NWB.fTimeRight",                   &container.NWB_time_R[0]);
-    chain->SetBranchAddress("NWB.fGeoMeanSaturationCorrected",  &container.NWB_light_GM[0]);
+    // chain->SetBranchAddress("NWB.fGeoMeanSaturationCorrected",  &container.NWB_light_GM[0]);
     chain->SetBranchAddress("NWB.fThetaRan",                    &container.NWB_theta[0]);
     chain->SetBranchAddress("NWB.fPhiRan",                      &container.NWB_phi[0]);
     chain->SetBranchAddress("NWB.fDistRancm",                   &container.NWB_distance[0]);
@@ -282,7 +282,7 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchStatus("NWB.fTimeMean", true);
     chain->SetBranchStatus("NWB.fTimeLeft", true);
     chain->SetBranchStatus("NWB.fTimeRight", true);
-    chain->SetBranchStatus("NWB.fGeoMeanSaturationCorrected", true);
+    // chain->SetBranchStatus("NWB.fGeoMeanSaturationCorrected", true);
     chain->SetBranchStatus("NWB.fThetaRan", true);
     chain->SetBranchStatus("NWB.fPhiRan", true);
     chain->SetBranchStatus("NWB.fDistRancm", true);

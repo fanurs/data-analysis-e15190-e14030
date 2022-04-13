@@ -21,6 +21,10 @@ using Json = nlohmann::json;
 
 // forward declarations of calibration functions
 double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R);
+double get_light_output(
+    NWLightOutputCalibParamReader& nw_pcalib,
+    int bar, double total_L, double total_R, double pos
+);
 std::array<double, 2> get_psd(
     NWPulseShapeDiscriminationParamReader& psd_reader,
     int bar, double total_L, double total_R, double fast_L, double fast_R, double pos
@@ -38,8 +42,10 @@ int main(int argc, char* argv[]) {
 
     // read in parameter readers
     NWBPositionCalibParamReader nwb_pcalib;
-    nwb_pcalib.load(argparser.run_num);
+    NWLightOutputCalibParamReader nwb_lcalib('B');
     NWPulseShapeDiscriminationParamReader nwb_psd_reader('B');
+    nwb_pcalib.load(argparser.run_num);
+    nwb_lcalib.load(argparser.run_num);
     nwb_psd_reader.load(argparser.run_num);
 
     // read in Daniele's ROOT files (Kuan's version)
@@ -54,8 +60,10 @@ int main(int argc, char* argv[]) {
     TFolder* metadata = gROOT->GetRootFolder()->AddFolder("metadata", "");
     metadata->Add(new TNamed(inroot_path.string().c_str(), "inroot_path"));
     TFolder* position_param_paths = metadata->AddFolder("position_param_paths", "");
-    nwb_pcalib.write_metadata(position_param_paths);
+    TFolder* light_param_paths = metadata->AddFolder("light_param_path", "");
     TFolder* psd_param_paths = metadata->AddFolder("psd_param_paths", "");
+    nwb_pcalib.write_metadata(position_param_paths);
+    nwb_lcalib.write_metadata(light_param_paths);
     nwb_psd_reader.write_metadata(psd_param_paths);
 
     // main loop
@@ -83,6 +91,15 @@ int main(int argc, char* argv[]) {
             evt.NWB_distance[m]=phitheta[0];
             evt.NWB_theta[m]=phitheta[1];
             evt.NWB_phi[m]=phitheta[2];
+
+            // light output calibration
+            evt.NWB_light_GM[m] = get_light_output(
+                nwb_lcalib,
+                evt.NWB_bar[m],
+                double(evt.NWB_total_L[m]),
+                double(evt.NWB_total_R[m]),
+                evt.NWB_pos[m]
+            );
             
             // pulse shape discrimination
             std::array<double, 2> psd = get_psd(
@@ -116,6 +133,30 @@ double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time
     int p1 = nw_pcalib.get(bar, "p1");
     double pos = p0 + p1 * (time_L - time_R);
     return pos;
+}
+
+double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, double total_L, double total_R, double pos) {
+    double light_L = total_L;
+    double light_R = total_R;
+    std::unordered_map<std::string, double> par = nw_lcalib.run_param.at(bar);
+
+    // saturation recovery
+    double scalar = exp((2 / par.at("att_length")) * pos + log(par.at("gain_ratio")));
+    double threshold = 4090;
+    if (light_L > threshold && light_R < threshold) { light_L = light_R / scalar; }
+    if (light_R > threshold && light_L < threshold) { light_R = light_L * scalar; }
+
+    // gain matching
+    // Not needed for calibration using Geometric Mean
+    // Gain matching factor will be cancelled out when taking the geometric mean
+
+    // light output calibration
+    double light_GM = sqrt(light_L * light_R);
+    light_GM *= 4.196; // w.r.t. AmBe 4.196 MeVee
+    light_GM /= par.at("a") + par.at("b") * pos + par.at("c") * pos * pos;
+    light_GM = par.at("d") + light_GM * par.at("e");
+    
+    return light_GM;
 }
 
 std::array<double, 2> get_psd(
@@ -175,7 +216,6 @@ std::array<double, 2> get_psd(
     return {ppsd, ppsd_perp};
 }
 
-
 std::array<double, 3> get_global_coordinates(
     NWBPositionCalibParamReader& nw_pcalib,
     int bar,
@@ -197,7 +237,7 @@ std::array<double, 3> get_global_coordinates(
     };
     
     double posy = (double) rand() / RAND_MAX - 0.5;
-    double posz=(double) rand() / RAND_MAX - 0.5;
+    double posz = (double) rand() / RAND_MAX - 0.5;
     posy *= 3.0 * 2.54; //3.0 inches is the height of the neutron bar
     posz *= 2.5 * 2.54; //2.5 inches is the width of the neutron bar
     

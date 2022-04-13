@@ -76,6 +76,26 @@ public:
     void write_metadata(TFolder* folder, bool relative_path=true);
 };
 
+class NWLightOutputCalibParamReader : public ParamReader<int> {
+public:
+    char AB;
+    char ab;
+    std::filesystem::path project_dir = "";
+    std::filesystem::path lcalib_reldir = "database/neutron_wall/light_output_calibration";
+    std::string sat_filename = "nw%c_saturation_recovery.csv";
+    std::string pul_filename = "nw%c_pulse_height_calibration.dat";
+    std::filesystem::path sat_path, pul_path;
+    std::unordered_map<int, std::unordered_map<std::string, double>> run_param;
+
+    NWLightOutputCalibParamReader(const char AB, bool load_params=true);
+    ~NWLightOutputCalibParamReader();
+
+    long load_saturation();
+    void load_pulse_height();
+    bool load(int run);
+    void write_metadata(TFolder* folder, bool relative_path=true);
+};
+
 class NWPulseShapeDiscriminationParamReader : public ParamReader<int> {
 private:
     std::vector<int> not_found_bars;
