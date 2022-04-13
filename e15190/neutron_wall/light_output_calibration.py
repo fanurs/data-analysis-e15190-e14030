@@ -379,9 +379,9 @@ class ParamIO:
     
     @classmethod
     def create_breakpoint_for_bar(cls, df_bar):
-        data = np.array(df_bar[['att_length', 'gain_ratio']].values)
+        data = np.array(df_bar[['att_length', 'gain_ratio', 'log_light_ratio_spread']].values)
         cpd = rpt.KernelCPD('rbf', min_size=1).fit(data)
-        bp_indices = cpd.predict(pen=1.0)
+        bp_indices = cpd.predict(pen=3)
         
         df_bp = []
         prev_i = 0
@@ -389,12 +389,15 @@ class ParamIO:
             rows = df_bar.iloc[prev_i:i_bp]
             att_length = cls.median50_average(rows['att_length'])
             gain_ratio = cls.median50_average(rows['gain_ratio'])
+            llr_spread = cls.median50_average(rows['log_light_ratio_spread'])
             att_length_std = cls.median50_std(rows['att_length'])
             gain_ratio_std = cls.median50_std(rows['gain_ratio'])
+            llr_spread_std = cls.median50_std(rows['log_light_ratio_spread'])
             df_bp.append([
                 min(rows.run), max(rows.run),
                 att_length, att_length_std,
                 gain_ratio, gain_ratio_std,
+                llr_spread, llr_spread_std,
             ])
             prev_i = i_bp
         return pd.DataFrame(
@@ -403,6 +406,7 @@ class ParamIO:
                 'run_start', 'run_stop',
                 'att_length', 'att_length_std',
                 'gain_ratio', 'gain_ratio_std',
+                'log_light_ratio_spread', 'log_light_ratio_spread_std',
             ],
         )
     
@@ -410,27 +414,43 @@ class ParamIO:
     def create_breakpoint_for_bars(cls, df_bars):
         result = None
         for bar, df_bar in df_bars.items():
-            normalize = lambda x: (x - x.mean()) / x.std()
-            df_bar_norm = df_bar.copy()
-            df_bar_norm['att_length'] = normalize(df_bar['att_length'])
-            df_bar_norm['gain_ratio'] = normalize(df_bar['gain_ratio'])
-
             cuts = ['run < 3000', 'run > 3999']
             dfs_bp_bar = None
             for cut in cuts:
-                df = df_bar_norm.query(cut)
+                df = df_bar.query(cut)
+                if len(df) < 2: continue
                 df_bp = cls.create_breakpoint_for_bar(df)
                 df_bp.insert(0, 'bar', bar)
                 dfs_bp_bar = pd.concat([dfs_bp_bar, df_bp])
-            
-            denormalize = lambda x, x_orig: x * x_orig.std() + x_orig.mean()
-            dfs_bp_bar['att_length'] = denormalize(dfs_bp_bar['att_length'], df_bar['att_length'])
-            dfs_bp_bar['gain_ratio'] = denormalize(dfs_bp_bar['gain_ratio'], df_bar['gain_ratio'])
-            dfs_bp_bar['att_length_std'] *= df_bar['att_length'].std()
-            dfs_bp_bar['gain_ratio_std'] *= df_bar['gain_ratio'].std()
-
+            dfs_bp_bar = cls.fill_run_gaps(dfs_bp_bar)
             result = pd.concat([result, dfs_bp_bar])
         return result
+
+    @staticmethod
+    def fill_run_gaps(dfs_bp_bar):
+        run_starts = dfs_bp_bar['run_start']
+        run_stops = dfs_bp_bar['run_stop']
+        run_ranges = np.vstack([run_starts, run_stops]).T
+        for i in range(1, len(run_ranges)):
+            if run_ranges[i, 0] != run_ranges[i - 1, 1] + 1:
+                run_ranges[i, 0] = run_ranges[i - 1, 1] + 1
+        
+        # 3500 split
+        i_4xxx = np.where(run_ranges[:, 0] > 3999)[0][0]
+        if i_4xxx > 0:
+            run_ranges[i_4xxx, 0] = 3501
+            run_ranges[i_4xxx - 1, 1] = 3500
+        
+        result = dfs_bp_bar.copy()
+        result['run_start'] = run_ranges[:, 0]
+        result['run_stop'] = run_ranges[:, 1]
+        return result
+    
+    @classmethod
+    def create_and_save_breakpoints(cls):
+        df = cls.create_breakpoint_for_bars(cls.get_df_bars())
+        path = Path(os.path.expandvars(LightOutputCalibrator.DATABASE_DIR)) / 'calib_params.csv'
+        df.to_csv(path, index=False)
 
 
 class LogOfLightRatio:
