@@ -447,9 +447,9 @@ class ParamIO:
         return result
     
     @classmethod
-    def create_and_save_breakpoints(cls):
+    def create_and_save_breakpoints(cls, AB):
         df = cls.create_breakpoint_for_bars(cls.get_df_bars())
-        path = Path(os.path.expandvars(LightOutputCalibrator.DATABASE_DIR)) / 'calib_params.csv'
+        path = Path(os.path.expandvars(LightOutputCalibrator.DATABASE_DIR)) / f'nw{AB.tolower()}_saturation_recovery.csv'
         df.to_csv(path, index=False)
 
 
