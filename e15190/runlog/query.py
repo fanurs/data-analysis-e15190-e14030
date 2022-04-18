@@ -1,5 +1,6 @@
 import collections
 import pathlib
+import os
 
 import numpy as np
 import pandas as pd
@@ -242,6 +243,18 @@ class ElogQuery:
         indices = np.vstack([ibatch.astype(int), self.df.index])
         indices = pd.MultiIndex.from_arrays(indices, names=['ibatch', 'irun'])
         self.df.set_index(indices, inplace=True)
+
+class CosmicQuery:
+    def __init__(self):
+        path = '$DATABASE_DIR/runlog/cosmic_runs.csv'
+        path = pathlib.Path(os.path.expandvars(path))
+        self.df = pd.read_csv(path)
+        self.df['begin_time'] = pd.to_datetime(self.df['begin_time'])
+        self.df['end_time'] = pd.to_datetime(self.df['end_time'])
+        self.df['elapse'] = pd.to_timedelta(self.df['elapse'])
+    
+    def get_all_runs(self):
+        return sorted(self.df['run'].to_list())
 
 class Query:
     """A class of query methods for the database.
@@ -554,3 +567,11 @@ class Query:
         """
         subdf = Query.elog.df_batches.query(cut)
         return subdf.index.to_list()
+
+    @staticmethod
+    def get_all_cosmic_runs():
+        return CosmicQuery().get_all_runs()
+    
+    @staticmethod
+    def get_cosmic_run_info():
+        return CosmicQuery().df
