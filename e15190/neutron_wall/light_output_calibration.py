@@ -54,7 +54,7 @@ class LightOutputCalibrator:
                 f'NW{self.AB}_time_L - NW{self.AB}_time_R > -25',
             ]),
             drop_columns=['VW_multi'],
-            insert_run_column=True,
+            insert_run_index=True,
         )
         kw.update(kwargs)
 
