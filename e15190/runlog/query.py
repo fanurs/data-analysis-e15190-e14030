@@ -256,6 +256,18 @@ class CosmicQuery:
     def get_all_runs(self):
         return sorted(self.df['run'].to_list())
 
+class AmBeQuery:
+    def __init__(self):
+        path = '$DATABASE_DIR/runlog/ambe_runs.csv'
+        path = pathlib.Path(os.path.expandvars(path))
+        self.df = pd.read_csv(path)
+        self.df['begin_time'] = pd.to_datetime(self.df['begin_time'])
+        self.df['end_time'] = pd.to_datetime(self.df['end_time'])
+        self.df['elapse'] = pd.to_timedelta(self.df['elapse'])
+    
+    def get_all_runs(self):
+        return sorted(self.df['run'].to_list())
+
 class Query:
     """A class of query methods for the database.
 
@@ -575,3 +587,11 @@ class Query:
     @staticmethod
     def get_cosmic_run_info():
         return CosmicQuery().df
+    
+    @staticmethod
+    def get_all_ambe_runs():
+        return AmBeQuery().get_all_runs()
+
+    @staticmethod
+    def get_ambe_run_info():
+        return AmBeQuery().df
