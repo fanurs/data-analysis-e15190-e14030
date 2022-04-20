@@ -2,6 +2,7 @@ import concurrent.futures
 import os
 from pathlib import Path
 from typing import Union
+import warnings
 
 import duckdb as dk
 import pandas as pd
@@ -261,6 +262,8 @@ class RunCache:
                 from_cache=from_cache,
                 save_cache=save_cache,
             )
+            if len(df_run) == 0:
+                warnings.warn(f'Run {run} is empty or not found.')
             if insert_run_index:
                 df_run.insert(0, 'run', run)
                 df_run = df_run.set_index(['run'], append=True, drop=True)
