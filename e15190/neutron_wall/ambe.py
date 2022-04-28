@@ -304,24 +304,42 @@ class FitPlotter:
 
 
 if __name__ == '__main__':
-    VERBOSE = True
+    # VERBOSE = True
 
-    ambe_run = AmBeRun('B')
-    # ambe_run.read([4798, 4799, 4800, 4801, 4802])
-    ambe_run.read([3072, 3073])
-    ambe_run.randomize_ADC()
-    ambe_run.add_x_positions()
-    ambe_run.fit_compton_edges(verbose=VERBOSE)
+    # ambe_run = AmBeRun('B')
+    # # ambe_run.read([4798, 4799, 4800, 4801, 4802])
+    # ambe_run.read([3072, 3073])
+    # ambe_run.randomize_ADC()
+    # ambe_run.add_x_positions()
+    # ambe_run.fit_compton_edges(verbose=VERBOSE)
 
-    path = Path(os.path.expandvars(AmBeRun.DATABASE_DIR))
-    path /= f'compton_edges_{min(ambe_run.runs)}-{max(ambe_run.runs)}.csv'
-    ambe_run.save_params(path)
+    # path = Path(os.path.expandvars(AmBeRun.DATABASE_DIR))
+    # path /= f'compton_edges_{min(ambe_run.runs)}-{max(ambe_run.runs)}.csv'
+    # ambe_run.save_params(path)
 
-    directory = Path(os.path.expandvars(AmBeRun.DATABASE_DIR))
-    directory /= f'gallery/run-{min(ambe_run.runs)}-{max(ambe_run.runs)}'
-    directory.mkdir(parents=True, exist_ok=True)
-    for bar in range(1, 25):
-        path = directory / f'NW{ambe_run.AB}-bar{bar:02d}.png'
-        ambe_run.save_plot(path, bar)
-        if VERBOSE:
-            print(f'Saved plot to "{path}"')
+    # directory = Path(os.path.expandvars(AmBeRun.DATABASE_DIR))
+    # directory /= f'gallery/run-{min(ambe_run.runs)}-{max(ambe_run.runs)}'
+    # directory.mkdir(parents=True, exist_ok=True)
+    # for bar in range(1, 25):
+    #     path = directory / f'NW{ambe_run.AB}-bar{bar:02d}.png'
+    #     ambe_run.save_plot(path, bar)
+    #     if VERBOSE:
+    #         print(f'Saved plot to "{path}"')
+
+    ######
+    # Update quadratic curves in "nwb_pulse_height_calibration.dat"
+    ######
+    ambe_path = Path(os.path.expandvars(AmBeRun.DATABASE_DIR))
+    ambe_path /= f'compton_edges_3072-3073.csv'
+    df_ambe = pd.read_csv(ambe_path)
+
+    light_path = Path(os.path.expandvars('$DATABASE_DIR/neutron_wall/light_output_calibration'))
+    light_path /= 'nwb_pulse_height_calibration.dat'
+    df_light = pd.read_csv(light_path, delim_whitespace=True)
+
+    df_light['a'] = df_ambe['p0']
+    df_light['b'] = df_ambe['p1']
+    df_light['c'] = df_ambe['p2']
+
+    from e15190.utilities import tables
+    tables.to_fwf(df_light, light_path)
