@@ -2,6 +2,7 @@ import concurrent.futures
 import os
 from pathlib import Path
 from typing import Union
+import warnings
 
 import duckdb as dk
 import pandas as pd
@@ -193,7 +194,7 @@ class RunCache:
         from_cache=True,
         save_cache=True,
         reset_index=False,
-        insert_run_column=False,
+        insert_run_index=True,
         verbose=False,
     ) -> pd.DataFrame:
         """Read in multiple runs (multiple files) from Daniele's ROOT files.
@@ -236,8 +237,9 @@ class RunCache:
             in the ROOT file. Subentry enumerates the event multiplicity of a
             single event/entry in a detector, e.g. microBall multiplicity. If
             True, new single-level index starting from 0 is used.
-        insert_run_column : bool, default False
-            If True, a column 'run' is inserted into the dataframe as first column.
+        insert_run_index : bool, default True
+            If True, 'run' is inserted as the first level index, above entry and
+            subentry.
         verbose : bool, default False
             If True, print the progress of the function.
 
@@ -260,8 +262,12 @@ class RunCache:
                 from_cache=from_cache,
                 save_cache=save_cache,
             )
-            if insert_run_column:
+            if len(df_run) == 0:
+                warnings.warn(f'Run {run} is empty or not found.')
+            if insert_run_index:
                 df_run.insert(0, 'run', run)
+                df_run = df_run.set_index(['run'], append=True, drop=True)
+                df_run = df_run.reorder_levels(['run', 'entry', 'subentry'])
             if drop_columns is not None:
                 df_run = df_run.drop(drop_columns, axis=1)
             df = pd.concat([df, df_run], axis=0)

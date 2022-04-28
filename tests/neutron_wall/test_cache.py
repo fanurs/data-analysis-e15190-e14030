@@ -225,7 +225,7 @@ class TestRunCache:
         assert len(df) == sum([len(df_single[run]) for run in runs])
         assert all(df.columns == ['i_evt', 'multi_0', 'x_0', 'multi_1'])
         assert np.allclose(df['x_0'], np.ravel([df_single[run]['x_0'] for run in runs]))
-        assert {'entry', 'subentry'} == set(df.index.names)
+        assert ['run', 'entry', 'subentry'] == list(df.index.names)
         assert 0 in set(df['multi_1'])
         assert 'run' not in df.columns
 
@@ -251,9 +251,9 @@ class TestRunCache:
         assert 'subentry' not in df.index.names
         assert all(df.index == range(len(df)))
 
-        # test insert_run_column = True
-        df = rc.read(runs, branches, insert_run_column=True)
-        assert list(df.columns).index('run') == 0
+        # test insert_run_index = False
+        df = rc.read(runs, branches, insert_run_index=False)
+        assert df.index.names == ['entry', 'subentry']
 
         # test verbose = True
         rc.read(runs, branches, verbose=True)
