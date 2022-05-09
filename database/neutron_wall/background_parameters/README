@@ -1,0 +1,3 @@
+
+The background.dat file contains the parameter of the exponential decay background function
+Bg= Amp[litude* exp(-E/decay), where E is the neutron energy.
