@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Documentation for Data Analysis: E15190-E14030 &#8212; Data Analysis for E15190-E14030  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
@@ -36,9 +37,9 @@
             
   <div class="toctree-wrapper compound">
 </div>
-<div class="section" id="documentation-for-data-analysis-e15190-e14030">
+<section id="documentation-for-data-analysis-e15190-e14030">
 <h1>Documentation for Data Analysis: E15190-E14030<a class="headerlink" href="#documentation-for-data-analysis-e15190-e14030" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="useful-links">
+<section id="useful-links">
 <h2>Useful links<a class="headerlink" href="#useful-links" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030">GitHub repository</a></p></li>
@@ -48,18 +49,18 @@
 <li><p><a class="reference internal" href="_autosummary/e15190.html"><span class="doc">API reference</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 </ul>
-</div>
-<div class="section" id="documentation">
+</section>
+<section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
 <p>All the Python source code is documented at <a class="reference internal" href="_autosummary/e15190.html"><span class="doc">here</span></a>.</p>
 <p>C++ source code and standalone scripts are currently not being documented.</p>
-</div>
-<div class="section" id="background">
+</section>
+<section id="background">
 <h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
 <p>This repository primarily focuses on neutron wall analysis. Instead of starting from the raw event files (binary files from the DAQ), we treat the ROOT files generated using <a class="reference external" href="https://github.com/nscl-hira/E15190-Unified-Analysis-Framework">Daniele’s analysis framework</a> (currently using branch <code class="docutils literal notranslate"><span class="pre">zhu</span></code>) as inputs, and from there we write our own analysis codes. In the case where calibration parameters are not good enough or some minor mistakes were found in the framework, we always try <em>not</em> to modify the framework. Instead, we would like to “freeze” the framework, and correct for any imperfection or errors in the output ROOT files within this repository. Unless there is something that framework does not preserve in the ROOT files, e.g. missing events, then only we will go back and try to debug the framework (currently WMU is working on this).</p>
 <p>This decision was made after considering the fact that all major authors of the framework had left the group. It is simply safer and more efficient to keep it as “legacy code”, and build on top of the ROOT files it generated. Fortunately, most of the calibrations have already been done. While some are found to be off later on, most are already good enough for a simple “first-order” analysis.</p>
-</div>
-<div class="section" id="installation">
+</section>
+<section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>If you are not familiar with conda, more detailed instructions can be found at <a class="reference internal" href="manualdoc/installation.html#installation-detailed-version"><span class="std std-ref">Installation (detailed version)</span></a>.</p>
 <ol class="arabic">
@@ -86,8 +87,8 @@
 </div>
 </li>
 </ol>
-</div>
-<div class="section" id="structure-of-the-repository">
+</section>
+<section id="structure-of-the-repository">
 <h2>Structure of the repository<a class="headerlink" href="#structure-of-the-repository" title="Permalink to this headline">¶</a></h2>
 <p>This repository is written mainly in Python 3.8 and C++20 (<code class="docutils literal notranslate"><span class="pre">-std=c++2a</span></code> in GCC 9 and earlier).</p>
 <ul class="simple">
@@ -101,8 +102,8 @@
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/environment.yml">environment.yml</a>: Configuration file for setting up the conda environment.</p></li>
 <li><p><a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/build.py">build.py</a>: Installation script. To build the conda environment as well as modifying a few other things, e.g. environment variables, terminal commands, etc.</p></li>
 </ul>
-</div>
-<div class="section" id="testing-framework">
+</section>
+<section id="testing-framework">
 <h2>Testing framework<a class="headerlink" href="#testing-framework" title="Permalink to this headline">¶</a></h2>
 <p>We are using the <a class="reference external" href="https://docs.pytest.org/">pytest</a> framework. To test everything, simply activate the conda environment, go to the project directory and type:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pytest</span>
@@ -112,7 +113,7 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pytest tests/utilities/test_timer.py</span>
 </pre></div>
 </div>
-<div class="section" id="when-to-do-unit-testing">
+<section id="when-to-do-unit-testing">
 <h3>When to do unit testing?<a class="headerlink" href="#when-to-do-unit-testing" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Right after installation, run all tests to see if things are working correctly.</p></li>
@@ -120,9 +121,9 @@
 <li><p>You are also encouraged to write and run tests <em>while</em> developing the source code. This is often considered as the best practice, though sometimes a little too tedious.</p></li>
 <li><p>Any other scenarios where you think there might be a chance to break things, i.e. server updates, conda environment updates, git merge with other collaborators, etc.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="pep-8-style-guide">
+</section>
+</section>
+<section id="pep-8-style-guide">
 <h2>PEP 8 style guide<a class="headerlink" href="#pep-8-style-guide" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8 Style Guide</a> is the most popular style guide among Python developers. It is a set of guidelines for writing Python code that aims to be consistent and readable. The <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">webpage</a> has a detailed description of the style guide. While it is always a good idea to go through the guidelines, not everyone will have the luxury to read the whole document and remember all the rules. So oftentimes, people use some automated tools to format their code.</p>
 <p>In this project, we use <a class="reference external" href="https://pypi.org/project/autopep8/">autopep8</a> to automatically format our code in order to comply with the PEP 8 standard. This Python package is already listed in <a class="reference external" href="https://github.com/Fanurs/data-analysis-e15190-e14030/tree/main/environment.yml">environment.yml</a>, so right after you activate the conda environment, you can simply type:</p>
@@ -131,8 +132,8 @@
 </div>
 <p>This command should have automatically formatted the <code class="docutils literal notranslate"><span class="pre">demo_script.py</span></code> script in place. In most cases, autopep8 only changes the style of the code, e.g. whitespaces, indentation, etc., and it should not change the behavior of the code. Always re-run some tests if you are not sure.</p>
 <p>Lastly, it is strongly recommended to apply autopep8 to your script before committing to git or pushing to GitHub.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>

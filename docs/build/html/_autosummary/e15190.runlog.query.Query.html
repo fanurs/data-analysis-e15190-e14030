@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>e15190.runlog.query.Query &#8212; Data Analysis for E15190-E14030  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
@@ -34,7 +35,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="e15190-runlog-query-query">
+  <section id="e15190-runlog-query-query">
 <h1>e15190.runlog.query.Query<a class="headerlink" href="#e15190-runlog-query-query" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query">
@@ -102,11 +103,23 @@ basic query interface for users who are not familiar with pandas.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.beams" title="e15190.runlog.query.Query.beams"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beams</span></code></a>()</p></td>
 <td><p>Returns all distinct beam names in the database.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch" title="e15190.runlog.query.Query.get_batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch</span></code></a>(ibatch)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_ambe_runs</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_cosmic_runs</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ambe_run_info</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch" title="e15190.runlog.query.Query.get_batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch</span></code></a>(ibatch)</p></td>
 <td><p>Returns a sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in <a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch_info" title="e15190.runlog.query.Query.get_batch_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch_info</span></code></a>(ibatch[, include_comments])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch_info" title="e15190.runlog.query.Query.get_batch_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch_info</span></code></a>(ibatch[, include_comments])</p></td>
 <td><p>Returns a dictionary of properties for a given batch.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cosmic_run_info</span></code>()</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_n_batches" title="e15190.runlog.query.Query.get_n_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_n_batches</span></code></a>()</p></td>
 <td><p>Returns the number of batches in the database.</p></td>
@@ -396,7 +409,7 @@ following variables are can be specified in the expression:</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
