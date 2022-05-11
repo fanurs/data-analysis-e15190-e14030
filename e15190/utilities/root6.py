@@ -134,3 +134,15 @@ class HistogramConversion:
         )
         return df if keep_zeros else df.query(f'{zname} != 0.0').reset_index(drop=True)
 histo_conversion = HistogramConversion()
+
+class TFile:
+    def __init__(self, path, mode='READ'):
+        self.path = pathlib.Path(path)
+        self.mode = mode.upper()
+
+    def __enter__(self):
+        self.file = ROOT.TFile(str(self.path), self.mode)
+        return self.file
+
+    def __exit__(self, *args):
+        self.file.Close()
