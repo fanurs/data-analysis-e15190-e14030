@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>e15190.runlog.data_cleansing.ElogCleanser &#8212; Data Analysis for E15190-E14030  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
@@ -34,11 +35,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="e15190-runlog-data-cleansing-elogcleanser">
+  <section id="e15190-runlog-data-cleansing-elogcleanser">
 <h1>e15190.runlog.data_cleansing.ElogCleanser<a class="headerlink" href="#e15190-runlog-data-cleansing-elogcleanser" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.runlog.data_cleansing.ElogCleanser">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.data_cleansing.</span></span><span class="sig-name descname"><span class="pre">ElogCleanser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elog_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.data_cleansing.</span></span><span class="sig-name descname"><span class="pre">ElogCleanser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elog_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_elog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser" title="Permalink to this definition">¶</a></dt>
 <dd><p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -46,19 +47,22 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.__init__" title="e15190.runlog.data_cleansing.ElogCleanser.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([elog_path])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.__init__" title="e15190.runlog.data_cleansing.ElogCleanser.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([elog_path, read_elog])</p></td>
 <td><p>To cleanse the ELOG downloaded from the web.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.cleanse" title="e15190.runlog.data_cleansing.ElogCleanser.cleanse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cleanse</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.cleanse" title="e15190.runlog.data_cleansing.ElogCleanser.cleanse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cleanse</span></code></a>([cleanse_runs, cleanse_events])</p></td>
 <td><p>Cleanse the elog.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.filtered_runs" title="e15190.runlog.data_cleansing.ElogCleanser.filtered_runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filtered_runs</span></code></a>()</p></td>
 <td><p>Updates and returns filtered experimental runs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.save_cleansed_elog" title="e15190.runlog.data_cleansing.ElogCleanser.save_cleansed_elog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_cleansed_elog</span></code></a>([output_dir, df_runs, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code>(**kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.save_cleansed_elog" title="e15190.runlog.data_cleansing.ElogCleanser.save_cleansed_elog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_cleansed_elog</span></code></a>([output_dir, df_runs, ...])</p></td>
 <td><p>Save experimental runs and events after data cleansing.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.save_filtered_runs" title="e15190.runlog.data_cleansing.ElogCleanser.save_filtered_runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_filtered_runs</span></code></a>(file_extension[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.save_filtered_runs" title="e15190.runlog.data_cleansing.ElogCleanser.save_filtered_runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_filtered_runs</span></code></a>(file_extension[, ...])</p></td>
 <td><p>Save filtered experimental runs to a file.</p></td>
 </tr>
 </tbody>
@@ -70,23 +74,20 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.runs" title="e15190.runlog.data_cleansing.ElogCleanser.runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runs</span></code></a></p></td>
-<td><p>Dataframe of experimental runs</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">CLEANSED_DIR</span></code></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.events" title="e15190.runlog.data_cleansing.ElogCleanser.events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">events</span></code></a></p></td>
-<td><p>Dataframe of events</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">OUTPUT_DIR</span></code></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.runs_final" title="e15190.runlog.data_cleansing.ElogCleanser.runs_final"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runs_final</span></code></a></p></td>
-<td><p>Dataframe of experimental runs after filtering</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.events_final" title="e15190.runlog.data_cleansing.ElogCleanser.events_final"><code class="xref py py-obj docutils literal notranslate"><span class="pre">events_final</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.data_cleansing.ElogCleanser.events_final" title="e15190.runlog.data_cleansing.ElogCleanser.events_final"><code class="xref py py-obj docutils literal notranslate"><span class="pre">events_final</span></code></a></p></td>
 <td><p>Dataframe of events after filtering</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.data_cleansing.ElogCleanser.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elog_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elog_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_elog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>To cleanse the ELOG downloaded from the web.</p>
 <p>The ELOG is hosted at
 <a class="reference external" href="http://neutronstar.physics.wmich.edu/runlog/index.php?op=list">http://neutronstar.physics.wmich.edu/runlog/index.php?op=list</a>
@@ -112,28 +113,13 @@ into some suitable data types. Some simple removal of entries (rows) is
 also done here.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>elog_path</strong> (<em>str</em><em>, </em><em>default None</em>) – The path to the local ELOG html file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the default path
-is used, i.e. <code class="docutils literal notranslate"><span class="pre">$PROJECT_DIR/database/runlog/downloads/elog.html</span></code>.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>elog_path</strong> (<em>str</em><em>, </em><em>default None</em>) – The path to the local ELOG html file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the default path
+is used, i.e. <code class="docutils literal notranslate"><span class="pre">$DATABASE_DIR/runlog/downloads/elog.html</span></code>.</p></li>
+<li><p><strong>read_elog</strong> (<em>bool</em><em>, </em><em>default True</em>) – Read in the HTML file.</p></li>
+</ul>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="e15190.runlog.data_cleansing.ElogCleanser.runs">
-<span class="sig-name descname"><span class="pre">runs</span></span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser.runs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dataframe of experimental runs</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="e15190.runlog.data_cleansing.ElogCleanser.events">
-<span class="sig-name descname"><span class="pre">events</span></span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser.events" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dataframe of events</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="e15190.runlog.data_cleansing.ElogCleanser.runs_final">
-<span class="sig-name descname"><span class="pre">runs_final</span></span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser.runs_final" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dataframe of experimental runs after filtering</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -149,7 +135,7 @@ is used, i.e. <code class="docutils literal notranslate"><span class="pre">$PROJ
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.data_cleansing.ElogCleanser.cleanse">
-<span class="sig-name descname"><span class="pre">cleanse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser.cleanse" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cleanse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cleanse_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cleanse_events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.data_cleansing.ElogCleanser.cleanse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cleanse the elog.</p>
 <p>This function updates the <code class="docutils literal notranslate"><span class="pre">self.runs</span></code> and <code class="docutils literal notranslate"><span class="pre">self.events</span></code> dataframes.
 Most entries are being preserved, i.e. minimal filtering is done except
@@ -298,7 +284,7 @@ spreadsheet software.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>

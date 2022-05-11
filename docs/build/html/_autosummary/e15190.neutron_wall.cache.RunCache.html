@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>e15190.neutron_wall.cache.RunCache &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.cache.RunCache</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="e15190-neutron-wall-cache-runcache">
+<h1>e15190.neutron_wall.cache.RunCache<a class="headerlink" href="#e15190-neutron-wall-cache-runcache" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.cache.RunCache">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.cache.</span></span><span class="sig-name descname"><span class="pre">RunCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path_fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_path_fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.cache.RunCache" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.cache.RunCache.__init__" title="e15190.neutron_wall.cache.RunCache.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(src_path_fmt, cache_path_fmt[, ...])</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param src_path_fmt</dt>
+<dd class="field-odd"><p>The format of the path to the ROOT file, e.g.</p>
+</dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_tree_name</span></code>(uproot_file)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.cache.RunCache.read" title="e15190.neutron_wall.cache.RunCache.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(runs, branches[, sql_cmd, ...])</p></td>
+<td><p>Read in multiple runs (multiple files) from Daniele's ROOT files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.cache.RunCache.read_run" title="e15190.neutron_wall.cache.RunCache.read_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run</span></code></a>(run, branches[, sql_cmd, ...])</p></td>
+<td><p>Read in one run (one file) from Daniele's ROOT files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.cache.RunCache.read_run_from_root" title="e15190.neutron_wall.cache.RunCache.read_run_from_root"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run_from_root</span></code></a>(run, branches[, tree_name])</p></td>
+<td><p>Read in one run (one file) from Daniele's ROOT files.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_run_from_sqlite</span></code>(run[, sql_cmd])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.cache.RunCache.save_run_to_sqlite" title="e15190.neutron_wall.cache.RunCache.save_run_to_sqlite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_run_to_sqlite</span></code></a>(run, df)</p></td>
+<td><p>Save the run as a dataframe in sqlite database.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.cache.RunCache.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path_fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_path_fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.cache.RunCache.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_path_fmt</strong> (<em>str with 'run' specifier</em>) – The format of the path to the ROOT file, e.g.
+<code class="docutils literal notranslate"><span class="pre">'/home/user/data/CalibratedData_{run:04d}.root'</span></code>.</p></li>
+<li><p><strong>cache_path_fmt</strong> (<em>str with 'run' specifier</em>) – The format of the path to the sqlite3 database file, e.g.
+<code class="docutils literal notranslate"><span class="pre">'/mnt/analysis/data/cache/run-{run:04d}.db'</span></code>.</p></li>
+<li><p><strong>max_workers</strong> (<em>int</em><em>, </em><em>default 8</em>) – The maximum number of thread pool executor workers to use for
+decompression and interpretation of ROOT files by Uproot.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.cache.RunCache.read_run_from_root">
+<span class="sig-name descname"><span class="pre">read_run_from_root</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.cache.RunCache.read_run_from_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in one run (one file) from Daniele’s ROOT files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – The run number.</p></li>
+<li><p><strong>branches</strong> (<em>dict of str:str</em><em> or </em><em>list of str</em>) – If a dict, old_br_name -&gt; new_br_name. The keys are the branch names
+at original path, and the values are the new names given to the
+dataframe. If a list, the branch names at path are used as the new
+names.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>default None</em>) – The name of the tree to read. If None, the tree name is inferred
+from the ROOT file. Infer is guaranteed only if there exists exactly
+one TTree in the ROOT file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.cache.RunCache.save_run_to_sqlite">
+<span class="sig-name descname"><span class="pre">save_run_to_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pathlib.Path</span></span></span><a class="headerlink" href="#e15190.neutron_wall.cache.RunCache.save_run_to_sqlite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the run as a dataframe in sqlite database.</p>
+<p>This is primarily used as cache for future use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – The run number.</p></li>
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – The dataframe to save.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>path</strong> – The path to the sqlite database file.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.cache.RunCache.read_run">
+<span class="sig-name descname"><span class="pre">read_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.cache.RunCache.read_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in one run (one file) from Daniele’s ROOT files.</p>
+<p>By default, the run is read from the SQLite cache. If the cache does not
+exist, the run is read from the ROOT file and saved to the cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – The run number.</p></li>
+<li><p><strong>branches</strong> (<em>dict of str:str</em><em> or </em><em>list of str</em>) – If dict, old_br_name -&gt; new_br_name. If list, branch names remain
+the same. If the function is reading from cache, this option is ignored;
+if the function is reading from ROOT, this option is required.</p></li>
+<li><p><strong>sql_cmd</strong> (<em>str</em><em>, </em><em>default ''</em>) – The SQL command to be appended after ‘SELECT * FROM table_name’. A
+space is automatically added between the table name and the command.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>default None</em>) – The name of the tree to read. If None, the tree name is inferred.
+Infer is guaranteed only if there exists exactly one TTree in the
+ROOT file.</p></li>
+<li><p><strong>from_cache</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, the function always attempts to read from the cache, unless
+the cache does not exist. If False, cache will be ignored, and the
+run will be read from the ROOT file.</p></li>
+<li><p><strong>save_cache</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, the run is saved to the cache after reading from the ROOT
+file. If False, the run will not be saved to the cache. This option
+is ignored if the function is already reading from the cache.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – The dataframe of the run.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.cache.RunCache.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insert_run_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.cache.RunCache.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in multiple runs (multiple files) from Daniele’s ROOT files.</p>
+<p>It is user’s responsibility to ensure that the resultant dataframe fits
+into memory. Use <code class="docutils literal notranslate"><span class="pre">sql_cmd</span></code> to select only the rows of interest. This
+filter is applied to the single-run dataframes before being concatenated
+into the final dataframe, keeping the memory usage minimal.</p>
+<p>The entries and columns that are being cached are not affected by
+<code class="docutils literal notranslate"><span class="pre">sql_cmd</span></code> and <code class="docutils literal notranslate"><span class="pre">drop_columns</span></code>. These options only take place when
+constructing the final dataframe and loading to memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>runs</strong> (<em>list of int</em><em> or </em><em>int</em>) – The run numbers.</p></li>
+<li><p><strong>branches</strong> (<em>dict of str:str</em><em> or </em><em>list of str</em>) – If dict, old_br_name -&gt; new_br_name. If list, branch names remain
+the same. If the function is reading from cache, this option is ignored.</p></li>
+<li><p><strong>sql_cmd</strong> (<em>str</em><em>, </em><em>default ''</em>) – The SQL command to be appended after ‘SELECT * FROM table_name’. This
+option is ignored when reading from ROOT files.</p></li>
+<li><p><strong>drop_columns</strong> (<em>list of str</em><em>, </em><em>default None</em>) – The columns to be dropped from the dataframe for each run. This is
+executed after <code class="docutils literal notranslate"><span class="pre">pandas_query</span></code>. This has no effect on the columns
+that are being cached.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>default None</em>) – The name of the tree to read. If None, the tree name is inferred.</p></li>
+<li><p><strong>from_cache</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, the function attempts to read from cache. If False, cache
+will be ignored, and the runs will be read from ROOT files.</p></li>
+<li><p><strong>save_cache</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, the runs are saved to the cache after reading from ROOT
+files.</p></li>
+<li><p><strong>reset_index</strong> (<em>bool</em><em>, </em><em>default False</em>) – If False, the original index is kept. The original index comes from
+uproot, where there is a two-level index of (entry, subentry). Entry
+enumerates the triggered events and is identical to the entry number
+in the ROOT file. Subentry enumerates the event multiplicity of a
+single event/entry in a detector, e.g. microBall multiplicity. If
+True, new single-level index starting from 0 is used.</p></li>
+<li><p><strong>insert_run_index</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, ‘run’ is inserted as the first level index, above entry and
+subentry.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, print the progress of the function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – The concatenated dataframe of all runs.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.cache.RunCache</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

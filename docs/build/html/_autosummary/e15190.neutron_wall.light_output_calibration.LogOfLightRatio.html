@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>e15190.neutron_wall.light_output_calibration.LogOfLightRatio &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.light_output_calibration.LogOfLightRatio</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="e15190-neutron-wall-light-output-calibration-logoflightratio">
+<h1>e15190.neutron_wall.light_output_calibration.LogOfLightRatio<a class="headerlink" href="#e15190-neutron-wall-light-output-calibration-logoflightratio" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.light_output_calibration.</span></span><span class="sig-name descname"><span class="pre">LogOfLightRatio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">light_L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">light_R</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.__init__" title="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(pos, light_L, light_R)</p></td>
+<td><p>Class to help analyzing the logarithm of light ratio.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_straightened_xy</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">decorate_descale_xy</span></code>(func)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.deflatten" title="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.deflatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deflatten</span></code></a>(x, y)</p></td>
+<td><p>Rotates flattened (x, y) back to the original points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_longest_increasing_subarray</span></code>(x)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.fit_linear" title="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.fit_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_linear</span></code></a>()</p></td>
+<td><p>A robust linear fit on (x, y) using PCA and RANSAC.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_wavy</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_wavy_on_flat</span></code>([return_xy])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.flatten" title="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten</span></code></a>(x, y)</p></td>
+<td><p>Rotates (x, y) to zero slope of the linear fit.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_wavy_slopes</span></code>(x)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">intercept_to_gain_ratio</span></code>(intercept)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code>(x, y, angle)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">slope_to_attenuation_length</span></code>(slope)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">straighten</span></code>(pos, log_light_ratio)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">attenuation_length</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_linear" title="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attenuation_length_from_linear</span></code></a></p></td>
+<td><p>In unit of centimeter</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_wavy" title="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_wavy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attenuation_length_from_wavy</span></code></a></p></td>
+<td><p>In unit of centimeter</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.gain_ratio" title="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.gain_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gain_ratio</span></code></a></p></td>
+<td><p>Gain right divided by gain left</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_light_ratio_spread</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">light_L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">light_R</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to help analyzing the logarithm of light ratio.</p>
+<p>Data are assumed to be coming from one single NW bar. Experimental runs
+of the same nuclear reactions that are closeby in time could be chained
+together for more statistics.</p>
+<p>Both <code class="docutils literal notranslate"><span class="pre">self.x</span></code> and <code class="docutils literal notranslate"><span class="pre">self.y</span></code> will be defined as dimensionless
+quantities. The scaling factors are chosen empirically to make the
+ranges of x and y roughly the same.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>light_L</strong> (<em>array-like</em>) – The light output of detected at the left side of the bar in ADC.</p></li>
+<li><p><strong>light_R</strong> (<em>array-like</em>) – The light output of detected at the right side of the bar in ADC.</p></li>
+<li><p><strong>pos</strong> (<em>array-like</em>) – The hit positions on the bar in centimeter.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.fit_linear">
+<span class="sig-name descname"><span class="pre">fit_linear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.fit_linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>A robust linear fit on (x, y) using PCA and RANSAC.</p>
+<p>To improve robustness against outliers, PCA is first performed so that
+data points with 2nd components far from zero are removed. The remaining
+data are fed to RANSAC to find the most robust linear fit, updated as
+<code class="docutils literal notranslate"><span class="pre">self.linear_fit</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.flatten">
+<span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotates (x, y) to zero slope of the linear fit.</p>
+<p>Rotation center is at origin, not the intersection between the linear
+fit and the y-axis. This function is only used intermediately for
+fitting the “wavy” relation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.deflatten">
+<span class="sig-name descname"><span class="pre">deflatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.deflatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotates flattened (x, y) back to the original points.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_wavy">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">attenuation_length_from_wavy</span></span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_wavy" title="Permalink to this definition">¶</a></dt>
+<dd><p>In unit of centimeter</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_linear">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">attenuation_length_from_linear</span></span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.attenuation_length_from_linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>In unit of centimeter</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="e15190.neutron_wall.light_output_calibration.LogOfLightRatio.gain_ratio">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">gain_ratio</span></span><a class="headerlink" href="#e15190.neutron_wall.light_output_calibration.LogOfLightRatio.gain_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gain right divided by gain left</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.light_output_calibration.LogOfLightRatio</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>
