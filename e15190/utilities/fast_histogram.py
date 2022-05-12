@@ -83,7 +83,11 @@ def plot_histo1d(hist_func, x, range, bins, **kwargs):
     patches : histogram patches
         The histogram patches.
     """
-    weights = fh.histogram1d(x, range=range, bins=bins)
+    if 'weights' in kwargs:
+        weights = fh.histogram1d(x, range=range, bins=bins, weights=kwargs['weights'])
+        kwargs.pop('weights')
+    else:
+        weights = fh.histogram1d(x, range=range, bins=bins)
     x_centers = np.linspace(*range, bins + 1)
     x_centers = 0.5 * (x_centers[1:] + x_centers[:-1])
     return hist_func(
@@ -126,7 +130,12 @@ def plot_histo2d(hist_func, x, y, range, bins, **kwargs):
         The histogram patches.
     """
     range, bins = map(np.array, (range, bins))
-    weights = fh.histogram2d(x, y, range=range, bins=bins)
+    if 'weights' in kwargs:
+        weights = fh.histogram2d(x, y, range=range, bins=bins, weights=kwargs['weights'])
+        kwargs.pop('weights')
+    else:
+        weights = fh.histogram2d(x, y, range=range, bins=bins)
+    weights = weights.transpose().flatten()
     x_centers = np.linspace(*range[0], bins[0] + 1)
     y_centers = np.linspace(*range[1], bins[1] + 1)
     x_centers = 0.5 * (x_centers[1:] + x_centers[:-1])
@@ -135,7 +144,7 @@ def plot_histo2d(hist_func, x, y, range, bins, **kwargs):
     return hist_func(
         x_centers.flatten(),
         y_centers.flatten(),
-        weights=weights.transpose().flatten(),
+        weights=weights,
         range=range,
         bins=bins,
         **kwargs,
