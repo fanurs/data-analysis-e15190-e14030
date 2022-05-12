@@ -79,6 +79,9 @@ class HistogramConversion:
     def __init__(self):
         pass
 
+    def __call__(self, histo, *args, **kwargs):
+        return self.histo_to_dframe(histo, *args, **kwargs)
+
     def histo_to_dframe(self, histo, *args, **kwargs):
         if isinstance(histo, ROOT.TH2):
             func = self._histo2d_to_dframe
