@@ -595,3 +595,95 @@ class Query:
     @staticmethod
     def get_ambe_run_info():
         return AmBeQuery().df
+
+class ReactionParser:
+    def __init__(self, beams=None, targets=None, energies=None):
+        if beams is None:
+            beams = [
+                ('Ca', 40),
+                ('Ca', 48),
+            ]
+        self.beams = beams
+
+        if targets is None:
+            targets = [
+                ('Ni', 58),
+                ('Ni', 64),
+                ('Sn', 112),
+                ('Sn', 124),
+            ]
+        self.targets = targets
+    
+        if energies is None:
+            energies = [56, 140]
+        self.energies = energies
+
+    @property
+    def beam_target_styles(self):
+        return [
+            'aa10bb20',
+            'Aa10Bb20',
+            '10aa20bb',
+            '10Aa20Bb',
+        ]
+    
+    @property
+    def beam_target_energy_styles_re(self):
+        return [
+            'aa10bb20e100',
+            'Aa10Bb20E100',
+        ]
+    
+    @staticmethod
+    def _isotope_combinations(symbol, mass_number):
+        return [
+            f'{symbol.capitalize()}{mass_number}',
+            f'{symbol.lower()}{mass_number}',
+            f'{mass_number}{symbol.capitalize()}',
+            f'{mass_number}{symbol.lower()}',
+        ]
+    
+    def read_beam(self, string):
+        for beam in self.beams:
+            for beam_str in self._isotope_combinations(*beam):
+                if beam_str in string:
+                    return beam
+    
+    def read_target(self, string):
+        for target in self.targets:
+            for target_str in self._isotope_combinations(*target):
+                if target_str in string:
+                    return target
+    
+    def read_energy(self, string):
+        for energy in self.energies:
+            if str(energy) in string:
+                return int(energy)
+    
+    def set_convert_style(self, dst_style):
+        if dst_style not in self.beam_target_styles and dst_style not in self.beam_target_energy_styles:
+            raise ValueError(f'Unknown style: {dst_style}')
+        self.dst_style = dst_style
+    
+    def convert(self, string, dst_style=None):
+        if dst_style is None:
+            dst_style = self.dst_style
+
+        beam = self.read_beam(string)
+        target = self.read_target(string)
+        energy = self.read_energy(string)
+
+        if dst_style == 'aa10bb20':
+            return f'{beam[0].lower()}{beam[1]}{target[0].lower()}{target[1]}'
+        if dst_style == 'Aa10Bb20':
+            return f'{beam[0].capitalize()}{beam[1]}{target[0].capitalize()}{target[1]}'
+        if dst_style == '10aa20bb':
+            return f'{beam[1]}{beam[0].lower()}{target[1]}{target[0].lower()}'
+        if dst_style == '10Aa20Bb':
+            return f'{beam[1]}{beam[0].capitalize()}{target[1]}{target[0].capitalize()}'
+
+        if dst_style == 'aa10bb20e100':
+            return f'{beam[0].lower()}{beam[1]}{target[0].lower()}{target[1]}e{energy}'
+        if dst_style == 'Aa10Bb20E100':
+            return f'{beam[0].capitalize()}{beam[1]}{target[0].capitalize()}{target[1]}E{energy}'
+    
