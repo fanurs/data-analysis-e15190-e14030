@@ -238,6 +238,8 @@ class DataManager:
 
 _data_manager = DataManager()
 
+amu = const.u * const.c**2
+
 def get_A_Z(notation, simple_tuple=False):
     """Converts mass-number annotated isotope expression into A and Z.
 
@@ -311,7 +313,7 @@ def mass(argv, unitless=True, not_found_okay=False, not_found_warning=True):
     mass : float or ``astropy.units.Quantity``
         The mass of the isotope.
     """
-    global _data_manager
+    global _data_manager, amu
     df = _data_manager.df
     df_units = _data_manager.units
 
@@ -332,7 +334,6 @@ def mass(argv, unitless=True, not_found_okay=False, not_found_warning=True):
         else:
             raise ValueError(f'"(A, Z) = ({A}, {Z})" not found')
 
-    amu = const.u * const.c**2
     if found:
         mass_excess = u.Quantity(df.loc[(A, Z)]['mass_excess'], df_units['mass_excess'])
         mass_excess = mass_excess.value * u.Unit('keV')
