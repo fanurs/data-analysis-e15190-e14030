@@ -19,8 +19,8 @@ def kinergy_to_momentum(mass, kinergy):
 def energy_to_momentum(mass, energy):
     return np.sqrt(energy**2 - mass**2)
 
-def rapidity(energy, momentum):
-    return 0.5 * np.log((energy + momentum) / (energy - momentum))
+def rapidity(energy, momentum_z):
+    return 0.5 * np.log((energy + momentum_z) / (energy - momentum_z))
 
 class LorentzVector:
     def __init__(self, x, y, z, t):
