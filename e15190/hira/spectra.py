@@ -140,7 +140,7 @@ class LabPtransverseRapidity:
         df_corrected = self.df_slice.copy()
         for y_val, subdf in self.df_slice.groupby('y'):
             n_total = len(subdf)
-            n_inside = np.sum(self.is_inside(subdf.x, subdf.y))
+            n_inside = np.sum(self.is_inside(subdf.x, subdf.y) & (subdf.z > z_threshold))
             if n_inside == 0:
                 continue
             with pd.option_context('mode.chained_assignment', None):
