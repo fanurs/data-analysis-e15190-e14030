@@ -40,7 +40,11 @@ class HiraFile:
                 get_particle(obj.GetName()) for obj in file.GetListOfKeys()
             ]).keys())
     
-    def get_root_histogram(self, h_name):
+    def get_root_histogram(self, h_name=None, particle=None, keyword=None):
+        if h_name is None:
+            h_names = self.get_all_histograms(particle)
+            h_names = [h_name for h_name in h_names if keyword.lower() in h_name.lower()]
+            h_name = max(h_names, key=len)
         with rt6.TFile(self.path) as file:
             hist = file.Get(h_name)
             hist.SetDirectory(0)
@@ -63,7 +67,7 @@ class LabPtransverseRapidity:
         '10Be': (22.0, 200.0),
     }
 
-    def __init__(self, particle, reaction, df_hist, bounds=(0.4, 0.6)):
+    def __init__(self, particle, reaction, df_hist):
         """
         Parameters
         ----------
@@ -76,14 +80,10 @@ class LabPtransverseRapidity:
             represents the rapidity in lab frame (0 ~ 1), 'y' represents the
             transverse momentum in MeV/c, 'z' represents the cross section in ??
             unit.
-        bounds : 2-tuple, default (0.4, 0.6)
-            The lower bound and upper bound of the lab rapidity.
         """
         self.particle = particle
         self.reaction = reaction
         self.df_full = df_hist
-        self.bounds = bounds
-        self.df_slice = self.df_full.query(f'x >= {self.bounds[0]} & x <= {self.bounds[1]}')
     
     @functools.cached_property
     def beam_rapidity(self):
@@ -136,18 +136,47 @@ class LabPtransverseRapidity:
             kinergy <= self.lab_kinergy_per_A_ranges[self.particle][1] * A,
         ], axis=0)
 
-    def correct_coverage(self, z_threshold=0, inplace=False):
-        df_corrected = self.df_slice.copy()
-        for y_val, subdf in self.df_slice.groupby('y'):
+    def correct_coverage(self, df_slice, z_threshold=0):
+        df_corrected = df_slice.copy()
+        for _, subdf in df_slice.groupby('y'):
             n_total = len(subdf)
             n_inside = np.sum(self.is_inside(subdf.x, subdf.y) & (subdf.z > z_threshold))
             if n_inside == 0:
                 continue
             with pd.option_context('mode.chained_assignment', None):
                 df_corrected.loc[subdf.index, 'z'] *= n_total / n_inside
-        if inplace:
-            self.df_slice = df_corrected
+                df_corrected.loc[subdf.index, 'zerr'] *= n_total / n_inside
         return df_corrected
+    
+    def get_ptA_spectrum(
+        self,
+        rapidity_range=(0.4, 0.6),
+        z_threshold=0,
+        correct_coverage=True,
+        hrange=(0, 600),
+        bins=600,
+    ):
+        df_slice = self.df_full.query(f'x >= {rapidity_range[0]} & x <= {rapidity_range[1]}')
+        if correct_coverage:
+            df_slice = self.correct_coverage(df_slice, z_threshold)
+
+        h = fh.histo1d(df_slice.y, weights=df_slice.z, range=hrange, bins=bins)
+        herr = np.sqrt(fh.histo1d(df_slice.y, weights=df_slice.zerr**2, range=hrange, bins=bins))
+
+        # normalization
+        d_rapidity = np.abs(np.diff(rapidity_range))
+        d_transverse_momentum = np.abs(np.diff(hrange)) / bins
+
+        return pd.DataFrame({
+            'x': np.linspace(*hrange, bins),
+            'y': h / (d_rapidity * d_transverse_momentum),
+            'yerr': herr / (d_rapidity * d_transverse_momentum),
+            'fyerr': np.divide(
+                herr, h,
+                out=np.zeros_like(herr),
+                where=(h != 0),
+            )
+        })
     
     def plot2d(self, ax=None, hist=None, cmap='jet', **kwargs):
         if ax is None:
@@ -171,21 +200,17 @@ class LabPtransverseRapidity:
             **kw,
         )
 
-    def plot1d(self, ax=None, hist=None, **kwargs):
+    def plot1d_ptA(self, ax=None, hist=None, **kwargs):
         if ax is None:
             ax = plt.gca()
         if hist is None:
-            hist = self.df_slice
+            hist = self.get_ptA_spectrum(
+                hrange=(0, 600),
+                bins=30,
+            )
 
         kw = dict(
-            range=(0, 600),
-            bins=600,
+            fmt='.',
         )
         kw.update(kwargs)
-
-        # normalization
-        d_rapidity = self.bounds[1] - self.bounds[0]
-        d_transverse_momentum = (kw['range'][1] - kw['range'][0]) / kw['bins']
-        z = hist.z / (d_rapidity * d_transverse_momentum)
-
-        return fh.plot_histo1d(ax.hist, hist.y, weights=z, **kw)
+        return ax.errorbar(hist.x, hist.y, yerr=hist.yerr, **kw)
