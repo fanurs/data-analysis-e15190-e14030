@@ -245,8 +245,8 @@ def get_A_Z(notation, simple_tuple=False):
 
     Parameters
     ----------
-    notation : str
-        A string that represents an isotope, e.g. 'Ca40' and 'U235'.
+    notation : str or tuple
+        A string that represents an isotope, e.g. 'Ca40' or ('Ca', 40).
     simple_tuple : bool, default False
         If `True`, returns a simple tuple ``(A, Z)``; if `False`, returns a named
         tuple.
@@ -259,6 +259,9 @@ def get_A_Z(notation, simple_tuple=False):
     """
     global _data_manager
     symb_to_Z = _data_manager.symb_to_Z
+
+    if not isinstance(notation, str):
+        notation = str(notation[0]) + str(notation[1])
 
     common_shorthands = {'n': (1, 0),
                          'p': (1, 1),
