@@ -9,7 +9,12 @@ import pandas as pd
 
 import e15190
 from e15190.runlog import query
-from e15190.utilities import atomic_mass_evaluation as ame, fast_histogram as fh, root6 as rt6, physics
+from e15190.utilities import (
+    atomic_mass_evaluation as ame,
+    fast_histogram as fh,
+    root6 as rt6,
+    physics,
+)
 
 class HiraFile:
     PATH_KEY = 'rensheng_hira_root_files_dir'
@@ -67,33 +72,30 @@ class LabPtransverseRapidity:
         '10Be': (22.0, 200.0),
     }
 
-    def __init__(self, particle, reaction, df_hist):
+    def __init__(self, reaction, particle, df_hist):
         """
         Parameters
         ----------
-        particle : str
-            Particle name.
         reaction : str
             Reaction notation, e.g. "Ca40Ni58E140".
+        particle : str
+            Particle name.
         df_hist : pandas.DataFrame
             DataFrame with columns 'x', 'y', 'z', 'zerr' and 'zferr'. 'x'
             represents the rapidity in lab frame (0 ~ 1), 'y' represents the
             transverse momentum in MeV/c, 'z' represents the cross section in ??
             unit.
         """
-        self.particle = particle
         self.reaction = reaction
+        self.particle = particle
         self.df_full = df_hist
     
     @functools.cached_property
     def beam_rapidity(self):
         beam = query.ReactionParser.read_beam(self.reaction)
+        target = query.ReactionParser.read_target(self.reaction)
         beam_energy = query.ReactionParser.read_energy(self.reaction)
-
-        beam_mass = ame.mass(ame.get_A_Z(beam))
-        beam_ene = beam_energy * (beam_mass / ame.amu.to('MeV').value) + beam_mass
-        beam_momentum = physics.energy_to_momentum(beam_mass, beam_ene)
-        return physics.rapidity(beam_ene, beam_momentum)
+        return physics.BeamTargetReaction(beam, target, beam_energy).beam_lab_rapidity
     
     @staticmethod
     def theta_curve(theta, mass):
@@ -156,6 +158,27 @@ class LabPtransverseRapidity:
         hrange=(0, 600),
         bins=600,
     ):
+        """
+        Parameters
+        ----------
+        rapidity_range : 2-tuple, default is (0.4, 0.6)
+            Range of beam-normalized rapidity in lab frame.
+        z_threshold : float, default=0
+            Threshold of z-axis. Values below the threshold will be ignored, i.e.
+            considered as zero.
+        correct_coverage : bool, default is True
+            If ``True``, missing data due to geometric coverage will be
+            corrected. If ``False``, correction will not be applied.
+        hrange : 2-tuple, default is (0, 600)
+            Histogram range of :math:`p_T/A` in MeV/c.
+        bins : int, default is 600
+            Number of bins for the histogram.
+
+        Returns
+        -------
+        spectrum : pandas.DataFrame
+            DataFrame with columns 'x', 'y', 'yerr' and 'fyerr'.
+        """
         df_slice = self.df_full.query(f'x >= {rapidity_range[0]} & x <= {rapidity_range[1]}')
         if correct_coverage:
             df_slice = self.correct_coverage(df_slice, z_threshold)
@@ -171,7 +194,7 @@ class LabPtransverseRapidity:
             'x': np.linspace(*hrange, bins),
             'y': h / (d_rapidity * d_transverse_momentum),
             'yerr': herr / (d_rapidity * d_transverse_momentum),
-            'fyerr': np.divide(
+            'yferr': np.divide(
                 herr, h,
                 out=np.zeros_like(herr),
                 where=(h != 0),
