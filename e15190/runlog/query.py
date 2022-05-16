@@ -597,26 +597,31 @@ class Query:
         return AmBeQuery().df
 
 class ReactionParser:
-    def __init__(self, beams=None, targets=None, energies=None):
-        if beams is None:
-            beams = [
-                ('Ca', 40),
-                ('Ca', 48),
-            ]
-        self.beams = beams
+    beams = [
+        ('Ca', 40),
+        ('Ca', 48),
+    ]
+    targets = [
+        ('Ni', 58),
+        ('Ni', 64),
+        ('Sn', 112),
+        ('Sn', 124),
+    ]
+    energies = [
+        56,
+        140,
+    ]
+    dst_style = None
 
-        if targets is None:
-            targets = [
-                ('Ni', 58),
-                ('Ni', 64),
-                ('Sn', 112),
-                ('Sn', 124),
-            ]
-        self.targets = targets
+    def __init__(self, beams=None, targets=None, energies=None):
+        if beams is not None:
+            self.beams = beams
+
+        if targets is not None:
+            self.targets = targets
     
-        if energies is None:
-            energies = [56, 140]
-        self.energies = energies
+        if energies is not None:
+            self.energies = energies
 
     @property
     def beam_target_styles(self):
@@ -643,35 +648,40 @@ class ReactionParser:
             f'{mass_number}{symbol.lower()}',
         ]
     
-    def read_beam(self, string):
-        for beam in self.beams:
-            for beam_str in self._isotope_combinations(*beam):
+    @classmethod
+    def read_beam(cls, string):
+        for beam in cls.beams:
+            for beam_str in cls._isotope_combinations(*beam):
                 if beam_str in string:
                     return beam
     
-    def read_target(self, string):
-        for target in self.targets:
-            for target_str in self._isotope_combinations(*target):
+    @classmethod
+    def read_target(cls, string):
+        for target in cls.targets:
+            for target_str in cls._isotope_combinations(*target):
                 if target_str in string:
                     return target
     
-    def read_energy(self, string):
-        for energy in self.energies:
+    @classmethod
+    def read_energy(cls, string):
+        for energy in cls.energies:
             if str(energy) in string:
                 return int(energy)
     
-    def set_convert_style(self, dst_style):
-        if dst_style not in self.beam_target_styles and dst_style not in self.beam_target_energy_styles:
+    @classmethod
+    def set_convert_style(cls, dst_style):
+        if dst_style not in cls.beam_target_styles and dst_style not in cls.beam_target_energy_styles:
             raise ValueError(f'Unknown style: {dst_style}')
-        self.dst_style = dst_style
+        cls.dst_style = dst_style
     
-    def convert(self, string, dst_style=None):
+    @classmethod
+    def convert(cls, string, dst_style=None):
         if dst_style is None:
-            dst_style = self.dst_style
+            dst_style = cls.dst_style
 
-        beam = self.read_beam(string)
-        target = self.read_target(string)
-        energy = self.read_energy(string)
+        beam = cls.read_beam(string)
+        target = cls.read_target(string)
+        energy = cls.read_energy(string)
 
         if dst_style == 'aa10bb20':
             return f'{beam[0].lower()}{beam[1]}{target[0].lower()}{target[1]}'
