@@ -291,6 +291,13 @@ def get_A_Z(notation, simple_tuple=False):
         isotope = collections.namedtuple('Isotope', ['A', 'Z'])
         return isotope(A=A, Z=Z)
 
+def get_N_Z(notation, simple_tuple=False):
+    if simple_tuple:
+        A, Z = get_A_Z(notation, simple_tuple=True)
+        return (A - Z, Z)
+    A_Z = get_A_Z(notation, simple_tuple=True)
+    return collections.namedtuple('Isotope', ['N', 'Z'])(A_Z.A - A_Z.Z, A_Z.Z)
+
 def mass(argv, unitless=True, not_found_okay=False, not_found_warning=True):
     """Get mass of isotope.
 

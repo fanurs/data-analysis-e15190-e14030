@@ -1,6 +1,7 @@
 from astropy import units
 import numpy as np
 import pandas as pd
+from scipy.optimize import curve_fit
 
 from e15190.utilities import atomic_mass_evaluation as ame
 
@@ -107,3 +108,68 @@ class BeamTargetReaction:
         beam_ene = self.beam_kinergy * (beam_mass / ame.amu.to(self.ene_unit).value) + beam_mass
         beam_mom = (beam_ene**2 - beam_mass**2)**0.5
         return 0.5 * np.log((beam_ene + beam_mom) / (beam_ene - beam_mom))
+
+class IsoscalingRegression:
+    def __init__(self):
+        pass
+
+    def model(self, N, Z, alpha, beta, normalization):
+        """
+        Function for isoscaling yield ratio.
+
+        .. math::
+
+            R_{21}(N, Z) = C \\exp\\left[ N\\alpha + Z\\beta \\right]
+
+        Parameters
+        ----------
+        N : int
+            Number of neutrons.
+        Z : int
+            Number of protons.
+        alpha : float
+            Coefficient of neutron number. It is related to the difference in
+            effective neutron chemical potentials divided by the effective
+            chemical potentials, :math:`\\alpha = \\frac{\\Delta\\mu_n}{T}`.
+        beta : float
+            Coefficient of proton number. It is related to the difference in
+            effective proton chemical potentials divided by the effective
+            chemical potentials, :math:`\\beta = \\frac{\\Delta\\mu_p}{T}`.
+        normalization : float
+            The :math:`C` in the above equation.
+
+        Returns
+        -------
+        R21 : float
+            Isoscaling ratios of particles between two reaction systems 2 and 1.
+            Conventionally, reaction system 2 is heavier than reaction system 1.
+        """
+        return normalization * np.exp(N * alpha + Z * beta)
+
+    def fit(self, df):
+        """
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            DataFrame with columns ``'N'``, ``'Z'``, ``'R21'``, ``'R21_err'``.
+        """
+        self.df = df
+        self.par, cov = curve_fit(
+            lambda x, *par: self.model(x[:, 0], x[:, 1], *par),
+            df[['N', 'Z']].to_numpy(),
+            df['R21'].to_numpy(),
+            sigma=df['R21_err'].to_numpy(),
+            absolute_sigma=True,
+            p0=[0, 0, 1],
+        )
+        self.err = np.sqrt(np.diag(cov))
+        self.alpha, self.beta, self.normalization = self.par
+        self.alpha_err, self.beta_err, self.normalization_err = self.err
+        return self
+
+    def predict(self, N=None, Z=None):
+        if N is None:
+            N = self.df['N'].to_numpy()
+        if Z is None:
+            Z = self.df['Z'].to_numpy()
+        return self.model(N, Z, *self.par)
