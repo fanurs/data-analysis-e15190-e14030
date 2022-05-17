@@ -72,7 +72,7 @@ class LabPtransverseRapidity:
         '10Be': (22.0, 200.0),
     }
 
-    def __init__(self, reaction, particle, df_hist):
+    def __init__(self, reaction, particle, df_hist=None):
         """
         Parameters
         ----------
@@ -80,15 +80,20 @@ class LabPtransverseRapidity:
             Reaction notation, e.g. "Ca40Ni58E140".
         particle : str
             Particle name.
-        df_hist : pandas.DataFrame
+        df_hist : pandas.DataFrame, default None
             DataFrame with columns 'x', 'y', 'z', 'zerr' and 'zferr'. 'x'
             represents the rapidity in lab frame (0 ~ 1), 'y' represents the
             transverse momentum in MeV/c, 'z' represents the cross section in ??
-            unit.
+            unit. If None, the program attempts to load histogram automatically
+            with the keyword 'rapidity'.
         """
         self.reaction = reaction
         self.particle = particle
-        self.df_full = df_hist
+        if df_hist is None:
+            self.df_full = HiraFile(self.reaction).get_root_histogram(particle=particle, keyword='rapidity')
+            self.df_full = rt6.histo_conversion(self.df_full)
+        else:
+            self.df_full = df_hist
     
     @functools.cached_property
     def beam_rapidity(self):
@@ -138,24 +143,26 @@ class LabPtransverseRapidity:
             kinergy <= self.lab_kinergy_per_A_ranges[self.particle][1] * A,
         ], axis=0)
 
-    def correct_coverage(self, df_slice, z_threshold=0):
-        df_corrected = df_slice.copy()
-        for _, subdf in df_slice.groupby('y'):
+    def correct_coverage(self, df_slice):
+        df_corrected = df_slice.copy().reset_index(drop=True)
+        df_corrected['inside'] = self.is_inside(df_slice.x, df_slice.y)
+        scalars = np.ones(len(df_corrected))
+        groupby = df_corrected[['y', 'inside']].groupby('y').sum().inside
+        for y_val, subdf in df_corrected.groupby('y'):
             n_total = len(subdf)
-            n_inside = np.sum(self.is_inside(subdf.x, subdf.y) & (subdf.z > z_threshold))
+            n_inside = groupby.loc[y_val]
             if n_inside == 0:
                 continue
-            with pd.option_context('mode.chained_assignment', None):
-                df_corrected.loc[subdf.index, 'z'] *= n_total / n_inside
-                df_corrected.loc[subdf.index, 'zerr'] *= n_total / n_inside
-        return df_corrected
+            scalars[np.array(subdf.index)] = n_total / n_inside
+        df_corrected['z'] *= scalars
+        df_corrected['zerr'] *= scalars
+        return df_corrected.drop('inside', axis='columns')
     
     def get_ptA_spectrum(
         self,
         rapidity_range=(0.4, 0.6),
-        z_threshold=0,
         correct_coverage=True,
-        hrange=(0, 600),
+        range=(0, 600),
         bins=600,
     ):
         """
@@ -163,13 +170,10 @@ class LabPtransverseRapidity:
         ----------
         rapidity_range : 2-tuple, default is (0.4, 0.6)
             Range of beam-normalized rapidity in lab frame.
-        z_threshold : float, default=0
-            Threshold of z-axis. Values below the threshold will be ignored, i.e.
-            considered as zero.
         correct_coverage : bool, default is True
             If ``True``, missing data due to geometric coverage will be
             corrected. If ``False``, correction will not be applied.
-        hrange : 2-tuple, default is (0, 600)
+        range : 2-tuple, default is (0, 600)
             Histogram range of :math:`p_T/A` in MeV/c.
         bins : int, default is 600
             Number of bins for the histogram.
@@ -181,17 +185,18 @@ class LabPtransverseRapidity:
         """
         df_slice = self.df_full.query(f'x >= {rapidity_range[0]} & x <= {rapidity_range[1]}')
         if correct_coverage:
-            df_slice = self.correct_coverage(df_slice, z_threshold)
+            df_slice = self.correct_coverage(df_slice)
 
-        h = fh.histo1d(df_slice.y, weights=df_slice.z, range=hrange, bins=bins)
-        herr = np.sqrt(fh.histo1d(df_slice.y, weights=df_slice.zerr**2, range=hrange, bins=bins))
+        h = fh.histo1d(df_slice.y, weights=df_slice.z, range=range, bins=bins)
+        herr = np.sqrt(fh.histo1d(df_slice.y, weights=df_slice.zerr**2, range=range, bins=bins))
 
         # normalization
         d_rapidity = np.abs(np.diff(rapidity_range))
-        d_transverse_momentum = np.abs(np.diff(hrange)) / bins
+        d_transverse_momentum = np.abs(np.diff(range)) / bins
 
+        x_edges = np.linspace(*range, bins + 1)
         return pd.DataFrame({
-            'x': np.linspace(*hrange, bins),
+            'x': 0.5 * (x_edges[:-1] + x_edges[1:]),
             'y': h / (d_rapidity * d_transverse_momentum),
             'yerr': herr / (d_rapidity * d_transverse_momentum),
             'yferr': np.divide(
@@ -223,12 +228,14 @@ class LabPtransverseRapidity:
             **kw,
         )
 
-    def plot1d_ptA(self, ax=None, hist=None, **kwargs):
+    def plot1d_ptA(self, ax=None, hist=None, rapidity_range=(0.4, 0.6), correct_coverage=True, **kwargs):
         if ax is None:
             ax = plt.gca()
         if hist is None:
             hist = self.get_ptA_spectrum(
-                hrange=(0, 600),
+                rapidity_range=rapidity_range,
+                correct_coverage=correct_coverage,
+                range=(0, 600),
                 bins=30,
             )
 
