@@ -3,7 +3,6 @@
 A version of ROOT 6.20 or above is assumed.
 """
 import distutils.version
-import itertools as itr
 import pathlib
 import string
 import subprocess
@@ -149,3 +148,47 @@ class TFile:
 
     def __exit__(self, *args):
         self.file.Close()
+
+class TChain(ROOT.TChain):
+    def __init__(self, paths, tree_name):
+        self.paths = paths
+        self.tree_name = tree_name
+        super().__init__(tree_name)
+        for path in self.paths:
+            super().Add(path)
+
+def get_all_branches(path, tree):
+    with TFile(path) as file:
+        tr = file.Get(tree)
+        def get_branches(obj):
+            result = []
+            for br in obj.GetListOfBranches():
+                if isinstance(br, ROOT.TBranchElement):
+                    result.extend(get_branches(br))
+                result.append(br.GetName())
+            return result
+        return get_branches(tr)
+
+def infer_tree_name(path):
+    """
+    Parameters
+    ----------
+    path : str or pathlib.Path or iterables
+        Path(s) to the ROOT file(s) of interest.
+    """
+    if not isinstance(path, (str, pathlib.Path)):
+        names = list(set([infer_tree_name(p) for p in path]))
+        if len(names) == 1:
+            return names[0]
+        raise ValueError('Paths contain different tree names.')
+
+    tree_names = []
+    with TFile(path) as file:
+        names = set([k.GetName() for k in file.GetListOfKeys()])
+        for name in names:
+            obj = file.Get(name)
+            if isinstance(obj, ROOT.TTree):
+                tree_names.append(obj.GetName())
+    if len(tree_names) == 1:
+        return tree_names[0]
+    raise ValueError(f'Cannot infer tree name from\n"{path}".')
