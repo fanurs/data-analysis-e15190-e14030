@@ -46,6 +46,10 @@ def get_key(
         ))
     return key
 
+def encrypt(message, key):
+    ferney_key = Fernet(key)
+    return ferney_key.encrypt(message.encode('utf-8')).decode('utf-8')
+
 def decrypt(encrypted_value, key):
     ferney_key = Fernet(key)
     return ferney_key.decrypt(encrypted_value.encode('utf-8')).decode('utf-8')
