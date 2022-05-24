@@ -298,6 +298,10 @@ def get_N_Z(notation, simple_tuple=False):
     A_Z = get_A_Z(notation, simple_tuple=True)
     return collections.namedtuple('Isotope', ['N', 'Z'])(A_Z.A - A_Z.Z, A_Z.Z)
 
+def get_symb(Z):
+    global _data_manager
+    return _data_manager.Z_to_symb[Z]
+
 def mass(argv, unitless=True, not_found_okay=False, not_found_warning=True):
     """Get mass of isotope.
 
