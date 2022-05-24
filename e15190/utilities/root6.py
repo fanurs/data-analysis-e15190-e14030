@@ -180,7 +180,9 @@ def infer_tree_name(path):
         names = list(set([infer_tree_name(p) for p in path]))
         if len(names) == 1:
             return names[0]
-        raise ValueError('Paths contain different tree names.')
+        if len(names) == 0:
+            raise ValueError(f'No tree name found in "{path}".')
+        raise ValueError(f'Paths contain different tree names: {names}')
 
     tree_names = []
     with TFile(path) as file:
