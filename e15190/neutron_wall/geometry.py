@@ -1,4 +1,5 @@
 import inspect
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,11 @@ from e15190.utilities import geometry as geom
 from e15190.utilities import tables
 
 class Bar(geom.RectangularBar):
+    edges_x = (-80, 89)
+    left_shadow_x = (-50, -15)
+    right_shadow_x = (15, 50)
+    shadowed_bars = [7, 8, 9, 15, 16, 17]
+
     def __init__(self, vertices, contain_pyrex=True):
         """Construct a Neutron Wall bar, either from Wall A or Wall B.
 
@@ -388,3 +394,74 @@ class Wall:
                 '.5f', '.5f', '.5f',
             ],
         )
+    
+    def get_geometry_efficiency(
+        self,
+        shadowed_bars,
+        cut_edges_bars='all',
+        skip_bars=(0, ),
+        custom_cuts: Dict[int, List[str]] = None,
+        norm=True,
+    ):
+        """
+
+        Parameters
+        ----------
+        shadowed_bars : bool or list of int
+            If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 15, 16,
+            17. If False, no shadow bar cut is applied. If a list of int, shadow
+            bar cut will only be applied to the bars in the list.
+        cut_edges_bars : ``'all'`` or list of int, default 'all'
+            If ``'all'``, edge cut will be applied to all bars. If a list of int,
+            edge cut will only be applied to the bars in the list.
+        skip_bars : list of int, default (0, )
+            Bars to be skipped. In the experiment, NWB-bar00 is the bottommost bar
+            that was blocked by the ground.
+        custom_cuts : dict of int to list of str, default None
+            When custom cuts are applied, all the other cuts are ignored, so
+            users should make sure the cuts are complete, e.g. edge cut is
+            included. The only cut variable being supported is ``'x'``.
+        norm : bool, default True
+            Whether to normalize the efficiency by :math:`2\pi`.
+        """
+        if shadowed_bars is True:
+            shadowed_bars = Bar.shadowed_bars
+        elif shadowed_bars is False:
+            shadowed_bars = []
+        
+        if cut_edges_bars == 'all':
+            cut_edges_bars = list(range(25))
+        
+        skip_bars = list(skip_bars)
+
+        custom_cuts = custom_cuts or dict()
+
+        bar_effs = []
+        for b, bar in self.bars.items():
+            if b in skip_bars: continue
+
+            cuts = None
+            if b in custom_cuts:
+                cuts = custom_cuts[b]
+            elif b in shadowed_bars and b in cut_edges_bars:
+                cuts = [
+                    f'{Bar.edges_x[0]} < x < {Bar.left_shadow_x[0]}',
+                    f'{Bar.left_shadow_x[1]} < x < {Bar.right_shadow_x[0]}',
+                    f'{Bar.right_shadow_x[1]} < x < {Bar.edges_x[1]}',
+                ]
+            elif b in cut_edges_bars:
+                cuts = [
+                    f'{Bar.edges_x[0]} < x < {Bar.edges_x[1]}',
+                ]
+            elif b in shadowed_bars:
+                cuts = [
+                    f'x < {Bar.left_shadow_x[0]}',
+                    f'{Bar.left_shadow_x[1]} < x < {Bar.right_shadow_x[0]}',
+                    f'{Bar.right_shadow_x[1]} < x',
+                ]
+            bar_effs.append(bar.get_geometry_efficiency_alphashape(cuts))
+        
+        if norm:
+            return lambda theta: np.sum([eff(theta) for eff in bar_effs], axis=0) / (2 * np.pi)
+        else:
+            return lambda theta: np.sum([eff(theta) for eff in bar_effs], axis=0)
