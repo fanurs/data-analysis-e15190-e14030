@@ -103,7 +103,23 @@ class Identifier:
 def same_x_values(dfa, dfb):
     return np.allclose(dfa[Identifier(dfa).x_name], dfb[Identifier(dfb).x_name])
 
+def _add_scalar(df, scalar):
+    d = Identifier(df, fill_errors=True)
+    result = pd.DataFrame({
+        d.x_name: d.df[d.x_name],
+        d.y_name: d.df[d.y_name] + scalar,
+        d.yerr_name: d.df[d.yerr_name],
+    })
+    result[d.yferr_name] = np.abs(np.divide(
+        result[d.yerr_name], result[d.y_name],
+        out=np.zeros_like(result[d.yerr_name]),
+        where=(result[d.y_name] != 0),
+    ))
+    return result
+
 def add(dfa, dfb):
+    if isinstance(dfb, (int, float)):
+        return _add_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
         raise ValueError('Cannot add dataframes with different x values.')
     a = Identifier(dfa, fill_errors=True)
@@ -120,7 +136,23 @@ def add(dfa, dfb):
     ))
     return result
 
+def _sub_scalar(df, scalar):
+    d = Identifier(df, fill_errors=True)
+    result = pd.DataFrame({
+        d.x_name: d.df[d.x_name],
+        d.y_name: d.df[d.y_name] - scalar,
+        d.yerr_name: d.df[d.yerr_name],
+    })
+    result[d.yferr_name] = np.abs(np.divide(
+        result[d.yerr_name], result[d.y_name],
+        out=np.zeros_like(result[d.yerr_name]),
+        where=(result[d.y_name] != 0),
+    ))
+    return result
+
 def sub(dfa, dfb):
+    if isinstance(dfb, (int, float)):
+        return _sub_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
         raise ValueError('Cannot subtract dataframes with different x values.')
     a = Identifier(dfa, fill_errors=True)
@@ -137,7 +169,18 @@ def sub(dfa, dfb):
     ))
     return result
 
+def _mul_scalar(df, scalar):
+    d = Identifier(df, fill_errors=True)
+    return pd.DataFrame({
+        d.x_name: d.df[d.x_name],
+        d.y_name: d.df[d.y_name] * scalar,
+        d.yerr_name: d.df[d.yerr_name] * scalar,
+        d.yferr_name: d.df[d.yferr_name],
+    })
+
 def mul(dfa, dfb):
+    if isinstance(dfb, (int, float)):
+        return _mul_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
         raise ValueError('Cannot multiply dataframes with different x values.')
     a = Identifier(dfa, fill_errors=True)
@@ -150,7 +193,18 @@ def mul(dfa, dfb):
     result[a.yerr_name] = np.abs(result[a.y_name] * result[a.yferr_name])
     return result[[a.x_name, a.y_name, a.yerr_name, a.yferr_name]]
 
+def _div_scalar(df, scalar):
+    d = Identifier(df, fill_errors=True)
+    return pd.DataFrame({
+        d.x_name: d.df[d.x_name],
+        d.y_name: d.df[d.y_name] / scalar,
+        d.yerr_name: d.df[d.yerr_name] / scalar,
+        d.yferr_name: d.df[d.yferr_name],
+    })
+
 def div(dfa, dfb):
+    if isinstance(dfb, (int, float)):
+        return _div_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
         raise ValueError('Cannot divide dataframes with different x values.')
     a = Identifier(dfa, fill_errors=True)
