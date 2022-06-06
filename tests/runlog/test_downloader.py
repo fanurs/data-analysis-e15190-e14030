@@ -1,6 +1,7 @@
 import pytest
 
 from pathlib import Path
+import sqlite3
 from tempfile import TemporaryDirectory
 
 import pandas as pd
@@ -35,7 +36,6 @@ class TestElogDownloader:
         with open(path, 'r') as file:
             assert '<html>' in file.read()
 
-@pytest.mark.skip(reason='MySQL download is not actively being used')
 class TestMySqlDownloader:
     @pytest.fixture(scope='class', autouse=True)
     def setup_teardown(self):
@@ -79,13 +79,9 @@ class TestMySqlDownloader:
         assert 'established' in stdout[0]
         assert 'closed' in stdout[1]
     
-        # with context manager
+        # with context manager, connection is always established
         with downloader.MySqlDownloader(auto_connect=False) as dl:
             pass
-        assert 'no connection' in capsys.readouterr().out.lower()
-
-        with downloader.MySqlDownloader(auto_connect=False) as dl:
-                dl.connect()
         stdout = capsys.readouterr().out.split('\n')
         assert 'established' in stdout[0]
         assert 'closed' in stdout[1]
@@ -132,7 +128,7 @@ class TestMySqlDownloader:
     
     @pytest.mark.parametrize(
         'path',
-        [None, Path(TemporaryDirectory().name) / 'dummy/tmp.h5']
+        [None, Path(TemporaryDirectory().name) / 'dummy/tmp.db']
     )
     def test_download_fresh(self, path):
         with downloader.MySqlDownloader(auto_connect=True) as dl:
@@ -141,19 +137,26 @@ class TestMySqlDownloader:
                 table_names=['vendors', 'users', 'mtypes'],
             )
         
-        with pd.HDFStore(path) as file:
-            assert '/vendors' in file.keys()
-            assert len(file.get('vendors')) == 21
-            assert '/users' in file.keys()
-            assert len(file.get('users')) == 11
-            assert '/mtypes' in file.keys()
-            assert len(file.get('mtypes')) == 18
-            assert '/runlog' not in file.keys()
-            assert '/runinfo' not in file.keys()
-            assert '/runbeamintensity' not in file.keys()
+        to_list = lambda x: [ele[0] for ele in x]
+        to_scalar = lambda x: x[0][0]
+        
+        with sqlite3.connect(path) as conn:
+            all_tables = conn.execute('SELECT name FROM sqlite_master WHERE type="table"').fetchall()
+            all_tables = to_list(all_tables)
+
+            assert 'vendors' in all_tables
+            assert to_scalar(conn.execute('SELECT COUNT(1) FROM vendors').fetchall()) == 21
+            assert 'users' in all_tables
+            assert to_scalar(conn.execute('SELECT COUNT(1) FROM users').fetchall()) == 11
+            assert 'mtypes' in all_tables
+            assert to_scalar(conn.execute('SELECT COUNT(1) FROM mtypes').fetchall()) == 18
+
+            assert 'runlog' not in all_tables
+            assert 'runinfo' not in all_tables
+            assert 'runbeamintensity' not in all_tables
     
     def test_download_file_already_exist(self, capsys, tmp_path, monkeypatch):
-        path = tmp_path / 'tmp.h5'
+        path = tmp_path / 'tmp.db'
         path.touch(exist_ok=True)
 
         monkeypatch.setattr('builtins.input', lambda _: 'y')
@@ -162,7 +165,7 @@ class TestMySqlDownloader:
         stdout = capsys.readouterr().out
         assert 'attempting to download run log' in stdout.lower()
         assert 'no re-download will be performed' not in stdout.lower()
-        assert 'converting and saving' in stdout.lower()
+        assert 'downloading' in stdout.lower()
         assert 'all tables have been saved' in stdout.lower()
 
         monkeypatch.setattr('builtins.input', lambda _: 'n')
@@ -171,7 +174,7 @@ class TestMySqlDownloader:
         stdout = capsys.readouterr().out
         assert 'attempting to download run log' in stdout.lower()
         assert 'no re-download will be performed' in stdout.lower()
-        assert 'converting and saving' not in stdout.lower()
+        assert 'downloading' not in stdout.lower()
         assert 'all tables have been saved' not in stdout.lower()
     
     def test_download_auto_disconnect(self, capsys, tmp_path):
