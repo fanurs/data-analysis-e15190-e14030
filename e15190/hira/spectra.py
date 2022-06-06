@@ -29,24 +29,39 @@ class HiraFile:
         self.filename = 'f1_MergedData_bHat_0.00_0.40.root'
         self.path = self.directory / self.reaction / self.filename
     
-    def get_all_histograms(self, particle=None):
-        with rt6.TFile(self.path) as file:
-            if particle is None:
-                return [obj.GetName() for obj in file.GetListOfKeys()]
-            return [
-                obj.GetName() for obj in file.GetListOfKeys()
-                if obj.GetName().endswith('_' + particle)
-            ]
-    
+    @functools.lru_cache()
     def get_all_particles(self):
         with rt6.TFile(self.path) as file:
             get_particle = lambda name: name.split('_')[-1]
             return list(dict.fromkeys([
                 get_particle(obj.GetName()) for obj in file.GetListOfKeys()
             ]).keys())
-    
+
+    def convert_particle(self, notation):
+        """Convert notation into Rensheng's convention.
+        """
+        all_particles = {
+            ame.get_A_Z(particle, simple_tuple=True): particle
+            for particle in self.get_all_particles()
+        }
+        isotope = ame.get_A_Z(notation, simple_tuple=True)
+        return all_particles[isotope]
+
+    @functools.lru_cache()
+    def get_all_histograms(self, particle=None):
+        with rt6.TFile(self.path) as file:
+            if particle is None:
+                return [obj.GetName() for obj in file.GetListOfKeys()]
+            particle = self.convert_particle(particle)
+            return [
+                obj.GetName() for obj in file.GetListOfKeys()
+                if obj.GetName().endswith('_' + particle)
+            ]
+
+    @functools.lru_cache()
     def get_root_histogram(self, h_name=None, particle=None, keyword=None):
         if h_name is None:
+            particle = self.convert_particle(particle)
             h_names = self.get_all_histograms(particle)
             h_names = [h_name for h_name in h_names if keyword.lower() in h_name.lower()]
             h_name = max(h_names, key=len)
@@ -55,6 +70,119 @@ class HiraFile:
             hist.SetDirectory(0)
             return hist
         
+class LabKinergyTheta:
+    lab_theta_range = (30.0, 75.0) # degree
+    lab_kinergy_per_A_ranges = { # MeV/A
+        'p': (20.0, 198.0),
+        'd': (15.0, 263 / 2),
+        't': (12.0, 312 / 3),
+        '3He': (20.0, 200.0),
+        '4He': (18.0, 200.0),
+        '6He': (13.0, 200.0),
+        '6Li': (22.0, 200.0),
+        '7Li': (22.0, 200.0),
+        '8Li': (22.0, 200.0),
+        '7Be': (22.0, 200.0),
+        '9Be': (22.0, 200.0),
+        '10Be': (22.0, 200.0),
+    }
+
+    def __init__(self, reaction, particle, df_hist=None):
+        """
+        Parameters
+        ----------
+        reaction : str
+            Reaction notation, e.g. "ca40ni58e140".
+        particle : str
+            Particle name
+        df_hist : pandas.DataFrame, default None
+            DataFrame with columns 'x', 'y', 'z', 'zerr' and 'zferr'. 'x'
+            represents the lab kinetic energy, 'y' represents the lab theta
+            angle in degree, 'z' represents the cross section in ??  unit. If
+            None, the program attempts to load histogram automatically with the
+            keyword 'Ekin'.
+        """
+        self.reaction = reaction
+        self.hira_file = HiraFile(reaction)
+        self.particle = self.hira_file.convert_particle(particle)
+        if df_hist is None:
+            self.df_full = self.hira_file.get_root_histogram(particle=particle, keyword='Ekin')
+            self.df_full = rt6.histo_conversion(self.df_full)
+        else:
+            self.df_full = df_hist
+    
+    def get_lab_kinergy_spectrum(
+        self,
+        theta_range,
+        range=(0, 200),
+        bins=200,
+    ):
+        """
+        Parameters
+        ----------
+        theta_range : 2-tuple
+            The range of theta in degree.
+        range : 2-tuple, default (0, 200)
+            The histogram range of the lab kinetic energy in MeV/c.
+        bins : int, default 200
+            The number of bins in the histogram.
+        
+        Returns
+        -------
+        spectrum : pandas.DataFrame
+            DataFrame with columns 'x', 'y', 'yerr', 'yferr'.
+        """
+        df_slice = self.df_full.query(f'y >= {theta_range[0]} and y <= {theta_range[1]}')
+        h = fh.histo1d(df_slice.x, weights=df_slice.z, range=range, bins=bins)
+        herr = np.sqrt(fh.histo1d(df_slice.x, weights=df_slice.zerr**2, range=range, bins=bins))
+
+        # normalization
+        df_kinergy = np.abs(np.diff(range)) / bins
+        df_solid_angle = np.sin(np.mean(np.radians(theta_range))) * np.abs(np.diff(np.radians(theta_range))) * (2 * np.pi)
+        d_denom = df_kinergy * df_solid_angle
+
+        x_edges = np.linspace(*range, bins + 1)
+        return pd.DataFrame({
+            'x': 0.5 * (x_edges[1:] + x_edges[:-1]),
+            'y': h / d_denom,
+            'yerr': herr / d_denom,
+            'yferr': np.divide(
+                herr, h,
+                out=np.zeros_like(herr),
+                where=(h != 0),
+            )
+        })
+
+    def plot2d(self, ax=None, hist=None, cmap='jet', cut=True, **kwargs):
+        if ax is None:
+            ax = plt.gca()
+        if hist is None:
+            hist = self.df_full
+        
+        if cut:
+            hist = hist.query(' & '.join([
+                f'x >= {self.lab_kinergy_per_A_ranges[self.particle][0]}',
+                f'x <= {self.lab_kinergy_per_A_ranges[self.particle][1]}',
+                f'y >= {self.lab_theta_range[0]}',
+                f'y <= {self.lab_theta_range[1]}',
+            ]))
+        
+        cmap = copy(plt.cm.get_cmap(cmap))
+        cmap.set_under('white')
+        kw = dict(
+            cmap=cmap,
+            range=[(0, 210), (25, 80)],
+            bins=[210, 55 * 5],
+        )
+        kw.update(kwargs)
+
+        return fh.plot_histo2d(
+            ax.hist2d,
+            hist.x, hist.y,
+            weights=hist.z,
+            **kw,
+        )
+
 class LabPtransverseRapidity:
     lab_theta_range = (30.0, 75.0) # degree
     lab_kinergy_per_A_ranges = { # MeV/A
@@ -79,7 +207,7 @@ class LabPtransverseRapidity:
         reaction : str
             Reaction notation, e.g. "Ca40Ni58E140".
         particle : str
-            Particle name.
+            Particle name
         df_hist : pandas.DataFrame, default None
             DataFrame with columns 'x', 'y', 'z', 'zerr' and 'zferr'. 'x'
             represents the rapidity in lab frame (0 ~ 1), 'y' represents the
@@ -89,8 +217,9 @@ class LabPtransverseRapidity:
         """
         self.reaction = reaction
         self.particle = particle
+        self.hira_file = HiraFile(reaction)
         if df_hist is None:
-            self.df_full = HiraFile(self.reaction).get_root_histogram(particle=particle, keyword='rapidity')
+            self.df_full = self.hira_file.get_root_histogram(particle=particle, keyword='rapidity')
             self.df_full = rt6.histo_conversion(self.df_full)
         else:
             self.df_full = df_hist
@@ -181,7 +310,7 @@ class LabPtransverseRapidity:
         Returns
         -------
         spectrum : pandas.DataFrame
-            DataFrame with columns 'x', 'y', 'yerr' and 'fyerr'.
+            DataFrame with columns 'x', 'y', 'yerr' and 'yferr'.
         """
         df_slice = self.df_full.query(f'x >= {rapidity_range[0]} & x <= {rapidity_range[1]}')
         if correct_coverage:
@@ -193,12 +322,13 @@ class LabPtransverseRapidity:
         # normalization
         d_rapidity = np.abs(np.diff(rapidity_range))
         d_transverse_momentum = np.abs(np.diff(range)) / bins
+        d_denom = d_rapidity * d_transverse_momentum
 
         x_edges = np.linspace(*range, bins + 1)
         return pd.DataFrame({
             'x': 0.5 * (x_edges[:-1] + x_edges[1:]),
-            'y': h / (d_rapidity * d_transverse_momentum),
-            'yerr': herr / (d_rapidity * d_transverse_momentum),
+            'y': h / d_denom,
+            'yerr': herr / d_denom,
             'yferr': np.divide(
                 herr, h,
                 out=np.zeros_like(herr),
@@ -228,15 +358,24 @@ class LabPtransverseRapidity:
             **kw,
         )
 
-    def plot1d_ptA(self, ax=None, hist=None, rapidity_range=(0.4, 0.6), correct_coverage=True, **kwargs):
+    def plot1d_ptA(
+        self,
+        ax=None,
+        hist=None,
+        rapidity_range=(0.4, 0.6),
+        correct_coverage=True,
+        range=(0, 600),
+        bins=30,
+        **kwargs,
+    ):
         if ax is None:
             ax = plt.gca()
         if hist is None:
             hist = self.get_ptA_spectrum(
                 rapidity_range=rapidity_range,
                 correct_coverage=correct_coverage,
-                range=(0, 600),
-                bins=30,
+                range=range,
+                bins=bins,
             )
 
         kw = dict(
