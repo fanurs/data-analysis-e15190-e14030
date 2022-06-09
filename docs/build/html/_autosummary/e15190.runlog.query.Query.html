@@ -90,7 +90,7 @@ LIMIT and WHERE to select a subset of the database for inspection.</p>
 </div>
 <p>Run scalers can be queried as following:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">e15190.runlog.query</span> <span class="kn">import</span> <span class="n">Query</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Query</span><span class="o">.</span><span class="n">get_runscalers</span><span class="p">(</span><span class="mi">4100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Query</span><span class="o">.</span><span class="n">get_runscalers</span><span class="p">(</span><span class="mi">4100</span><span class="p">,</span> <span class="s1">&#39;nw&#39;</span><span class="p">)</span>
 <span class="go">      run              datetime  VW-TOP-OR  VW-BOT-OR  VW-TOP-BOT-OR  VW-GATE \</span>
 <span class="go">0    4100   2018-03-11 03:41:16      22180      10953          15913    88002</span>
 <span class="go">1    4100   2018-03-11 03:41:18      22357      10921          16020    87246</span>
