@@ -315,7 +315,7 @@ if __name__ == '__main__': # pragma: no cover
     print('''
     What do you want to download?
     \t1) Elog data from the web
-    \t2) Scalers data from the MySQL database at WMU
+    \t2) Data from the MySQL database at WMU
     ''')
     resp = input('(1/2) > ')
     if resp == '1':
