@@ -73,7 +73,7 @@ class. Here is an example:</p>
 <td><p>Disconnect from the MySQL database.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.download" title="e15190.runlog.downloader.MySqlDownloader.download"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code></a>([download_path, table_names, ...])</p></td>
-<td><p>Convert tables into pandas dataframes and save into an HDF file</p></td>
+<td><p>Convert tables into pandas dataframes and save into an SQLite3 file</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.downloader.MySqlDownloader.get_all_table_names" title="e15190.runlog.downloader.MySqlDownloader.get_all_table_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_table_names</span></code></a>()</p></td>
 <td><p>Returns all table names in the MySQL database.</p></td>
@@ -106,7 +106,9 @@ class. Here is an example:</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>auto_connect</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to automatically connect to the MySQL database. Login
-credentials are needed to connect to the database.</p></li>
+credentials are needed to connect to the database. If you are using
+context manager, this parameter is irrelevant — connection is
+always being established.</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to print the progress of connecting to the MySQL database.
 This setting has less priority than individual class functions, i.e.
 if other functions have explicitly set a verbose value, then this
@@ -192,12 +194,12 @@ If <code class="docutils literal notranslate"><span class="pre">None</span></cod
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.downloader.MySqlDownloader.download">
 <span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">download_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_disconnect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.downloader.MySqlDownloader.download" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert tables into pandas dataframes and save into an HDF file</p>
+<dd><p>Convert tables into pandas dataframes and save into an SQLite3 file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>download_path</strong> (<em>str</em><em>, </em><em>default None</em>) – File path to the HDF file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the file is saved at
-<code class="docutils literal notranslate"><span class="pre">$DATABASE_DIR/runlog/downloads/mysql_database.h5</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">$DATABASE_DIR/runlog/downloads/mysql_database.db</span></code>.</p></li>
 <li><p><strong>auto_disconnect</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to automatically disconnect from the MySQL database after
 all tables have been downloaded.</p></li>
 <li><p><strong>table_names</strong> (<em>list of str</em><em>, </em><em>default None</em>) – List of table names to download. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, all tables are
@@ -207,7 +209,7 @@ global setting is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>download_path</strong> – File path to the HDF file.</p>
+<dd class="field-even"><p><strong>download_path</strong> – File path to the SQLite3 file.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pathlib.Path</p>

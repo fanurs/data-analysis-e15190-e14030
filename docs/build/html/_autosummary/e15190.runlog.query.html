@@ -53,8 +53,14 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery" title="e15190.runlog.query.ElogQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ElogQuery</span></code></a>([load_run_batches, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query" title="e15190.runlog.query.Query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Query</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.runlog.query.MySqlQuery.html#e15190.runlog.query.MySqlQuery" title="e15190.runlog.query.MySqlQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MySqlQuery</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query" title="e15190.runlog.query.Query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Query</span></code></a>()</p></td>
 <td><p>A class of query methods for the database.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.runlog.query.ReactionParser.html#e15190.runlog.query.ReactionParser" title="e15190.runlog.query.ReactionParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReactionParser</span></code></a>([beams, targets, energies])</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -62,10 +68,14 @@
 <dt class="sig sig-object py" id="e15190.runlog.query.Query">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.runlog.query.</span></span><span class="sig-name descname"><span class="pre">Query</span></span><a class="headerlink" href="#e15190.runlog.query.Query" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class of query methods for the database.</p>
-<p>Currently, all queries are made from the Elog database. Of course, one can
-always directly make queries on the <code class="xref py py-attr docutils literal notranslate"><span class="pre">elog.df</span></code> dataframe. This class
-is mostly for writing down functions that are used often, or to provide some
-basic query interface for users who are not familiar with pandas.</p>
+<p>Runlog queries are made from both the Elog database and the MySQL database.</p>
+<p>For Elog queries, one can either directly make a query on the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">elog.df</span></code> dataframe or use functions like <a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query.get_run_info" title="e15190.runlog.query.Query.get_run_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_run_info()</span></code></a>
+to get the run information.</p>
+<p>For MySQL queries, one can utilize the class <a class="reference internal" href="e15190.runlog.query.MySqlQuery.html#e15190.runlog.query.MySqlQuery" title="e15190.runlog.query.MySqlQuery"><code class="xref py py-func docutils literal notranslate"><span class="pre">MySqlQuery()</span></code></a> or
+functions like <a class="reference internal" href="e15190.runlog.query.Query.html#e15190.runlog.query.Query.get_runscalers" title="e15190.runlog.query.Query.get_runscalers"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_runscalers()</span></code></a>. Bear in mind that the entire MySQL
+database is huge. If you just want to explore the database, use clauses like
+LIMIT and WHERE to select a subset of the database for inspection.</p>
 <p class="rubric">Examples</p>
 <p>Single run info can easily be queried as following:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">e15190.runlog.query</span> <span class="kn">import</span> <span class="n">Query</span>
@@ -103,6 +113,36 @@ basic query interface for users who are not familiar with pandas.</p>
 <span class="go">  &#39;Ni 58 Ca40 140MeV/u, coincidence data delayed triggers 150ns(1) Before</span>
 <span class="go">  this run: 1) delayed hira+NW master by 150 ns, 2) dleayed fast clear by</span>
 <span class="go">  150ns; 3)increased the fast busy by 150 ns.&#39;]}</span>
+</pre></div>
+</div>
+<p>Run scalers can be queried as following:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">e15190.runlog.query</span> <span class="kn">import</span> <span class="n">Query</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Query</span><span class="o">.</span><span class="n">get_runscalers</span><span class="p">(</span><span class="mi">4100</span><span class="p">)</span>
+<span class="go">      run              datetime  VW-TOP-OR  VW-BOT-OR  VW-TOP-BOT-OR  VW-GATE \</span>
+<span class="go">0    4100   2018-03-11 03:41:16      22180      10953          15913    88002</span>
+<span class="go">1    4100   2018-03-11 03:41:18      22357      10921          16020    87246</span>
+<span class="go">2    4100   2018-03-11 03:41:20      22450      11015          16040    86622</span>
+<span class="go">3    4100   2018-03-11 03:41:22      22343      11032          16013    86232</span>
+<span class="go">4    4100   2018-03-11 03:41:24      22285      10985          15920    86526</span>
+<span class="go">..    ...                   ...        ...        ...            ...      ...</span>
+<span class="go">881  4100   2018-03-11 04:12:03      21756      10761          15676    86893</span>
+<span class="go">882  4100   2018-03-11 04:12:05      21774      10732          15644    87262</span>
+<span class="go">883  4100   2018-03-11 04:12:08      21759      10772          15713    86451</span>
+<span class="go">884  4100   2018-03-11 04:12:10      22263      11032          16027    86564</span>
+<span class="go">885  4100   2018-03-11 04:12:12      22271      10727          16023    88343</span>
+<span class="go">---</span>
+<span class="go">     VW-FCLR  MASTER  MASTER2  VW-DELAY   FA-OR  DSS-OR  NW-RAW  NW-LIVE \</span>
+<span class="go">0      85224    5023     5023         0  808973       0  213598    88002</span>
+<span class="go">1      84507    4940     4940         0  804762       0  210173    87246</span>
+<span class="go">2      83929    4972     4972         0  800139       0  210713    86622</span>
+<span class="go">3      83446    5040     5040         0  796532       0  211062    86232</span>
+<span class="go">4      83829    5024     5024         0  796509       0  211055    86526</span>
+<span class="go">..       ...     ...      ...       ...     ...     ...     ...      ...</span>
+<span class="go">881    84172    4929     4929         0  793584       0  207542    86893</span>
+<span class="go">882    84657    4882     4882         0  796243       0  207361    87262</span>
+<span class="go">883    83769    4907     4907         0  790993       0  206080    86451</span>
+<span class="go">884    83803    4986     4986         0  792586       0  208633    86564</span>
+<span class="go">885    85664    4871     4871         0  808603       0  208472    88343</span>
 </pre></div>
 </div>
 <dl class="py attribute">
@@ -352,6 +392,57 @@ following variables are can be specified in the expression:</p>
 <span class="go">[22, 33, 49]</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.get_runscalers">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_runscalers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_runscalers" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run</strong> (<em>int</em>) – Run number.</p></li>
+<li><p><strong>source</strong> (<em>str</em><em> or </em><em>int</em>) – Source name (<code class="docutils literal notranslate"><span class="pre">'hira'</span></code> or <code class="docutils literal notranslate"><span class="pre">'nw'</span></code>) or number (0 or 1), respectively.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>scalers</strong> – A dataframe containing datetime and scaler values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.get_runscalernames">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_runscalernames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_runscalernames" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>source</strong> (<em>str</em><em> or </em><em>int</em>) – Source name (<code class="docutils literal notranslate"><span class="pre">'hira'</span></code> or <code class="docutils literal notranslate"><span class="pre">'nw'</span></code>) or number (0 or 1), respectively.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>scaler_names</strong> – A list of scaler names, i.e. all the columns except <code class="docutils literal notranslate"><span class="pre">'run'</span></code> and <code class="docutils literal notranslate"><span class="pre">'datetime'</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.get_runscalernames_channel_map">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_runscalernames_channel_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_runscalernames_channel_map" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>channel_map</strong> – A dataframe containing the mapping between scaler names and
+channels. Other columns like <code class="docutils literal notranslate"><span class="pre">'description'</span></code> and <code class="docutils literal notranslate"><span class="pre">'wmu_name'</span></code>
+are also included; ‘’<cite>wmu_name</cite>’’ is the name used by Western
+Michigan University (WMU).</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pd.DataFrame</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
