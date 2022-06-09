@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>e15190.neutron_wall.cosmic.UshapeRansacEstimator &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <title>e15190.utilities.physics.LorentzVector &#8212; Data Analysis for E15190-E14030  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -26,7 +26,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.cosmic.UshapeRansacEstimator</a></li> 
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.physics.LorentzVector</a></li> 
       </ul>
     </div>  
 
@@ -35,11 +35,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="e15190-neutron-wall-cosmic-ushaperansacestimator">
-<h1>e15190.neutron_wall.cosmic.UshapeRansacEstimator<a class="headerlink" href="#e15190-neutron-wall-cosmic-ushaperansacestimator" title="Permalink to this headline">¶</a></h1>
+  <section id="e15190-utilities-physics-lorentzvector">
+<h1>e15190.utilities.physics.LorentzVector<a class="headerlink" href="#e15190-utilities-physics-lorentzvector" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="e15190.neutron_wall.cosmic.UshapeRansacEstimator">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.cosmic.</span></span><span class="sig-name descname"><span class="pre">UshapeRansacEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.cosmic.UshapeRansacEstimator" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="e15190.utilities.physics.LorentzVector">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.physics.</span></span><span class="sig-name descname"><span class="pre">LorentzVector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.physics.LorentzVector" title="Permalink to this definition">¶</a></dt>
 <dd><p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -47,25 +47,10 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.cosmic.UshapeRansacEstimator.__init__" title="e15190.neutron_wall.cosmic.UshapeRansacEstimator.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(bar)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.physics.LorentzVector.__init__" title="e15190.utilities.physics.LorentzVector.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(x, y, z, t)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(X, y)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_params</span></code>([deep])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model</span></code>(x, y_shift)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code>(X)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">score</span></code>(X, y)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code>(**params)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">boost</span></code>(bx, by, bz)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -77,14 +62,14 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">AMBE_PATH</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">df</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.cosmic.UshapeRansacEstimator.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.cosmic.UshapeRansacEstimator.__init__" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="e15190.utilities.physics.LorentzVector.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.physics.LorentzVector.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -122,7 +107,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.cosmic.UshapeRansacEstimator</a></li> 
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.physics.LorentzVector</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

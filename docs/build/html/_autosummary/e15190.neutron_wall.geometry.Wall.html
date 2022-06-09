@@ -13,6 +13,7 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
@@ -50,13 +51,21 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.__init__" title="e15190.neutron_wall.geometry.Wall.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(AB[, contain_pyrex, ...])</p></td>
 <td><p>Construct a neutron wall, A or B.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.read_from_inventor_readings" title="e15190.neutron_wall.geometry.Wall.read_from_inventor_readings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_inventor_readings</span></code></a>(filepath)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.get_geometry_efficiency" title="e15190.neutron_wall.geometry.Wall.get_geometry_efficiency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency</span></code></a>(shadowed_bars[, ...])</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param shadowed_bars</dt>
+<dd class="field-odd"><p>If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 15, 16,</p>
+</dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.read_from_inventor_readings" title="e15190.neutron_wall.geometry.Wall.read_from_inventor_readings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_inventor_readings</span></code></a>(filepath)</p></td>
 <td><p>Reads in Inventor measurements and returns <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.save_pca_to_database" title="e15190.neutron_wall.geometry.Wall.save_pca_to_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_pca_to_database</span></code></a>(AB, filepath, bars)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.save_pca_to_database" title="e15190.neutron_wall.geometry.Wall.save_pca_to_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_pca_to_database</span></code></a>(AB, filepath, bars)</p></td>
 <td><p>Save the principal components of the bars to database.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.save_vertices_to_database" title="e15190.neutron_wall.geometry.Wall.save_vertices_to_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_vertices_to_database</span></code></a>(AB, filepath, bars)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.save_vertices_to_database" title="e15190.neutron_wall.geometry.Wall.save_vertices_to_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_vertices_to_database</span></code></a>(AB, filepath, bars)</p></td>
 <td><p>Saves the vertices of the bars to database.</p></td>
 </tr>
 </tbody>
@@ -248,6 +257,28 @@ the topmost bar will be numbered 24.</p></li>
 <li><p><strong>filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – Path to the database file, e.g. <a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_pca" title="e15190.neutron_wall.geometry.Wall.path_pca"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.path_pca</span></code></a>.</p></li>
 <li><p><strong>bars</strong> (<em>list of Bar objects</em>) – Sorted from bottom to top. The bottommost bar will be numbered 0;
 the topmost bar will be numbered 24.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.get_geometry_efficiency">
+<span class="sig-name descname"><span class="pre">get_geometry_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shadowed_bars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_edges_bars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_bars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_cuts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.get_geometry_efficiency" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shadowed_bars</strong> (<em>bool</em><em> or </em><em>list of int</em>) – If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 15, 16,
+17. If False, no shadow bar cut is applied. If a list of int, shadow
+bar cut will only be applied to the bars in the list.</p></li>
+<li><p><strong>cut_edges_bars</strong> (<code class="docutils literal notranslate"><span class="pre">'all'</span></code> or list of int, default ‘all’) – If <code class="docutils literal notranslate"><span class="pre">'all'</span></code>, edge cut will be applied to all bars. If a list of int,
+edge cut will only be applied to the bars in the list.</p></li>
+<li><p><strong>skip_bars</strong> (<em>list of int</em><em>, </em><em>default</em><em> (</em><em>0</em><em>, </em><em>)</em>) – Bars to be skipped. In the experiment, NWB-bar00 is the bottommost bar
+that was blocked by the ground.</p></li>
+<li><p><strong>custom_cuts</strong> (<em>dict of int to list of str</em><em>, </em><em>default None</em>) – When custom cuts are applied, all the other cuts are ignored, so
+users should make sure the cuts are complete, e.g. edge cut is
+included. The only cut variable being supported is <code class="docutils literal notranslate"><span class="pre">'x'</span></code>.</p></li>
+<li><p><strong>norm</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to normalize the efficiency by <span class="math notranslate nohighlight">\(2\pi\)</span>.</p></li>
 </ul>
 </dd>
 </dl>

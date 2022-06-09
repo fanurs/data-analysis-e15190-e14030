@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>e15190.neutron_wall.cosmic &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <title>e15190.utilities.root6.TFile &#8212; Data Analysis for E15190-E14030  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -26,7 +26,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.cosmic</a></li> 
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.root6.TFile</a></li> 
       </ul>
     </div>  
 
@@ -35,44 +35,30 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-e15190.neutron_wall.cosmic">
-<span id="e15190-neutron-wall-cosmic"></span><h1>e15190.neutron_wall.cosmic<a class="headerlink" href="#module-e15190.neutron_wall.cosmic" title="Permalink to this headline">¶</a></h1>
-<p class="rubric">Functions</p>
+  <section id="e15190-utilities-root6-tfile">
+<h1>e15190.utilities.root6.TFile<a class="headerlink" href="#e15190-utilities-root6-tfile" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.utilities.root6.TFile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.utilities.root6.</span></span><span class="sig-name descname"><span class="pre">TFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'READ'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.root6.TFile" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.cosmic.get_light_from_adc.html#e15190.neutron_wall.cosmic.get_light_from_adc" title="e15190.neutron_wall.cosmic.get_light_from_adc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_light_from_adc</span></code></a>(adc, pos, a, b, c, d, e)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="e15190.neutron_wall.cosmic.track_line.html#e15190.neutron_wall.cosmic.track_line" title="e15190.neutron_wall.cosmic.track_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">track_line</span></code></a>(x, track)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.root6.TFile.__init__" title="e15190.utilities.root6.TFile.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(path[, mode])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.cosmic.CosmicRun.html#e15190.neutron_wall.cosmic.CosmicRun" title="e15190.neutron_wall.cosmic.CosmicRun"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CosmicRun</span></code></a>(AB[, min_multi])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="e15190.neutron_wall.cosmic.TrackFitter.html#e15190.neutron_wall.cosmic.TrackFitter" title="e15190.neutron_wall.cosmic.TrackFitter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackFitter</span></code></a>(df)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.cosmic.UshapeFitter.html#e15190.neutron_wall.cosmic.UshapeFitter" title="e15190.neutron_wall.cosmic.UshapeFitter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UshapeFitter</span></code></a>(bar, cosmic_run)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="e15190.neutron_wall.cosmic.UshapeRansacEstimator.html#e15190.neutron_wall.cosmic.UshapeRansacEstimator" title="e15190.neutron_wall.cosmic.UshapeRansacEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UshapeRansacEstimator</span></code></a>(bar)</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.root6.TFile.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'READ'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.root6.TFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -106,7 +92,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.cosmic</a></li> 
+        <li class="nav-item nav-item-this"><a href="">e15190.utilities.root6.TFile</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

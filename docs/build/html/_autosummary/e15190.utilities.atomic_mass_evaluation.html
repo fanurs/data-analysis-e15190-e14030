@@ -54,6 +54,12 @@ been changed.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.atomic_mass_evaluation.get_A_Z.html#e15190.utilities.atomic_mass_evaluation.get_A_Z" title="e15190.utilities.atomic_mass_evaluation.get_A_Z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_A_Z</span></code></a>(notation[, simple_tuple])</p></td>
 <td><p>Converts mass-number annotated isotope expression into A and Z.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.utilities.atomic_mass_evaluation.get_N_Z.html#e15190.utilities.atomic_mass_evaluation.get_N_Z" title="e15190.utilities.atomic_mass_evaluation.get_N_Z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_N_Z</span></code></a>(notation[, simple_tuple])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.atomic_mass_evaluation.get_symb.html#e15190.utilities.atomic_mass_evaluation.get_symb" title="e15190.utilities.atomic_mass_evaluation.get_symb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_symb</span></code></a>(Z)</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="e15190.utilities.atomic_mass_evaluation.mass.html#e15190.utilities.atomic_mass_evaluation.mass" title="e15190.utilities.atomic_mass_evaluation.mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mass</span></code></a>(argv[, unitless, not_found_okay, ...])</p></td>
 <td><p>Get mass of isotope.</p></td>
 </tr>
@@ -222,7 +228,7 @@ included.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>notation</strong> (<em>str</em>) – A string that represents an isotope, e.g. ‘Ca40’ and ‘U235’.</p></li>
+<li><p><strong>notation</strong> (<em>str</em><em> or </em><em>tuple</em>) – A string that represents an isotope, e.g. ‘Ca40’ or (‘Ca’, 40).</p></li>
 <li><p><strong>simple_tuple</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, returns a simple tuple <code class="docutils literal notranslate"><span class="pre">(A,</span> <span class="pre">Z)</span></code>; if <cite>False</cite>, returns a named
 tuple.</p></li>
 </ul>

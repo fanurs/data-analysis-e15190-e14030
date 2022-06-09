@@ -1,11 +1,46 @@
 import collections
 import pathlib
 import os
+import sqlite3
+from typing import List
 
 import numpy as np
 import pandas as pd
 
-from e15190 import PROJECT_DIR
+import e15190 # always needed
+
+
+class MySqlQuery:
+    downloaded_path = '$DATABASE_DIR/runlog/cleansed/mysql_database.db'
+
+    def __init__(self):
+        self.downloaded_path = pathlib.Path(os.path.expandvars(self.downloaded_path))
+
+    @staticmethod
+    def fetchall(result):
+        return [ele[0] for ele in result.fetchall()]
+
+    @property
+    def table_names(self):
+        with sqlite3.connect(self.downloaded_path) as conn:
+            result = conn.execute('SELECT name FROM sqlite_master WHERE type="table"')
+            return self.fetchall(result)
+    
+    def get_table(self, table_name=None, commands=None, **kwargs):
+        with sqlite3.connect(self.downloaded_path) as conn:
+            if table_name is not None:
+                df = pd.read_sql_query(f'SELECT * FROM {table_name}', conn, **kwargs)
+            elif commands is not None:
+                df = pd.read_sql_query(commands, conn, **kwargs)
+            return df
+
+    @staticmethod
+    def runscalers_source_id(source):
+        if source == 'hira' or source == 0:
+            return 0
+        if source == 'nw' or source == 1:
+            return 1
+        raise ValueError(f'Unknown source: {source}')
 
 class ElogQuery:
     def __init__(
@@ -30,11 +65,11 @@ class ElogQuery:
             useful when the run batches are re-determined and we want the new
             run batches to be saved into a CSV file.
         """
-        self.path = 'database/runlog/elog_runs_filtered.h5' # relative to PROJECT_DIR
+        self.path = '$DATABASE_DIR/runlog/elog_runs_filtered.h5'
 
         self.df = None
         """The Elog database pandas dataframe."""
-        with pd.HDFStore(PROJECT_DIR / self.path, 'r') as file:
+        with pd.HDFStore(os.path.expandvars(self.path), 'r') as file:
             self.df = file['runs']
             self.df.sort_values('run', inplace=True, ignore_index=True)
         
@@ -56,7 +91,7 @@ class ElogQuery:
         self.df_batches = None
         """A summary of batch properties rather than run properties."""
 
-        self.run_batches_path = 'database/runlog/run_batches.csv' # relative to $PROJECT_DIR
+        self.run_batches_path = '$DATABASE_DIR/runlog/run_batches.csv'
 
         if update_run_batches:
             self.determine_run_batches()
@@ -213,7 +248,7 @@ class ElogQuery:
             The path to the CSV file. If ``None``, the function uses
             :py:attr:`run_batches_path`.
         """
-        filepath = pathlib.Path(filepath or PROJECT_DIR / self.run_batches_path)
+        filepath = pathlib.Path(filepath or os.path.expandvars(self.run_batches_path))
         self.df_batches.to_csv(filepath)
 
     def load_run_batches(self, filepath=None):
@@ -225,7 +260,7 @@ class ElogQuery:
             The path to the CSV file. If ``None``, the function uses
             :py:attr:`run_batches_path`.
         """
-        filepath = pathlib.Path(filepath or PROJECT_DIR / self.run_batches_path)
+        filepath = pathlib.Path(filepath or os.path.expandvars(self.run_batches_path))
         self.df_batches = pd.read_csv(filepath)
         self.df_batches.set_index('ibatch', drop=True, inplace=True)
 
@@ -244,6 +279,7 @@ class ElogQuery:
         indices = pd.MultiIndex.from_arrays(indices, names=['ibatch', 'irun'])
         self.df.set_index(indices, inplace=True)
 
+
 class CosmicQuery:
     def __init__(self):
         path = '$DATABASE_DIR/runlog/cosmic_runs.csv'
@@ -255,6 +291,7 @@ class CosmicQuery:
     
     def get_all_runs(self):
         return sorted(self.df['run'].to_list())
+
 
 class AmBeQuery:
     def __init__(self):
@@ -268,13 +305,20 @@ class AmBeQuery:
     def get_all_runs(self):
         return sorted(self.df['run'].to_list())
 
+
 class Query:
     """A class of query methods for the database.
 
-    Currently, all queries are made from the Elog database. Of course, one can
-    always directly make queries on the :py:attr:`elog.df` dataframe. This class
-    is mostly for writing down functions that are used often, or to provide some
-    basic query interface for users who are not familiar with pandas.
+    Runlog queries are made from both the Elog database and the MySQL database.
+
+    For Elog queries, one can either directly make a query on the
+    :py:attr:`elog.df` dataframe or use functions like :py:func:`get_run_info`
+    to get the run information.
+    
+    For MySQL queries, one can utilize the class :py:func:`MySqlQuery` or
+    functions like :py:func:`get_runscalers`. Bear in mind that the entire MySQL
+    database is huge. If you just want to explore the database, use clauses like
+    LIMIT and WHERE to select a subset of the database for inspection.
 
     Examples
     --------
@@ -316,6 +360,36 @@ class Query:
       this run: 1) delayed hira+NW master by 150 ns, 2) dleayed fast clear by
       150ns; 3)increased the fast busy by 150 ns.']}
     
+    Run scalers can be queried as following:
+
+    >>> from e15190.runlog.query import Query
+    >>> Query.get_runscalers(4100)
+          run              datetime  VW-TOP-OR  VW-BOT-OR  VW-TOP-BOT-OR  VW-GATE \\
+    0    4100   2018-03-11 03:41:16      22180      10953          15913    88002   
+    1    4100   2018-03-11 03:41:18      22357      10921          16020    87246   
+    2    4100   2018-03-11 03:41:20      22450      11015          16040    86622   
+    3    4100   2018-03-11 03:41:22      22343      11032          16013    86232   
+    4    4100   2018-03-11 03:41:24      22285      10985          15920    86526   
+    ..    ...                   ...        ...        ...            ...      ...   
+    881  4100   2018-03-11 04:12:03      21756      10761          15676    86893   
+    882  4100   2018-03-11 04:12:05      21774      10732          15644    87262   
+    883  4100   2018-03-11 04:12:08      21759      10772          15713    86451   
+    884  4100   2018-03-11 04:12:10      22263      11032          16027    86564   
+    885  4100   2018-03-11 04:12:12      22271      10727          16023    88343   
+    ---
+         VW-FCLR  MASTER  MASTER2  VW-DELAY   FA-OR  DSS-OR  NW-RAW  NW-LIVE \\
+    0      85224    5023     5023         0  808973       0  213598    88002   
+    1      84507    4940     4940         0  804762       0  210173    87246   
+    2      83929    4972     4972         0  800139       0  210713    86622   
+    3      83446    5040     5040         0  796532       0  211062    86232   
+    4      83829    5024     5024         0  796509       0  211055    86526   
+    ..       ...     ...      ...       ...     ...     ...     ...      ...   
+    881    84172    4929     4929         0  793584       0  207542    86893   
+    882    84657    4882     4882         0  796243       0  207361    87262   
+    883    83769    4907     4907         0  790993       0  206080    86451   
+    884    83803    4986     4986         0  792586       0  208633    86564   
+    885    85664    4871     4871         0  808603       0  208472    88343   
+
     """
     elog = ElogQuery(load_run_batches=True)
     """Class attribute :py:class:`ElogQuery` object loaded with run batches."""
@@ -595,6 +669,70 @@ class Query:
     @staticmethod
     def get_ambe_run_info():
         return AmBeQuery().df
+
+    @staticmethod
+    def get_runscalers(run, source) -> pd.DataFrame:
+        """
+        Parameters
+        ----------
+        run : int
+            Run number.
+        source : str or int
+            Source name (``'hira'`` or ``'nw'``) or number (0 or 1), respectively.
+
+        Returns
+        -------
+        scalers : pd.DataFrame
+            A dataframe containing datetime and scaler values.
+        """
+        q = MySqlQuery()
+        source_id = q.runscalers_source_id(source)
+        df = q.get_table(
+            commands=f'''
+            SELECT * FROM runscalers_{source_id}
+            WHERE run = {run};
+            '''
+        )
+        df['datetime'] = pd.to_datetime(df['datetime'])
+        return df
+    
+    @staticmethod
+    def get_runscalernames(source) -> List[str]:
+        """
+        Parameters
+        ----------
+        source : str or int
+            Source name (``'hira'`` or ``'nw'``) or number (0 or 1), respectively.
+        
+        Returns
+        -------
+        scaler_names : list of str
+            A list of scaler names, i.e. all the columns except ``'run'`` and ``'datetime'``.
+        """
+        q = MySqlQuery()
+        source_id = q.runscalers_source_id(source)
+        columns = q.get_table(
+            commands=f'''
+            SELECT * FROM runscalers_{source_id}
+            LIMIT 1;
+            '''
+        ).columns
+        return [col for col in columns if col not in ['run', 'datetime']]
+    
+    @staticmethod
+    def get_runscalernames_channel_map() -> pd.DataFrame:
+        """
+        Returns
+        -------
+        channel_map : pd.DataFrame
+            A dataframe containing the mapping between scaler names and
+            channels. Other columns like ``'description'`` and ``'wmu_name'``
+            are also included; ''`wmu_name`'' is the name used by Western
+            Michigan University (WMU).
+        """
+        q = MySqlQuery()
+        return q.get_table(table_name='runscalernames').drop(columns=['index']).set_index(['id', 'chn'])
+
 
 class ReactionParser:
     beams = [

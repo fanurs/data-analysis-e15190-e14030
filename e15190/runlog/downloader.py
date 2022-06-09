@@ -2,11 +2,12 @@ import inspect
 import json
 import os
 from pathlib import Path
+import sqlite3
 import urllib.request
+import warnings
 
 import pandas as pd
 import pymysql
-pymysql.install_as_MySQLdb() # WMU uses MySQL
 
 from e15190.utilities import key_manager
 
@@ -82,7 +83,7 @@ class MySqlDownloader:
     >>>     df = dl.get_table('runtarget')
     """
     CREDENTIAL_PATH = '$DATABASE_DIR/runlog/mysql_login_credential.json'
-    DOWNLOAD_PATH = '$DATABASE_DIR/runlog/downloads/mysql_database.h5'
+    DOWNLOAD_PATH = '$DATABASE_DIR/runlog/downloads/mysql_database.db'
 
     def __init__(self, auto_connect=False, verbose=True):
         """Constructor for :py:class:`MySqlDownloader`.
@@ -91,13 +92,16 @@ class MySqlDownloader:
         ----------
         auto_connect : bool, default False
             Whether to automatically connect to the MySQL database. Login
-            credentials are needed to connect to the database.
+            credentials are needed to connect to the database. If you are using
+            context manager, this parameter is irrelevant --- connection is
+            always being established.
         verbose : bool, default True
             Whether to print the progress of connecting to the MySQL database.
             This setting has less priority than individual class functions, i.e.
             if other functions have explicitly set a verbose value, then this
             global setting will be ignored.
         """
+        pymysql.install_as_MySQLdb() # WMU uses MySQL
         self.connection = None
         self.cursor = None
         self.verbose = verbose
@@ -106,6 +110,8 @@ class MySqlDownloader:
             self.connect()
     
     def __enter__(self):
+        if self.connection is None:
+            self.connect()
         return self
     
     def __exit__(self, exc_type, exc_value, traceback):
@@ -213,7 +219,9 @@ class MySqlDownloader:
         all_table_names = self.get_all_table_names()
         if table_name not in all_table_names:
             raise ValueError(f'Table "{table_name}" is not found in the database.')
-        return pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', UserWarning)
+            return pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
 
     def download(
         self,
@@ -221,13 +229,13 @@ class MySqlDownloader:
         table_names=None,
         auto_disconnect=False,
         verbose=True):
-        """Convert tables into pandas dataframes and save into an HDF file
+        """Convert tables into pandas dataframes and save into an SQLite3 file
 
         Parameters
         ----------
         download_path : str, default None
             File path to the HDF file. If ``None``, the file is saved at
-            ``$DATABASE_DIR/runlog/downloads/mysql_database.h5``.
+            ``$DATABASE_DIR/runlog/downloads/mysql_database.db``.
         auto_disconnect : bool, default False
             Whether to automatically disconnect from the MySQL database after
             all tables have been downloaded.
@@ -241,7 +249,7 @@ class MySqlDownloader:
         Returns
         -------
         download_path : pathlib.Path
-            File path to the HDF file.
+            File path to the SQLite3 file.
         """
         verbose = self.verbose if verbose is None else verbose
 
@@ -255,7 +263,7 @@ class MySqlDownloader:
         download_path.parent.mkdir(parents=True, exist_ok=True)
         if download_path.is_file():
             resp = input(inspect.cleandoc(
-                f'''HDF file already exists at
+                f'''SQLite3 file already exists at
                 "{str(download_path)}".
                 Do you want to re-download from WMU MySQL database? (y/n)
                 This will overwrite the existing file.
@@ -268,13 +276,14 @@ class MySqlDownloader:
 
         if resp.lower().strip() == 'y':
             download_path.unlink(missing_ok=True)
-            with pd.HDFStore(download_path, 'w') as file:
+            with sqlite3.connect(download_path) as sqlite_conn:
                 for table_name in table_names:
                     if verbose:
-                        print(f'> Converting and saving {table_name}... ', end='', flush=True)
-                    df = pd.read_sql(f'SELECT * FROM {table_name}', self.connection)
-                    file.append(table_name, df)
-                    print('Done!')
+                        print(f'Downloading table "{table_name}"... ', end='', flush=True)
+                    df = self.get_table(table_name)
+                    df.to_sql(table_name, sqlite_conn, if_exists='replace')
+                    if verbose:
+                        print('Done!', flush=True)
             print(f'All tables have been saved to\n"{str(download_path)}"')
 
         if auto_disconnect:
@@ -303,5 +312,18 @@ class MySqlDownloader:
                 print('No connection found. Nothing to disconnect.')
 
 if __name__ == '__main__': # pragma: no cover
-    elog_downloader = ElogDownloader()
-    elog_downloader.download()
+    print('''
+    What do you want to download?
+    \t1) Elog data from the web
+    \t2) Data from the MySQL database at WMU
+    ''')
+    resp = input('(1/2) > ')
+    if resp == '1':
+        elog_downloader = ElogDownloader()
+        elog_downloader.download()
+        exit()
+    if resp == '2':
+        with MySqlDownloader() as mysql_downloader:
+            mysql_downloader.download()
+        exit()
+    print('Invalid input.')

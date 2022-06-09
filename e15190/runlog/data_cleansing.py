@@ -1,11 +1,13 @@
+#!/usr/bin/env python
+import inspect
 from pathlib import Path
 from os.path import expandvars
+import sqlite3
 
 import numpy as np
 import pandas as pd
 
 from e15190.runlog.downloader import ElogDownloader, MySqlDownloader
-from e15190.utilities import tables
 
 
 class ElogCleanser:
@@ -390,13 +392,17 @@ class ElogCleanser:
             for key, value in df.items():
                 file.append(key, value)
 
+
 class MySqlCleanser:
     """This is a class of methods to perform data cleansing on the tables freshly downloaded from MySQL at WMU.
     """
-    OUTPUT_DIR = '$DATABASE_DIR/runlog'
+    INPUT_PATH = MySqlDownloader.DOWNLOAD_PATH
+    OUTPUT_PATH = '$DATABASE_DIR/runlog/cleansed/mysql_database.db'
 
-    def __init__(self):
-        self.file = pd.HDFStore(MySqlDownloader.DOWNLOAD_PATH, 'r')
+    def __init__(self, verbose=True):
+        self.verbose = verbose
+        self.INPUT_PATH = Path(expandvars(self.INPUT_PATH))
+        self.OUTPUT_PATH = Path(expandvars(self.OUTPUT_PATH))
         self.table_names = [ # tables from WMU that contain relevant information for our analysis
             'runbeam',
             'runbeamintensity',
@@ -408,43 +414,59 @@ class MySqlCleanser:
         ]
 
     def cleanse(self, verbose=True):
-        df = {
-            'runbeam': self._cleanse_runbeam(),
-            'runtarget': self._cleanse_runtarget(),
-            'runlog': self._cleanse_runlog(),
-            'runscalernames': self._cleanse_runscalernames(),
-        }
-
-        path = Path(expandvars(self.OUTPUT_DIR)) / 'mysql_cleansed.h5'
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with pd.HDFStore(path, 'w') as file:
-            for name, _df in df.items():
-                file.append(name, _df)
-        if verbose:
-            print(f'Cleansed MySQL database saved to "{path}"')
+        self.dfs = dict()
+        self.dfs['runbeam'] = self._cleanse_runbeam()
+        self.dfs['runtarget'] = self._cleanse_runtarget()
+        self.dfs['runscalernames'] = self._cleanse_runscalernames()
+    
+    def save(self, force=False, verbose=True):
+        self.OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if force:
+            resp = 'y'
+        elif self.OUTPUT_PATH.is_file():
+            resp = input(inspect.cleandoc(
+                f'''SQLite3 file already exists at
+                "{str(self.OUTPUT_PATH)}".
+                Do you want to replace it? [y/n]
+                This will overwrite the existing file.
+                > '''
+            ))
+            if not resp.lower().strip() == 'y':
+                print('No changes have been made.')
+        else:
+            resp = 'y'
         
-        for name, _df in df.items():
-            path = Path(expandvars(self.OUTPUT_DIR)) / f'mysql_{name}.txt'
-            tables.to_fwf(_df, path)
-            if verbose:
-                print(f'Cleansed {name} saved to "{path}"')
+        if resp.lower().strip() == 'y':
+            self.OUTPUT_PATH.unlink(missing_ok=True)
+            with sqlite3.connect(self.OUTPUT_PATH) as conn:
+                for table_name, df in self.dfs.items():
+                    df.to_sql(table_name, conn, if_exists='replace')
+                if verbose:
+                    print('Done!', flush=True)
+        
+        return self.OUTPUT_PATH
 
     def _cleanse_runbeam(self):
-        print('Data cleansing runbeam... ', end='', flush=True)
-        df = self.file['runbeam'].copy()
-        df.rename(columns={
+        if self.verbose:
+            print('Data cleansing runbeam... ', end='', flush=True)
+        with sqlite3.connect(self.INPUT_PATH) as conn:
+            df = pd.read_sql(f'SELECT * FROM runbeam', conn)
+        df = df.set_index('index')
+        df = df.rename(columns={
             'name': 'beam',
             'bid': 'id',
-        }, inplace=True)
-        df = df[['id', 'beam']]
+        })
 
-        print('Done!')
+        if self.verbose:
+            print('Done!')
         return df
 
     def _cleanse_runtarget(self):
-        print('Data cleansing runtarget... ', end='', flush=True)
-
-        # HARD-CODED from hiramodules/runtarget
+        if self.verbose:
+            print('Data cleansing runtarget... ', end='', flush=True)
+        with sqlite3.connect(self.INPUT_PATH) as conn:
+            df = pd.read_sql(f'SELECT * FROM runtarget', conn)
+        df = df.set_index('index')
         df = pd.DataFrame(
             columns=['id', 'target', 'thickness'],
             data=[
@@ -459,11 +481,12 @@ class MySqlCleanser:
             ],
         )
 
-        print('Done!')
+        if self.verbose:
+            print('Done!')
         return df
 
     def _cleanse_runlog(self):
-        """Perform data cleansing on runlog.
+        """[INCOMPLETE] Perform data cleansing on runlog.
 
         The `runlog` table from the WMU MySQL database contains many entries.
         A valid run in the `runlog` is composed of a pair of entries that satisfy all the following conditions:
@@ -480,9 +503,12 @@ class MySqlCleanser:
         properly, the runs are electronics are set correctly, etc. All these are not being taken care in this stage of data
         cleansing. We leave the responsibility to analyses after this.
         """
-        print('Data cleansing runlog... ', end='', flush=True)
+        if self.verbose:
+            print('Data cleansing runlog... ', end='', flush=True)
 
-        df = self.file['runlog'].copy()
+        with sqlite3.connect(self.INPUT_PATH) as conn:
+            df = pd.read_sql(f'SELECT * FROM runlog', conn)
+        df = df.set_index('index')
         df = df.query('(runno >= 2000 & runno < 3000) | (runno >= 4000 & runno < 5000)')
 
         mask_begin = (df['state'] == 'begin')
@@ -517,13 +543,16 @@ class MySqlCleanser:
         df_cleansed.drop(columns=['host', 'lid'], inplace=True)
         df_cleansed.set_index(['run', 'state'], inplace=True, verify_integrity=True)
 
-        print('Done!')
+        if self.verbose:
+            print('Done!')
         return df_cleansed
 
     def _cleanse_runscalernames(self):
-        print('Data cleansing runscalernames... ', end='', flush=True)
-
-        # HARD-CODED FROM hiramodules/runscalernames
+        if self.verbose:
+            print('Data cleansing runscalernames... ', end='', flush=True)
+        with sqlite3.connect(self.INPUT_PATH) as conn:
+            df = pd.read_sql(f'SELECT * FROM runscalernames', conn)
+        df = df.set_index('index')
         df = pd.DataFrame(
             columns=['id', 'chn', 'name', 'description', 'wmu_name'],
             data=[
@@ -594,15 +623,79 @@ class MySqlCleanser:
             ],
         )
 
-        print('Done!')
+        if self.verbose:
+            print('Done!')
         return df
+    
+    def cleanse_save_runscalers(self, runs=None, runs_per_chunk=100):
+        if self.verbose:
+            print('Cleansing and saving runscalers_0 and runscalers_1...')
+        if 'runscalernames' not in self.dfs:
+            raise ValueError('runscalernames not found in dfs. runscalernames must be called before')
+
+        new_cols = [dict(), dict()]
+        for _, row in self.dfs['runscalernames'].sort_values(['id', 'chn']).iterrows():
+            new_cols[row['id']][f'ch{row["chn"]}'] = row['name']
+        dropcols = [
+            [f'ch{chn}' for chn in range(64) if f'ch{chn}' not in new_cols[id]]
+            for id in [0, 1]
+        ]
+
+        with sqlite3.connect(self.OUTPUT_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute('DROP TABLE IF EXISTS runscalers_0')
+            cursor.execute('DROP TABLE IF EXISTS runscalers_1')
+            conn.commit()
+
+        if runs is None:
+            runs = list(range(2000, 3000)) + list(range(4000, 5000))
+        n_runs = len(runs)
+        with sqlite3.connect(self.INPUT_PATH) as in_conn, sqlite3.connect(self.OUTPUT_PATH) as out_conn:
+            for i_run in range(0, n_runs, runs_per_chunk):
+                subruns = runs[i_run : i_run+runs_per_chunk]
+                if self.verbose:
+                    print(f'\rCleansing and saving run {subruns[-1]}... ({i_run + runs_per_chunk}/{n_runs})', end='', flush=True)
+                df = pd.read_sql(f'SELECT * FROM runscalers WHERE runno >= {subruns[0]} AND runno <= {subruns[-1]}', in_conn)
+                df = df.rename(columns={
+                    'runno': 'run',
+                    'sourceid': 'id',
+                })
+                df.insert(list(df.columns).index('run') + 1, 'datetime', df['date'])
+                df = df.drop(columns=['index', 'sid', 'beamI', 'date'])
+
+                # runs in February 2018 were incorrectly recorded as March 2018
+                df['datetime'] = pd.to_datetime(df['datetime'])
+                df['datetime'] -= pd.Timedelta(days=28) * (df['run'] <= 2916)
+
+                for id in [0, 1]:
+                    df_id = df.query(f'id == {id}').drop(columns=['id', *dropcols[id]])
+                    df_id.rename(columns=new_cols[id], inplace=True)
+                    df_id.to_sql(f'runscalers_{id}', out_conn, if_exists='append', index=False)
+        
+        if self.verbose:
+            print('\nDone!')
 
 
 if __name__ == '__main__': # pragma: no cover
-    print('Data cleansing the ELOG...')
-    elog_cleanser = ElogCleanser()
-    elog_cleanser.cleanse()
-    elog_cleanser.filtered_runs()
-    elog_cleanser.save_cleansed_elog()
-    elog_cleanser.save_filtered_runs('h5')
-    elog_cleanser.save_filtered_runs('csv')
+    print('''
+    What do you want to cleanse?
+    \t1) Elog data downloaded from the web
+    \t2) Data from the MySQL database downloaded from WMU
+    ''')
+    resp = input('(1/2) > ')
+    if resp == '1':
+        print('Data cleansing the ELOG...')
+        cln = ElogCleanser()
+        cln.cleanse()
+        cln.filtered_runs()
+        cln.save_cleansed_elog()
+        cln.save_filtered_runs('h5')
+        cln.save_filtered_runs('csv')
+        exit()
+    if resp == '2':
+        cln = MySqlCleanser()
+        cln.cleanse()
+        cln.save()
+        cln.cleanse_save_runscalers() # this takes a long time
+        exit()
+    print('Invalid input.')
