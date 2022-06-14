@@ -363,7 +363,7 @@ class Query:
     Run scalers can be queried as following:
 
     >>> from e15190.runlog.query import Query
-    >>> Query.get_runscalers(4100)
+    >>> Query.get_runscalers(4100, 'nw')
           run              datetime  VW-TOP-OR  VW-BOT-OR  VW-TOP-BOT-OR  VW-GATE \\
     0    4100   2018-03-11 03:41:16      22180      10953          15913    88002   
     1    4100   2018-03-11 03:41:18      22357      10921          16020    87246   
