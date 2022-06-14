@@ -1,7 +1,7 @@
 # Primary scripts for processing ROOT files
 
 ## The main script - [`calibrate.cpp`](calibrate.cpp)
-This is the script that is used to calibrate or re-calibrate all the data in "Daniele's ROOT files". Basically, it takes in, for example, `CalibratedData_4083.root`, and produces `database/root_files/run-4083.root`.
+This is the script that is used to calibrate or re-calibrate all the data in "Daniele's ROOT files". Basically, it takes in, for example, `CalibratedData_4083.root`, and produces `database/root_files/run-4083.root`. Before running any calibration, please make sure all calibration files (calibration parameters) are ready.
 
 > **:warning: For NSCL/FRIB Fishtank users**<br>
 > Starting from March 10, 2022, the ROOT installation under conda envrionment has failed to compile any C++ scripts (issue #12), even though both PyROOT and [Cling](https://github.com/root-project/cling) are still working fine. If you are *not* on Fishtank, your conda environment may still work, so you can skip to the [usage section](#usage).
@@ -60,7 +60,6 @@ To compile:
 cd scripts/
 make
 ```
-The old method of using custom `groot` is deprecated and will be removed soon.
 
 Upon successful compilation, an executable file will be created with the name `calibrate.exe`. To calibrate, say, run 4083, type in:
 ```console
