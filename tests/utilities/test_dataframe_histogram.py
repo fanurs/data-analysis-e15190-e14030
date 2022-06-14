@@ -151,17 +151,29 @@ def test_same_x_values(dfs):
         func(dfs[0], dfs[2])
         assert 'could not be broadcast' in str(excinfo.value).lower()
 
+def test__divide_arrays():
+    arr_0 = np.array([1, -2, 3, 4.5, 0, 0])
+    arr_1 = np.array([1, 2, 0, 0.5, 0, 5])
+    assert np.allclose(dfh._divide_arrays(arr_0, arr_1), [1, -1, 0, 9, 0, 0])
+
 def test_add(dfs):
     df_add = dfh.add(dfs[0], dfs[1])
     assert np.allclose(df_add.y, dfs[0].y + dfs[1].multi)
+    assert np.allclose(df_add.yerr, np.sqrt(dfs[0].yerr**2 + dfs[1].multi_err**2))
+    assert np.allclose(df_add.yferr, np.abs(dfh._divide_arrays(df_add.yerr, df_add.y)))
+    assert np.allclose(df_add.yerr, np.abs(df_add.yferr * df_add.y))
 
 def test_sub(dfs):
     df_sub = dfh.sub(dfs[0], dfs[1])
     assert np.allclose(df_sub.y, dfs[0].y - dfs[1].multi)
+    assert np.allclose(df_sub.yerr, np.sqrt(dfs[0].yerr**2 + dfs[1].multi_err**2))
+    assert np.allclose(df_sub.yferr, np.abs(dfh._divide_arrays(df_sub.yerr, df_sub.y)))
 
 def test_mul(dfs):
     df_mult = dfh.mul(dfs[0], dfs[1])
     assert np.allclose(df_mult.y, dfs[0].y * dfs[1].multi)
+    assert np.allclose(df_mult.yferr, np.sqrt(dfs[0].yferr**2 + dfs[1].multi_ferr**2))
+    assert np.allclose(df_mult.yerr, np.abs(df_mult.y * df_mult.yferr))
 
 def test_div(dfs):
     df_div = dfh.div(dfs[0], dfs[1])
@@ -183,3 +195,4 @@ def test_div(dfs):
             0,
         ]
     )
+    assert np.allclose(df_div.yferr, np.abs(dfh._divide_arrays(df_div.yerr, df_div.y)))

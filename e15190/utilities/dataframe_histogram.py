@@ -103,6 +103,13 @@ class Identifier:
 def same_x_values(dfa, dfb):
     return np.allclose(dfa[Identifier(dfa).x_name], dfb[Identifier(dfb).x_name])
 
+def _divide_arrays(arr_num, arr_den):
+    """Element-wise division of two arrays.
+
+    Quotient is set to 0 if denominator is 0.
+    """
+    return np.divide(arr_num, arr_den, out=np.zeros_like(arr_num), where=(arr_den != 0))
+
 def _add_scalar(df, scalar):
     d = Identifier(df, fill_errors=True)
     result = pd.DataFrame({
@@ -129,11 +136,7 @@ def add(dfa, dfb):
         a.y_name: a.df[a.y_name] + dfb[b.y_name],
         a.yerr_name: np.sqrt(a.df[a.yerr_name]**2 + dfb[b.yerr_name]**2),
     })
-    result[a.yferr_name] = np.abs(np.divide(
-        result[a.yerr_name], result[a.y_name],
-        out=np.zeros_like(result[a.yerr_name]),
-        where=(result[a.y_name] != 0),
-    ))
+    result[a.yferr_name] = np.abs(_divide_arrays(result[a.yerr_name], result[a.y_name]))
     return result
 
 def _sub_scalar(df, scalar):
@@ -162,11 +165,7 @@ def sub(dfa, dfb):
         a.y_name: a.df[a.y_name] - dfb[b.y_name],
         a.yerr_name: np.sqrt(a.df[a.yerr_name]**2 + dfb[b.yerr_name]**2),
     })
-    result[a.yferr_name] = np.abs(np.divide(
-        result[a.yerr_name], result[a.y_name],
-        out=np.zeros_like(result[a.yerr_name]),
-        where=(result[a.y_name] != 0),
-    ))
+    result[a.yferr_name] = np.abs(_divide_arrays(result[a.yerr_name], result[a.y_name]))
     return result
 
 def _mul_scalar(df, scalar):
