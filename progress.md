@@ -1,0 +1,31 @@
+# Neutron wall B analysis
+
+- Position calibration
+    - [x] Run by run calibration
+    - [ ] Bar-by-bar position resolutions (update to GitHub)
+    - [ ] Error propagation (to final spectrum)
+- Event counting / normalization
+    - [ ] Trigger condition
+- Charged-particle veto
+    - [x] Crude filter (any hits on VW imply charged-particles)
+    - [ ] Cone projection filter (or estimate how much % could be improved)
+- Pulse shape discrimination
+    - [x] Batch by batch
+    - [ ] Time-of-flight analysis
+    - [ ] Error analysis
+    - [ ] Error propagation (to final spectrum)
+- Light output calibration (ADC -> MeVee)
+    - [x] Cosmic + AmBe five-point calibration
+    - [x] Bug fixed: Incorrect dimension of NW bars
+    - [ ] "Trianglular bug"
+- Shadow bar analysis
+    - [x] Correction curves have been established
+    - [x] Error analysis
+    - [ ] Error propagation (to final spectrum)
+- Geometric efficiency
+    - [x] Efficiency curve for any positional cuts (shadow bars, bad bars, etc.)
+- Detection efficiency
+    - [x] ~~SCINFUL-QMD~~
+    - [x] SCINFUL-PHITS v.s. Park's Geant4
+    - [x] Bug fixed: Included (n, 3He) and (n, 4He) that were previously excluded
+    - [ ] Why the 12C(n, d) peak is not as apparent as before? (Investigating)
