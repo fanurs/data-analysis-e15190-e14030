@@ -127,10 +127,10 @@ Lastly, it is strongly recommended to apply autopep8 to your script before commi
 Further readings
 ================
 
-- [Value-Assigned Pulse Shape Discrimination for Neutron Detectors](https://doi.org/10.1109/TNS.2021.3091126) by F. C. E. Teh, et al.
-- [Calibration of large neutron detection arrays using cosmic rays](https://doi.org/10.1016/j.nima.2020.163826) by K. Zhu, et al.
-- [Non-linearity effects on the light-output calibration of light charged particles in CsI(Tl) scintillator crystals](https://doi.org/10.1016/j.nima.2019.03.065) by D. Dell'Aquila, et al.
-- [Reaction losses of charged particles in CsI(Tl) crystals](https://doi.org/10.1016/j.nima.2021.165798) by S. Sweany, et al.
-- [Doctoral dissertation](https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Thesis_Sean_Sweany.pdf) by Sean Robert Sweany.
-- [Doctoral dissertation](https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Zhu_dissertation.pdf) by Kuan Zhu.
-- [Doctoral dissertation](https://publications.nscl.msu.edu/thesis/Coupland_2013_338.pdf) by Daniel David Schechtman Coupland
+- `Value-Assigned Pulse Shape Discrimination for Neutron Detectors <https://doi.org/10.1109/TNS.2021.3091126>`__ by F. C. E. Teh, et al.
+- `Calibration of large neutron detection arrays using cosmic rays <https://doi.org/10.1016/j.nima.2020.163826>`__ by K. Zhu, et al.
+- `Non-linearity effects on the light-output calibration of light charged particles in CsI(Tl) scintillator crystals <https://doi.org/10.1016/j.nima.2019.03.065>`__ by D. Dell'Aquila, et al.
+- `Reaction losses of charged particles in CsI(Tl) crystals <https://doi.org/10.1016/j.nima.2021.165798>`__ by S. Sweany, et al.
+- `Doctoral dissertation <https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Thesis_Sean_Sweany.pdf>`__ by Sean Robert Sweany.
+- `Doctoral dissertation <https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Zhu_dissertation.pdf>`__ by Kuan Zhu.
+- `Doctoral dissertation <https://publications.nscl.msu.edu/thesis/Coupland_2013_338.pdf>`__ by Daniel David Schechtman Coupland.
