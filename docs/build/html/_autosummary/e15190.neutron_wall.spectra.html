@@ -58,13 +58,68 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="e15190.neutron_wall.spectra.Cuts.html#e15190.neutron_wall.spectra.Cuts" title="e15190.neutron_wall.spectra.Cuts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cuts</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>A class of default cuts for neutron wall spectra.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="e15190.neutron_wall.spectra.Spectrum.html#e15190.neutron_wall.spectra.Spectrum" title="e15190.neutron_wall.spectra.Spectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Spectrum</span></code></a>(AB, paths[, runs, check_runlog, ...])</p></td>
 <td><p>A class for constructing neutron related spectra.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.spectra.</span></span><span class="sig-name descname"><span class="pre">Cuts</span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class of default cuts for neutron wall spectra.</p>
+<p>This class only offers the typical cuts that are being applied. If you want
+to change the cuts by a lot, it might be easier to simply write your own
+strings.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts.edge">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">89</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NWB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts.edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cut for the two edges of a neutron wall bar.</p>
+<p>This cut is used to remove the ambiguity near the edges of the bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>left</strong> (float, default <code class="xref py py-attr docutils literal notranslate"><span class="pre">e15190.neutron_wall.geometry.Bar.edges_x[0]</span></code>) – The left edge of the bar in cm.</p></li>
+<li><p><strong>right</strong> (float, default <code class="xref py py-attr docutils literal notranslate"><span class="pre">e15190.neutron_wall.geometry.Bar.edges_x[1]</span></code>) – The right edge of the bar in cm.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts.shadow_bars">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">shadow_bars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NWB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts.shadow_bars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cut for the regions on the neutron wall that are shadowed.</p>
+<p>We remove the segments <cite>-50 &lt; x &lt; -15</cite> and <cite>15 &lt; x &lt; 50</cite> for NWB bars 7,
+8, 9, 15, 16, 17.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts.psd">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">psd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd_upp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perp_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perp_upp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NWB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts.psd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cut for pulse shape discrimination.</p>
+<p>We used two-dimensional pulse shape discrimination (PSD). The first
+dimension or axis accounts for most of the separation, while the second
+dimension is perpendicular to the first one.</p>
+<p>This cut only makes sense after vetoing the charged particles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_low</strong> (<em>float</em><em>, </em><em>default 0.5</em>) – The lower bound of the cut. By default, it is 0.5 - data above 0.5
+are accepted as neutrons, whereas data below 0.5 are rejected as
+gammas.</p></li>
+<li><p><strong>psd_upp</strong> (<em>float</em><em>, </em><em>default 4.0</em>) – The upper bound of the cut, to make sure no extreme outliers are
+included.</p></li>
+<li><p><strong>perp_low</strong> (<em>float</em><em>, </em><em>default -0.7</em>) – The lower bound of the perpendicular axis.</p></li>
+<li><p><strong>perp_upp</strong> (<em>float</em><em>, </em><em>default 0.7</em>) – The upper bound of the perpendicular axis.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.spectra.</span></span><span class="sig-name descname"><span class="pre">Spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'A'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'B'</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_runlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum" title="Permalink to this definition">¶</a></dt>
@@ -186,7 +241,7 @@ to infer the tree name from the ROOT files.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_nw_cut">
-<span class="sig-name descname"><span class="pre">define_nw_cut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">light_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">4.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shadow_bar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'auto'</span><span class="p"><span class="pre">,</span> </span><span class="pre">True</span><span class="p"><span class="pre">,</span> </span><span class="pre">False</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cuts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_nw_cut" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">define_nw_cut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">light_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">4.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shadow_bar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'auto'</span><span class="p"><span class="pre">,</span> </span><span class="pre">True</span><span class="p"><span class="pre">,</span> </span><span class="pre">False</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd_perp_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-</span> <span class="pre">0.7,</span> <span class="pre">0.7)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cuts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_nw_cut" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cuts that are applied to the Neutron Wall.</p>
 <p>The cut will be named <code class="docutils literal notranslate"><span class="pre">'nw_cut'</span></code> in <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>.</p>
 <p>Implementation detail: <code class="docutils literal notranslate"><span class="pre">Filter()</span></code> cannot be used because the neutron
@@ -204,6 +259,7 @@ above this threshold are kept.</p></li>
 <code class="docutils literal notranslate"><span class="pre">'auto'</span></code>, shadow bar cut is applied whenever the shadow bar is
 present for the runs. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, shadow bar cut is applied always.
 If <code class="docutils literal notranslate"><span class="pre">False</span></code>, shadow bar cut is never applied.</p></li>
+<li><p><strong>psd_perp_range</strong> (<em>(</em><em>float</em><em>, </em><em>float</em><em>)</em><em>, </em><em>default</em><em> (</em><em>-0.7</em><em>, </em><em>0.7</em><em>)</em>) – The range of the second axis of the two-dimensional PSD.</p></li>
 <li><p><strong>extra_cuts</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Additional cuts to be applied. The cuts will be joined with the
 operator AND, i.e. <code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code> in ROOT. Any syntax that is supported by
 RDataFrame should work here.</p></li>

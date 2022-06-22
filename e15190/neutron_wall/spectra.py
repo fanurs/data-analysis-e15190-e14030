@@ -21,13 +21,35 @@ def enable_implicit_multithreading():
     ROOT.EnableImplicitMT()
 
 class Cuts:
+    """A class of default cuts for neutron wall spectra.
+
+    This class only offers the typical cuts that are being applied. If you want
+    to change the cuts by a lot, it might be easier to simply write your own
+    strings.
+    """
     @staticmethod
     def edge(left=nwgeo.Bar.edges_x[0], right=nwgeo.Bar.edges_x[1], on='NWB'):
+        """Cut for the two edges of a neutron wall bar.
+
+        This cut is used to remove the ambiguity near the edges of the bar.
+
+        Parameters
+        ----------
+        left : float, default :py:attr:`e15190.neutron_wall.geometry.Bar.edges_x[0]`
+            The left edge of the bar in cm.
+        right : float, default :py:attr:`e15190.neutron_wall.geometry.Bar.edges_x[1]`
+            The right edge of the bar in cm.
+        """
         x = f'{on}_pos'
         return f'{x} > {left} && {x} < {right}'
 
     @staticmethod
     def shadow_bars(on='NWB'):
+        """Cut for the regions on the neutron wall that are shadowed.
+
+        We remove the segments `-50 < x < -15` and `15 < x < 50` for NWB bars 7,
+        8, 9, 15, 16, 17.
+        """
         bar = f'{on}_bar'
         x = f'{on}_pos'
         return ' && '.join([
@@ -38,12 +60,34 @@ class Cuts:
         ])
     
     @staticmethod
-    def psd(separation=0.5, outlier=2.0, perp_low=-0.5, perp_upp=0.5, on='NWB'):
+    def psd(psd_low=0.5, psd_upp=4.0, perp_low=-0.7, perp_upp=0.7, on='NWB'):
+        """Cut for pulse shape discrimination.
+
+        We used two-dimensional pulse shape discrimination (PSD). The first
+        dimension or axis accounts for most of the separation, while the second
+        dimension is perpendicular to the first one.
+
+        This cut only makes sense after vetoing the charged particles.
+
+        Parameters
+        ----------
+        psd_low : float, default 0.5
+            The lower bound of the cut. By default, it is 0.5 - data above 0.5
+            are accepted as neutrons, whereas data below 0.5 are rejected as
+            gammas.
+        psd_upp : float, default 4.0
+            The upper bound of the cut, to make sure no extreme outliers are
+            included.
+        perp_low : float, default -0.7
+            The lower bound of the perpendicular axis.
+        perp_upp : float, default 0.7
+            The upper bound of the perpendicular axis.
+        """
         psd = f'{on}_psd'
         ppsd = f'{on}_psd_perp'
         return ' && '.join([
-            f'{psd} > {separation}',
-            f'{psd} < {outlier}',
+            f'{psd} > {psd_low}',
+            f'{psd} < {psd_upp}',
             f'{ppsd} > {perp_low}',
             f'{ppsd} < {perp_upp}',
         ])
@@ -234,6 +278,7 @@ class Spectrum:
         light_threshold=3.0, # MeVee
         psd_range=(0.5, 4.0),
         shadow_bar : Literal['auto', True, False] ='auto',
+        psd_perp_range=(-0.7, 0.7),
         extra_cuts=None,
         inplace=True,
     ):
@@ -259,6 +304,8 @@ class Spectrum:
             ``'auto'``, shadow bar cut is applied whenever the shadow bar is
             present for the runs. If ``True``, shadow bar cut is applied always.
             If ``False``, shadow bar cut is never applied.
+        psd_perp_range : (float, float), default (-0.7, 0.7)
+            The range of the second axis of the two-dimensional PSD.
         extra_cuts : list of str or None, default None
             Additional cuts to be applied. The cuts will be joined with the
             operator AND, i.e. ``&&`` in ROOT. Any syntax that is supported by
@@ -274,7 +321,10 @@ class Spectrum:
         conditions = [
             Cuts.edge(),
             f'NW{self.AB}_light_GM > {light_threshold}',
-            Cuts.psd(separation=psd_range[0], outlier=psd_range[1]),
+            Cuts.psd(
+                psd_low=psd_range[0], psd_high=psd_range[1],
+                psd_perp_low=psd_perp_range[0], psd_perp_high=psd_perp_range[1],
+            ),
         ]
         if shadow_bar == 'auto':
             shadow_bar = (self.shadow_bar == 'in')

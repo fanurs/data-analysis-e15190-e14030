@@ -40,7 +40,11 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.spectra.</span></span><span class="sig-name descname"><span class="pre">Cuts</span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts" title="Permalink to this definition">¶</a></dt>
-<dd><p class="rubric">Functions</p>
+<dd><p>A class of default cuts for neutron wall spectra.</p>
+<p>This class only offers the typical cuts that are being applied. If you want
+to change the cuts by a lot, it might be easier to simply write your own
+strings.</p>
+<p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -50,14 +54,14 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Cuts.__init__" title="e15190.neutron_wall.spectra.Cuts.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge</span></code>([left, right, on])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Cuts.edge" title="e15190.neutron_wall.spectra.Cuts.edge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge</span></code></a>([left, right, on])</p></td>
+<td><p>Cut for the two edges of a neutron wall bar.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">psd</span></code>([separation, outlier, perp_low, ...])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Cuts.psd" title="e15190.neutron_wall.spectra.Cuts.psd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">psd</span></code></a>([psd_low, psd_upp, perp_low, perp_upp, on])</p></td>
+<td><p>Cut for pulse shape discrimination.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">shadow_bars</span></code>([on])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Cuts.shadow_bars" title="e15190.neutron_wall.spectra.Cuts.shadow_bars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shadow_bars</span></code></a>([on])</p></td>
+<td><p>Cut for the regions on the neutron wall that are shadowed.</p></td>
 </tr>
 </tbody>
 </table>
@@ -65,6 +69,52 @@
 <dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts.edge">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">89</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NWB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts.edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cut for the two edges of a neutron wall bar.</p>
+<p>This cut is used to remove the ambiguity near the edges of the bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>left</strong> (float, default <code class="xref py py-attr docutils literal notranslate"><span class="pre">e15190.neutron_wall.geometry.Bar.edges_x[0]</span></code>) – The left edge of the bar in cm.</p></li>
+<li><p><strong>right</strong> (float, default <code class="xref py py-attr docutils literal notranslate"><span class="pre">e15190.neutron_wall.geometry.Bar.edges_x[1]</span></code>) – The right edge of the bar in cm.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts.shadow_bars">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">shadow_bars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NWB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts.shadow_bars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cut for the regions on the neutron wall that are shadowed.</p>
+<p>We remove the segments <cite>-50 &lt; x &lt; -15</cite> and <cite>15 &lt; x &lt; 50</cite> for NWB bars 7,
+8, 9, 15, 16, 17.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Cuts.psd">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">psd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd_upp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perp_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perp_upp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NWB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Cuts.psd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cut for pulse shape discrimination.</p>
+<p>We used two-dimensional pulse shape discrimination (PSD). The first
+dimension or axis accounts for most of the separation, while the second
+dimension is perpendicular to the first one.</p>
+<p>This cut only makes sense after vetoing the charged particles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd_low</strong> (<em>float</em><em>, </em><em>default 0.5</em>) – The lower bound of the cut. By default, it is 0.5 - data above 0.5
+are accepted as neutrons, whereas data below 0.5 are rejected as
+gammas.</p></li>
+<li><p><strong>psd_upp</strong> (<em>float</em><em>, </em><em>default 4.0</em>) – The upper bound of the cut, to make sure no extreme outliers are
+included.</p></li>
+<li><p><strong>perp_low</strong> (<em>float</em><em>, </em><em>default -0.7</em>) – The lower bound of the perpendicular axis.</p></li>
+<li><p><strong>perp_upp</strong> (<em>float</em><em>, </em><em>default 0.7</em>) – The upper bound of the perpendicular axis.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
