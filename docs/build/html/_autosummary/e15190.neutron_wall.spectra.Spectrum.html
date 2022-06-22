@@ -78,8 +78,8 @@ to the ROOT files.</p>
 </div>
 <p>We can also look at the neutron wall hit pattern:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">spec</span><span class="o">.</span><span class="n">rdf</span> <span class="o">=</span> <span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">rdf</span> <span class="c1"># this is how you can write a long statement in multiple lines</span>
-    <span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="s1">&#39;theta_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;theta[nw_cut]&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="s1">&#39;phi_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;phi[nw_cut]&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="s1">&#39;theta_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;NWB_theta[nw_cut]&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="s1">&#39;phi_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;NWB_phi[nw_cut]&#39;</span><span class="p">)</span>
 <span class="p">)</span>
 <span class="n">canv</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TCanvas</span><span class="p">()</span>
 <span class="n">h2d</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rdf</span><span class="o">.</span><span class="n">Histo1D</span><span class="p">(</span>

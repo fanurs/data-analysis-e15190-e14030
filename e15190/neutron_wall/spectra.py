@@ -97,8 +97,8 @@ class Spectrum:
     .. code-block:: python
 
         spec.rdf = (spec.rdf # this is how you can write a long statement in multiple lines
-            .Define('theta_cut', 'theta[nw_cut]')
-            .Define('phi_cut', 'phi[nw_cut]')
+            .Define('theta_cut', 'NWB_theta[nw_cut]')
+            .Define('phi_cut', 'NWB_phi[nw_cut]')
         )
         canv = ROOT.TCanvas()
         h2d = spec.rdf.Histo1D(
