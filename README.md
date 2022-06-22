@@ -24,6 +24,7 @@ This decision was made after considering the fact that all major authors of the 
 1. [Structure of the repository](#2-structure-of-the-repository)
 1. [Testing framework](#3-testing-framework)
 1. [PEP 8 style guide](#4-pep-8-style-guide)
+1. [Further readings](#5-further-readings)
 
 ## 1. Installation
 ### Local installation with conda
@@ -96,3 +97,12 @@ autopep8 demo_script.py --in-place
 This command should have automatically formatted the `demo_script.py` script in place. In most cases, autopep8 only changes the style of the code, e.g. whitespaces, indentation, etc., and it should not change the behavior of the code. Always re-run some tests if you are not sure.
 
 Lastly, it is strongly recommended to apply autopep8 to your script before committing to git or pushing to GitHub.
+
+## 5. Further readings
+- [Value-Assigned Pulse Shape Discrimination for Neutron Detectors](https://doi.org/10.1109/TNS.2021.3091126) by F. C. E. Teh, et al.
+- [Calibration of large neutron detection arrays using cosmic rays](https://doi.org/10.1016/j.nima.2020.163826) by K. Zhu, et al.
+- [Non-linearity effects on the light-output calibration of light charged particles in CsI(Tl) scintillator crystals](https://doi.org/10.1016/j.nima.2019.03.065) by D. Dell'Aquila, et al.
+- [Reaction losses of charged particles in CsI(Tl) crystals](https://doi.org/10.1016/j.nima.2021.165798) by S. Sweany, et al.
+- [Doctoral dissertation](https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Thesis_Sean_Sweany.pdf) by Sean Robert Sweany.
+- [Doctoral dissertation](https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Zhu_dissertation.pdf) by Kuan Zhu.
+- [Doctoral dissertation](https://publications.nscl.msu.edu/thesis/Coupland_2013_338.pdf) by Daniel David Schechtman Coupland

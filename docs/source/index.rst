@@ -122,3 +122,15 @@ In this project, we use `autopep8 <https://pypi.org/project/autopep8/>`__ to aut
 This command should have automatically formatted the ``demo_script.py`` script in place. In most cases, autopep8 only changes the style of the code, e.g. whitespaces, indentation, etc., and it should not change the behavior of the code. Always re-run some tests if you are not sure.
 
 Lastly, it is strongly recommended to apply autopep8 to your script before committing to git or pushing to GitHub.
+
+
+Further readings
+================
+
+- [Value-Assigned Pulse Shape Discrimination for Neutron Detectors](https://doi.org/10.1109/TNS.2021.3091126) by F. C. E. Teh, et al.
+- [Calibration of large neutron detection arrays using cosmic rays](https://doi.org/10.1016/j.nima.2020.163826) by K. Zhu, et al.
+- [Non-linearity effects on the light-output calibration of light charged particles in CsI(Tl) scintillator crystals](https://doi.org/10.1016/j.nima.2019.03.065) by D. Dell'Aquila, et al.
+- [Reaction losses of charged particles in CsI(Tl) crystals](https://doi.org/10.1016/j.nima.2021.165798) by S. Sweany, et al.
+- [Doctoral dissertation](https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Thesis_Sean_Sweany.pdf) by Sean Robert Sweany.
+- [Doctoral dissertation](https://groups.nscl.msu.edu/hira/Publications%20and%20Theses/Zhu_dissertation.pdf) by Kuan Zhu.
+- [Doctoral dissertation](https://publications.nscl.msu.edu/thesis/Coupland_2013_338.pdf) by Daniel David Schechtman Coupland
