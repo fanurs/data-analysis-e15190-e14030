@@ -322,8 +322,8 @@ class Spectrum:
             Cuts.edge(),
             f'NW{self.AB}_light_GM > {light_threshold}',
             Cuts.psd(
-                psd_low=psd_range[0], psd_high=psd_range[1],
-                psd_perp_low=psd_perp_range[0], psd_perp_high=psd_perp_range[1],
+                psd_low=psd_range[0], psd_upp=psd_range[1],
+                perp_low=psd_perp_range[0], perp_upp=psd_perp_range[1],
             ),
         ]
         if shadow_bar == 'auto':
