@@ -1,12 +1,16 @@
+import inspect
+from os.path import expandvars
+from pathlib import Path
+from typing import List
+
 import numpy as np
 import pandas as pd
 
-from e15190 import PROJECT_DIR
 from e15190.utilities import geometry as geom
 from e15190.utilities import tables
 
 class Bar(geom.RectangularBar):
-    def __init__(self, vertices):
+    def __init__(self, vertices, number=None):
         """Construct a Veto Wall bar.
 
         This class only deals with individual bar. The Veto Wall object is
@@ -21,6 +25,8 @@ class Bar(geom.RectangularBar):
             applied to automatically identify the 1st, 2nd and 3rd principal
             axes of the bar, which, for Veto Wall bar, corresponds to the y, x
             and z directions in the local (bar) coordinate system.
+        number : int, default None
+            The bar number. Use ``None`` if the bar number is not known.
         """
         super().__init__(
             vertices,
@@ -57,6 +63,8 @@ class Bar(geom.RectangularBar):
 
         self.loc_vertices = self.to_local_coordinates(self.vertices)
         self._make_vertices_dict()
+
+        self.number = number
     
     @property
     def width(self):
@@ -83,20 +91,19 @@ class Bar(geom.RectangularBar):
         return self.dimension(index=2)
 
 class Wall:
-    def __init__(self, refresh_from_inventor_readings=False):
-        # initialize class parameters
-        self.database_dir = PROJECT_DIR / 'database/veto_wall/geometry'
-        self.path_inventor_readings = self.database_dir / 'inventor_readings_VW.dat'
-        self.path_raw = self.database_dir / 'VW.dat'
+    path_inventor_readings = '$DATABASE_DIR/veto_wall/geometry/inventor_readings_VW.dat'
+    path_vertices = '$DATABASE_DIR/veto_wall/geometry/VW_vertices.dat'
+    path_pca = '$DATABASE_DIR/veto_wall/geometry/VW_pca.dat'
 
+    def __init__(self, refresh_from_inventor_readings=False):
         # if True, read in again from raw inventor readings
         self._refresh_from_inventor_readings = refresh_from_inventor_readings
         if self._refresh_from_inventor_readings:
-            bars_vertices = self.read_from_inventor_readings()
+            bars_vertices = self.read_from_inventor_readings(self.path_inventor_readings)
             self.process_and_save_to_database(bars_vertices)
 
         # read in from database
-        self.database = pd.read_csv(self.path_raw, comment='#', delim_whitespace=True)
+        self.database = pd.read_csv(self.path_vertices, comment='#', delim_whitespace=True)
         index_names = ['vw-bar', 'dir_x', 'dir_y', 'dir_z']
         self.database.set_index(index_names, drop=True, inplace=True)
 
@@ -104,17 +111,37 @@ class Wall:
         bar_nums = sorted(set(self.database.index.get_level_values('vw-bar')))
         self.bars = {b: Bar(self.database.loc[b][['x', 'y', 'z']]) for b in bar_nums}
     
-    def read_from_inventor_readings(self):
-        with open(self.path_inventor_readings, 'r') as file:
+    @classmethod
+    def read_from_inventor_readings(cls, filepath=None) -> List[Bar]:
+        """Reads in Inventor measurements and returns a list of :py:class:`Bar` objects.
+
+        Parameters
+        ----------
+        filepath : str or pathlib.Path, default None
+            File path of the Inventor measurements. If ``None``, set to
+            :py:attr:`self.path_inventor_readings <path_inventor_readings>`.
+        
+        Returns
+        -------
+        bars : list of :py:class:`Bar` objects
+            Sorted from left to right w.r.t. neutron wall.
+        """
+        if filepath is None:
+            filepath = Path(expandvars(cls.path_inventor_readings))
+
+        with open(filepath, 'r') as file:
             lines = file.readlines()
         
         # containers for process the lines
-        bars_vertices = [] # to collect vertices of all bars
+        bars = []
         vertex = [None] * 3
         vertices = [] # to collect all vertices of one particular bar
 
         for line in lines:
             sline = line.strip().split()
+
+            if len(sline) > 0 and sline[0].strip()[0] == 'L':
+                bar_number = int(sline[0][1:])
 
             # continue if this line does not contain measurement
             # else it will be in the format of, e.g.
@@ -140,23 +167,45 @@ class Wall:
             
             # append and reset if all 8 vertices of a bar have been read in
             if len(vertices) == 8:
-                bars_vertices.append(vertices)
+                bars.append(Bar(vertices, bar_number))
                 vertices = []
-        
-        return bars_vertices
+                bar_number = None
+            
+        # sort Bar objects
+        bars = sorted(bars, key=lambda bar: bar.pca.mean_[1])
+        if not all(bars[i].number < bars[i + 1].number for i in range(len(bars) - 1)):
+            raise Exception('Failed to sort bars from left to right')
+        return bars
     
-    def process_and_save_to_database(self, bars_vertices):
-        # construct bar objects from vertices and sort
-        bar_objects = []
-        bar_objects = [Bar(vertices) for vertices in bars_vertices]
-        bar_objects = sorted(bar_objects, key=lambda bar: bar.pca.mean_[0], reverse=True)
+    @classmethod
+    def save_vertices_to_database(cls, filepath=None, bars=None) -> pd.DataFrame:
+        """Saves the vertices of the bars to database.
+
+        Parameters
+        ----------
+        filepath : str or pathlib.Path, default None
+            Path to the database file. If ``None``, set to
+            :py:attr:`self.path_vertices <path_vertices>`.
+        bars : list of :py:class:`Bar` objects, default None
+            Sorted from left to right w.r.t. neutron wall. If ``None``, read
+            :py:func:`self.read_from_inventor_readings <read_from_inventor_readings>`
+            is invoked.
+        
+        Returns
+        -------
+        df_vertices : pandas.DataFrame
+            Dataframe containing the vertices of the bars.
+        """
+        if filepath is None:
+            filepath = Path(expandvars(cls.path_vertices))
+        if bars is None:
+            bars = cls.read_from_inventor_readings()
 
         # collect all vertices from all bars and save into a dataframe
         df= []
-        for bar_num, bar_obj in enumerate(bar_objects):
-            bar_num = bar_num + 1
-            for sign, vertex in bar_obj.vertices.items():
-                df.append([bar_num, *sign, *vertex])
+        for bar in bars:
+            for sign, vertex in bar.vertices.items():
+                df.append([bar.number, *sign, *vertex])
                 
         df = pd.DataFrame(
             df,
@@ -170,7 +219,7 @@ class Wall:
         # save to database
         tables.to_fwf(
             df,
-            self.path_raw,
+            filepath,
             comment='# measurement unit: cm',
             floatfmt=[
                 '.0f',
@@ -178,3 +227,64 @@ class Wall:
                 '.4f', '.4f', '.4f',
             ],
         )
+
+        return df
+    
+    @classmethod
+    def save_pca_to_database(cls, filepath=None, bars=None) -> pd.DataFrame:
+        """Saves the principal components of the bars to database.
+
+        Parameters
+        ----------
+        filepath : str or pathlib.Path, default None
+            Path to the database file. If ``None``, set to
+            :py:attr:`self.path_pca <path_pca>`.
+        bars : list of :py:class:`Bar` objects, default None
+            Sorted from left to right w.r.t. neutron wall. If ``None``, read
+            :py:func:`self.read_from_inventor_readings <read_from_inventor_readings>`
+            is invoked.
+        
+        Returns
+        -------
+        df_pca : pandas.DataFrame
+            Dataframe containing the principal components of the bars.
+        """
+        if filepath is None:
+            filepath = Path(expandvars(cls.path_pca))
+        if bars is None:
+            bars = cls.read_from_inventor_readings()
+        
+        # collect all PCA components and means from all bars and save into a dataframe
+        df = []
+        for bar in bars:
+            df.append([bar.number, 'L', *bar.pca.mean_])
+            for ic, component in enumerate(bar.pca.components_):
+                scaled_component = bar.dimension(ic) * component
+                df.append([bar.number, 'XYZ'[ic], *scaled_component])
+        
+        df = pd.DataFrame(
+            df,
+            columns=[
+                'vw-bar',
+                'vector',
+                'lab-x', 'lab-y', 'lab-z',
+            ],
+        )
+
+        tables.to_fwf(
+            df, filepath,
+            comment=inspect.cleandoc('''
+                # measurement unit: cm
+                # vector:
+                #   - L is VW bar center in lab frame
+                #   - X, Y, Z are VW bar's principal components in lab frame w.r.t. to L,
+                #     with the lengths (magnitudes) equal to the bar's respective dimensions.
+            '''),
+            floatfmt=[
+                '.0f',
+                's',
+                '.5f', '.5f', '.5f',
+            ],
+        )
+
+        return df
