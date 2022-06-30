@@ -1,10 +1,11 @@
 import inspect
+from os.path import expandvars
+from pathlib import Path
 from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 
-from e15190 import PROJECT_DIR
 from e15190.utilities import geometry as geom
 from e15190.utilities import tables
 
@@ -210,8 +211,8 @@ class Wall:
         self.ab = self.AB.lower()
         """'a' or 'b' : Neutron wall name in lowercase."""
 
-        self.database_dir = PROJECT_DIR / 'database/neutron_wall/geometry'
-        """``pathlib.Path`` : ``PROJECT_DIR / 'database/neutron_wall/geometry'``"""
+        self.database_dir = Path(expandvars('$PROJECT_DIR/database/neutron_wall/geometry'))
+        """``pathlib.Path`` : ``'$PROJECT_DIR/database/neutron_wall/geometry'``"""
 
         self.path_inventor_readings = self.database_dir / f'inventor_readings_NW{self.AB}.txt'
         """``pathlib.Path`` : ``self.database_dir / f'inventor_readings_NW{self.AB}.txt'``"""
@@ -253,7 +254,7 @@ class Wall:
     
     @staticmethod
     def read_from_inventor_readings(filepath):
-        """Reads in Inventor measurements and returns :py:class:`Bar` objects.
+        """Reads in Inventor measurements and returns a list of :py:class:`Bar` objects.
 
         Parameters
         ----------
