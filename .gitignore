@@ -35,6 +35,7 @@ scratch/
 tests/*.html
 
 # local database
+database/sqlite_files/
 database/local_paths.json
 database/neutron_wall/**/cache
 database/neutron_wall/**/calib_params
