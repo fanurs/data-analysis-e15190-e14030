@@ -2,7 +2,7 @@ import collections
 import pathlib
 import os
 import sqlite3
-from typing import List
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -397,7 +397,17 @@ class Query:
     _map_run_iloc = {run: iloc for iloc, run in enumerate(elog.df['run'].to_list())}
 
     @staticmethod
-    def _get_run_query(run):
+    def get_ibatch(run) -> int:
+        """Returns the batch number of the run
+
+        Parameters
+        ----------
+        run : int
+        """
+        return Query.elog.df.query(f'run == {run}').index.get_level_values('ibatch').values[0]
+
+    @staticmethod
+    def _get_run_query(run) -> pd.DataFrame:
         """Returns sub-dataframe of :py:attr:`ElogQuery.df` in
         :py:attr:`Query.elog` for a given run.
 
@@ -409,17 +419,20 @@ class Query:
         return Query.elog.df.iloc[Query._map_run_iloc[run]]
     
     @staticmethod
-    def get_run_info(run):
+    def get_run_info(run, include_ibatch=True) -> Dict[str, Any]:
         """Returns a dictionary of properties for a given run.
         
         Parameters
         ----------
         run : int
         """
-        return dict(Query._get_run_query(run))
+        result = dict(Query._get_run_query(run))
+        if include_ibatch:
+            result['ibatch'] = Query.get_ibatch(run)
+        return result
     
     @staticmethod
-    def _get_batch_query(ibatch):
+    def _get_batch_query(ibatch) -> pd.DataFrame:
         """Returns a sub-dataframe of :py:attr:`ElogQuery.df` in
         :py:attr:`Query.elog` for a given batch number.
 
@@ -431,7 +444,7 @@ class Query:
         return Query.elog.df.loc[ibatch]
 
     @staticmethod
-    def is_good(run):
+    def is_good(run) -> bool:
         """Returns whether a given run is good.
 
         Parameters
@@ -448,7 +461,7 @@ class Query:
         return run in Query.elog.df.run.to_list()
     
     @staticmethod
-    def are_good(runs):
+    def are_good(runs) -> List[bool]:
         """Returns whether a list of runs are good.
 
         Parameters
@@ -466,7 +479,7 @@ class Query:
         return [run in all_good_runs for run in runs]
 
     @staticmethod
-    def get_batch(ibatch):
+    def get_batch(ibatch) -> pd.DataFrame:
         """Returns a sub-dataframe of :py:attr:`ElogQuery.df` in
         :py:attr:`Query.elog` for a given batch number.
 
@@ -479,9 +492,20 @@ class Query:
         """
         df = Query._get_batch_query(ibatch)
         return df.reset_index(drop=True)
+
+    @staticmethod
+    def get_batch_runs(ibatch) -> List[int]:
+        """Returns runs in a given batch.
+        
+        Parameters
+        ----------
+        ibatch : int
+            Batch number (0-indexed).
+        """
+        return Query.elog.df.query(f'ibatch == {ibatch}').run.to_list()
     
     @staticmethod
-    def get_batch_info(ibatch, include_comments=True):
+    def get_batch_info(ibatch, include_comments=True, include_runs=True) -> Dict[str, Any]:
         """Returns a dictionary of properties for a given batch.
 
         This function basically reads off from the
@@ -497,11 +521,17 @@ class Query:
             common to the least common; if there is only one comment, the list
             is reduced into a string. If False, the comments are not included,
             i.e. the key ``'comment'`` is mapped to None.
+        include_runs : bool, default True
+            Whether to include the runs in the returned dictionary. If True,
+            the runs are included as a list of integers, sorted from the smallest
+            to the largest. If False, the runs are not included, and the key
+            ``'runs'`` will not be found in the returned dictionary.
         """
         result = dict(
             ibatch=ibatch,
             **Query.elog.df_batches.loc[ibatch],
         )
+
         if include_comments:
             df = Query.get_batch(ibatch)
             comment = collections.Counter(df['comment'])
@@ -512,30 +542,34 @@ class Query:
             result['comment'] = comment
         else:
             result['comment'] = None
+
+        if include_runs:
+            result['runs'] = Query.get_batch_runs(ibatch)
+        
         return result
     
     @staticmethod
-    def get_n_batches():
+    def get_n_batches() -> int:
         """Returns the number of batches in the database."""
         return len(Query.elog.df_batches)
     
     @staticmethod
-    def targets():
+    def targets() -> List[str]:
         """Returns all distinct target names in the database."""
         return Query.elog.df['target'].unique().tolist()
     
     @staticmethod
-    def beams():
+    def beams() -> List[str]:
         """Returns all distinct beam names in the database."""
         return Query.elog.df['beam'].unique().tolist()
     
     @staticmethod
-    def beam_energies():
+    def beam_energies() -> List[float]:
         """Returns all distinct beam energies in the database."""
         return Query.elog.df['beam_energy'].unique().tolist()
 
     @staticmethod
-    def select_runs(cut, comment_cut=None, **kw_comment):
+    def select_runs(cut, comment_cut=None, **kw_comment) -> List[int]:
         """Returns a list of run numbers that satisfy the given cuts.
 
         Parameters
@@ -609,7 +643,7 @@ class Query:
         return subdf['run'].to_list()
     
     @staticmethod
-    def select_batches(cut):
+    def select_batches(cut) -> List[int]:
         """Returns a list of batch numbers that satisfy the given cuts.
 
         Comment cut is not supported. But users can easily use this function to

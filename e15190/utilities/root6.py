@@ -169,6 +169,11 @@ def get_all_branches(path, tree):
             return result
         return get_branches(tr)
 
+def get_n_entries(path, tree):
+    with TFile(path) as file:
+        tr = file.Get(tree)
+        return tr.GetEntries()
+
 def infer_tree_name(path):
     """
     Parameters
