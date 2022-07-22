@@ -16,6 +16,7 @@ class RootToSQLite:
             'tdc',
             'mb',
             'fa',
+            'vw',
             'nwb',
         ]
 
@@ -75,7 +76,22 @@ class RootToSQLite:
         if verbose:
             print()
     
-    def convert(self, run, verbose=True):
+    def convert(self, run, new_file=False, tables=None, verbose=True):
+        """Convert a root file to an sqlite3 file.
+
+        Parameters
+        ----------
+        run : int
+            Experimental run number (HiRA)
+        new_file : bool, default False
+            If True, the old sqlite3 file, if exists, will be deleted before
+            conversion.
+        tables : list of str, default None
+            Tables to convert. If None, all tables in :py:attr:`self.tables`
+            will be converted.
+        verbose : bool, default True
+            If True, print progress.
+        """
         in_path = self.src_path_fmt.format(run=run)
         if not Path(in_path).is_file():
             if verbose:
@@ -86,13 +102,16 @@ class RootToSQLite:
             print(f'Converting run-{run:04d}...')
         out_path = Path(self.dst_path_fmt.format(run=run))
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.unlink(missing_ok=True)
+        if new_file:
+            out_path.unlink(missing_ok=True)
+        if tables is None:
+            tables = self.tables
         with sqlite3.connect(out_path) as conn:
-            for table in self.tables:
+            for table in tables:
                 if verbose:
                     print(f'Converting "{table}"...')
-                for df in self.get_dataframe(run, table.upper(), verbose=verbose):
-                    df.to_sql(table, conn, if_exists='append')
+                for i, df in enumerate(self.get_dataframe(run, table.upper(), verbose=verbose)):
+                    df.to_sql(table, conn, if_exists='append' if i > 0 else 'replace')
         if verbose:
             print(f'Done converting run-"{run:04d}"')
 
