@@ -6,18 +6,19 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 
+import e15190
 from e15190.runlog import downloader
 from .. import conftest
 
 class TestElogDownloader:
     @pytest.fixture(scope='class', autouse=True)
     def setup_teardown(self):
-        pass
+        rel_path = Path(downloader.ElogDownloader.DOWNLOAD_PATH)
+        rel_path = Path(*rel_path.parts[1:])
+        (e15190.DATABASE_DIR / rel_path).unlink(missing_ok=True)
 
         yield
 
-        rel_path = Path(downloader.ElogDownloader.DOWNLOAD_PATH)
-        rel_path = Path(*rel_path.parts[1:])
         conftest.copy_from_default_database(rel_path, not_found_ok=False)
 
     def test___init__(self):

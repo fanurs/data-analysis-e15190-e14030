@@ -124,6 +124,13 @@ def run_4100():
     )
 
 class TestQuery:
+    def test_get_ibatch(self):
+        ibatch = query.Query.get_ibatch(2200)
+        assert ibatch == 3
+
+        ibatch = query.Query.get_ibatch(4100)
+        assert ibatch == 33
+
     def test__get_run_query(self, run_2200, run_4100):
         entry = query.Query._get_run_query(2200)
         assert isinstance(entry, pd.Series)
@@ -143,12 +150,18 @@ class TestQuery:
         for key, value in run_2200.items():
             assert info[key] == value
         assert isinstance(info['comment'], str)
+        assert 'ibatch' in info
+        info = query.Query.get_run_info(2200, include_ibatch=False)
+        assert 'ibatch' not in info
 
         info = query.Query.get_run_info(4100)
         assert isinstance(info, dict)
         for key, value in run_4100.items():
             assert info[key] == value
         assert isinstance(info['comment'], str)
+        assert 'ibatch' in info
+        info = query.Query.get_run_info(4100, include_ibatch=False)
+        assert 'ibatch' not in info
 
     def test__get_batch_query(self):
         for ibatch in query.Query.elog.df_batches.index.get_level_values('ibatch'):
@@ -163,15 +176,23 @@ class TestQuery:
             assert batch.index.names == [None]
             assert batch.index.values.tolist() == list(range(len(batch)))
     
+    def test_get_batch_runs(self):
+        runs = query.Query.get_batch_runs(2)
+        assert set(runs) == {2142, 2143, 2144, 2145, 2146, 2147, 2150, 2151, 2152}
+
     def test_get_batch_info(self):
         for ibatch in query.Query.elog.df_batches.index.get_level_values('ibatch'):
             info = query.Query.get_batch_info(ibatch)
             assert isinstance(info, dict)
             assert info['ibatch'] == ibatch
             assert isinstance(info['comment'], (str, list))
+            assert 'runs' in info
 
             info = query.Query.get_batch_info(ibatch, include_comments=False)
             assert info['comment'] is None
+
+            info = query.Query.get_batch_info(ibatch, include_runs=False)
+            assert 'runs' not in info
     
     def test_get_n_batches(self):
         assert query.Query.get_n_batches() == len(query.Query.elog.df_batches)

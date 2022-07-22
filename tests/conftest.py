@@ -10,13 +10,13 @@ os.environ['DATABASE_DIR'] = str(e15190.DATABASE_DIR)
 shutil.rmtree(e15190.DATABASE_DIR, ignore_errors=True)
 e15190.DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 
-def copy_from_default_database(rel_path, not_found_ok=True):
+def copy_from_default_database(rel_path, not_found_ok=False):
     """
     Parameters
     ----------
     rel_path : str or pathlib.Path
         File path relative to the database directory.
-    not_found_ok : bool, default True
+    not_found_ok : bool, default False
         If True, raises FileNotFoundError if the file is not found.
     
     Returns
@@ -33,6 +33,10 @@ def copy_from_default_database(rel_path, not_found_ok=True):
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(src, dst)
     return True
+
+# files needed for most tests
+copy_from_default_database('runlog/elog_runs_filtered.h5')
+copy_from_default_database('runlog/run_batches.csv')
 
 from . import generate_sample_roots as gsr
 if not gsr.Sample1.root_exists():
