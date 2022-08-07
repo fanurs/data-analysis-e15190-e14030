@@ -14,7 +14,7 @@
 #include "TTree.h"
 
 struct Container {
-    static constexpr int max_multi = 1024;
+    static constexpr int max_multi = 128;
 
     // TDC triggers
     double TDC_hira_ds_nwtdc;
@@ -33,14 +33,31 @@ struct Container {
 
     // Microball
     int MB_multi;
+    std::array<int, max_multi> MB_ring; // ring number
+    std::array<int, max_multi> MB_det; // detector (crystal) number
+    std::array<short, max_multi> MB_tail;
+    std::array<short, max_multi> MB_fast;
+    std::array<short, max_multi> MB_time;
 
     // Forward Array
     int FA_multi;
     double FA_time_min;
+    double FA_time_mean;
+    std::array<int, max_multi> FA_det; // detector (crystal) number
+    std::array<short, max_multi> FA_total;
+    std::array<double, max_multi> FA_time;
 
     // Veto Wall
     int VW_multi;
-    std::array<int, max_multi> VW_bar;;
+    std::array<int, max_multi> VW_bar;
+    std::array<short, max_multi> VW_total_T; // top
+    std::array<short, max_multi> VW_total_B; // bottom
+    std::array<double, max_multi> VW_time_T;
+    std::array<double, max_multi> VW_time_B;
+    std::array<double, max_multi> VW_pos;
+    std::array<double, max_multi> VW_theta;
+    std::array<double, max_multi> VW_phi;
+    std::array<double, max_multi> VW_distance;
 
     // Neutron Wall B
     int NWB_multi;
@@ -52,15 +69,13 @@ struct Container {
     std::array<double, max_multi> NWB_time;
     std::array<double, max_multi> NWB_time_L;
     std::array<double, max_multi> NWB_time_R;
-    std::array<double, max_multi> NWB_light_GM;
-    std::array<double, max_multi> NWB_theta;
-    std::array<double, max_multi> NWB_phi;
-    std::array<double, max_multi> NWB_distance;
-
-    // New branches
-    std::array<double, max_multi> NWB_pos;
-    std::array<double, max_multi> NWB_psd;
-    std::array<double, max_multi> NWB_psd_perp;
+    std::array<double, max_multi> NWB_pos; /*updated*/
+    std::array<double, max_multi> NWB_light_GM; /*updated*/
+    std::array<double, max_multi> NWB_theta; /*updated*/
+    std::array<double, max_multi> NWB_phi; /*updated*/
+    std::array<double, max_multi> NWB_distance; /*updated*/
+    std::array<double, max_multi> NWB_psd; /*updated*/
+    std::array<double, max_multi> NWB_psd_perp; /*updated*/
 };
 Container container;
 
@@ -224,12 +239,29 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchAddress("TDCTriggers.uBall_DS_TRG",         &container.TDC_mb_ds);
     // Microball
     chain->SetBranchAddress("uBall.fmulti",                     &container.MB_multi);
+    chain->SetBranchAddress("uBall.fnumring",                   &container.MB_ring[0]);
+    chain->SetBranchAddress("uBall.fnumdet",                    &container.MB_det[0]);
+    chain->SetBranchAddress("uBall.fTail",                      &container.MB_tail[0]);
+    chain->SetBranchAddress("uBall.fFast",                      &container.MB_fast[0]);
+    chain->SetBranchAddress("uBall.fTime",                      &container.MB_time[0]);
     // Forward Array
     chain->SetBranchAddress("ForwardArray.fmulti",              &container.FA_multi);
     chain->SetBranchAddress("ForwardArray.fTimeMin",            &container.FA_time_min);
+    chain->SetBranchAddress("ForwardArray.fTimeMean",           &container.FA_time_mean);
+    chain->SetBranchAddress("ForwardArray.fnumdet",             &container.FA_det[0]);
+    chain->SetBranchAddress("ForwardArray.fE",                  &container.FA_total[0]);
+    chain->SetBranchAddress("ForwardArray.fTime",               &container.FA_time[0]);
     // Veto Wall
     chain->SetBranchAddress("VetoWall.fmulti",                  &container.VW_multi);
     chain->SetBranchAddress("VetoWall.fnumbar",                 &container.VW_bar[0]);
+    chain->SetBranchAddress("VetoWall.fTop",                    &container.VW_total_T[0]);
+    chain->SetBranchAddress("VetoWall.fBottom",                 &container.VW_total_B[0]);
+    chain->SetBranchAddress("VetoWall.fTimeTop",                &container.VW_time_T[0]);
+    chain->SetBranchAddress("VetoWall.fTimeBottom",             &container.VW_time_B[0]);
+    chain->SetBranchAddress("VetoWall.fYcm",                    &container.VW_pos[0]);
+    chain->SetBranchAddress("VetoWall.fThetaRan",               &container.VW_theta[0]);
+    chain->SetBranchAddress("VetoWall.fPhiRan",                 &container.VW_phi[0]);
+    chain->SetBranchAddress("VetoWall.fDistRancm",              &container.VW_distance[0]);
     // Neutron Wall B
     chain->SetBranchAddress("NWB.fmulti",                       &container.NWB_multi);
     chain->SetBranchAddress("NWB.fnumbar",                      &container.NWB_bar[0]);
@@ -240,10 +272,6 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchAddress("NWB.fTimeMean",                    &container.NWB_time[0]);
     chain->SetBranchAddress("NWB.fTimeLeft",                    &container.NWB_time_L[0]);
     chain->SetBranchAddress("NWB.fTimeRight",                   &container.NWB_time_R[0]);
-    // chain->SetBranchAddress("NWB.fGeoMeanSaturationCorrected",  &container.NWB_light_GM[0]);
-    chain->SetBranchAddress("NWB.fThetaRan",                    &container.NWB_theta[0]);
-    chain->SetBranchAddress("NWB.fPhiRan",                      &container.NWB_phi[0]);
-    chain->SetBranchAddress("NWB.fDistRancm",                   &container.NWB_distance[0]);
 
     // enable class objects
     chain->SetMakeClass(1);
@@ -266,12 +294,29 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchStatus("TDCTriggers.uBall_DS_TRG", true);
     // Microball
     chain->SetBranchStatus("uBall.fmulti", true);
+    chain->SetBranchStatus("uBall.fnumring", true);
+    chain->SetBranchStatus("uBall.fnumdet", true);
+    chain->SetBranchStatus("uBall.fTail", true);
+    chain->SetBranchStatus("uBall.fFast", true);
+    chain->SetBranchStatus("uBall.fTime", true);
     // Forward Array
     chain->SetBranchStatus("ForwardArray.fmulti", true);
     chain->SetBranchStatus("ForwardArray.fTimeMin", true);
+    chain->SetBranchStatus("ForwardArray.fTimeMean", true);
+    chain->SetBranchStatus("ForwardArray.fnumdet", true);
+    chain->SetBranchStatus("ForwardArray.fE", true);
+    chain->SetBranchStatus("ForwardArray.fTime", true);
     // Veto Wall
     chain->SetBranchStatus("VetoWall.fmulti", true);
     chain->SetBranchStatus("VetoWall.fnumbar", true);
+    chain->SetBranchStatus("VetoWall.fTop", true);
+    chain->SetBranchStatus("VetoWall.fBottom", true);
+    chain->SetBranchStatus("VetoWall.fTimeTop", true);
+    chain->SetBranchStatus("VetoWall.fTimeBottom", true);
+    chain->SetBranchStatus("VetoWall.fYcm", true);
+    chain->SetBranchStatus("VetoWall.fThetaRan", true);
+    chain->SetBranchStatus("VetoWall.fPhiRan", true);
+    chain->SetBranchStatus("VetoWall.fDistRancm", true);
     // Neutron Wall B
     chain->SetBranchStatus("NWB.fmulti", true);
     chain->SetBranchStatus("NWB.fnumbar", true);
@@ -282,10 +327,6 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchStatus("NWB.fTimeMean", true);
     chain->SetBranchStatus("NWB.fTimeLeft", true);
     chain->SetBranchStatus("NWB.fTimeRight", true);
-    // chain->SetBranchStatus("NWB.fGeoMeanSaturationCorrected", true);
-    chain->SetBranchStatus("NWB.fThetaRan", true);
-    chain->SetBranchStatus("NWB.fPhiRan", true);
-    chain->SetBranchStatus("NWB.fDistRancm", true);
 
     return chain;
 }
@@ -311,14 +352,31 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
 
     // Microball
     tree->Branch("MB_multi",      &container.MB_multi,        "MB_multi/I");
+    tree->Branch("MB_ring",       &container.MB_ring[0],      "MB_ring[MB_multi]/I");
+    tree->Branch("MB_det",        &container.MB_det[0],       "MB_det[MB_multi]/I");
+    tree->Branch("MB_tail",       &container.MB_tail[0],      "MB_tail[MB_multi]/S");
+    tree->Branch("MB_fast",       &container.MB_fast[0],      "MB_fast[MB_multi]/S");
+    tree->Branch("MB_time",       &container.MB_time[0],      "MB_time[MB_multi]/S");
 
     // Forward Array
     tree->Branch("FA_multi",      &container.FA_multi,        "FA_multi/I");
     tree->Branch("FA_time_min",   &container.FA_time_min,     "FA_time_min/D");
+    tree->Branch("FA_time_mean",  &container.FA_time_mean,    "FA_time_mean/D");
+    tree->Branch("FA_det",        &container.FA_det[0],       "FA_det[FA_multi]/I");
+    tree->Branch("FA_total",      &container.FA_total[0],     "FA_total[FA_multi]/S");
+    tree->Branch("FA_time",       &container.FA_time[0],      "FA_time[FA_multi]/D");
 
     // Veto Wall
     tree->Branch("VW_multi",      &container.VW_multi,        "VW_multi/I");
     tree->Branch("VW_bar",        &container.VW_bar[0],       "VW_bar[VW_multi]/I");
+    tree->Branch("VW_total_T",    &container.VW_total_T[0],   "VW_total_T[VW_multi]/S");
+    tree->Branch("VW_total_B",    &container.VW_total_B[0],   "VW_total_B[VW_multi]/S");
+    tree->Branch("VW_time_T",     &container.VW_time_T[0],    "VW_time_T[VW_multi]/D");
+    tree->Branch("VW_time_B",     &container.VW_time_B[0],    "VW_time_B[VW_multi]/D");
+    tree->Branch("VW_pos",        &container.VW_pos[0],       "VW_pos[VW_multi]/D");
+    tree->Branch("VW_theta",      &container.VW_theta[0],     "VW_theta[VW_multi]/D");
+    tree->Branch("VW_phi",        &container.VW_phi[0],       "VW_phi[VW_multi]/D");
+    tree->Branch("VW_distance",   &container.VW_distance[0],  "VW_distance[VW_multi]/D");
 
     // Neutron Wall B
     tree->Branch("NWB_multi",     &container.NWB_multi,       "NWB_multi/I");
@@ -330,12 +388,11 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("NWB_time",      &container.NWB_time[0],     "NWB_time[NWB_multi]/D");
     tree->Branch("NWB_time_L",    &container.NWB_time_L[0],   "NWB_time_L[NWB_multi]/D");
     tree->Branch("NWB_time_R",    &container.NWB_time_R[0],   "NWB_time_R[NWB_multi]/D");
+    tree->Branch("NWB_pos",       &container.NWB_pos[0],      "NWB_pos[NWB_multi]/D");
     tree->Branch("NWB_light_GM",  &container.NWB_light_GM[0], "NWB_light_GM[NWB_multi]/D");
     tree->Branch("NWB_theta",     &container.NWB_theta[0],    "NWB_theta[NWB_multi]/D");
     tree->Branch("NWB_phi",       &container.NWB_phi[0],      "NWB_phi[NWB_multi]/D");
     tree->Branch("NWB_distance",  &container.NWB_distance[0], "NWB_distance[NWB_multi]/D");
-    // new branches
-    tree->Branch("NWB_pos",       &container.NWB_pos[0],      "NWB_pos[NWB_multi]/D");
     tree->Branch("NWB_psd",       &container.NWB_psd[0],      "NWB_psd[NWB_multi]/D");
     tree->Branch("NWB_psd_perp",  &container.NWB_psd_perp[0], "NWB_psd_perp[NWB_multi]/D");
 

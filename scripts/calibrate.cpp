@@ -83,14 +83,14 @@ int main(int argc, char* argv[]) {
                 evt.NWB_time_L[m],
                 evt.NWB_time_R[m]
             );
-            std::array<double, 3> phitheta = get_global_coordinates(
+            std::array<double, 3> sph_coord = get_global_coordinates(
                 nwb_pcalib,
                 evt.NWB_bar[m],
                 evt.NWB_pos[m]
             );
-            evt.NWB_distance[m]=phitheta[0];
-            evt.NWB_theta[m]=phitheta[1];
-            evt.NWB_phi[m]=phitheta[2];
+            evt.NWB_distance[m] = sph_coord[0];
+            evt.NWB_theta[m] = sph_coord[1];
+            evt.NWB_phi[m] = sph_coord[2];
 
             // light output calibration
             evt.NWB_light_GM[m] = get_light_output(
