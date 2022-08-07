@@ -363,7 +363,7 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("FA_time_min",   &container.FA_time_min,     "FA_time_min/D");
     tree->Branch("FA_time_mean",  &container.FA_time_mean,    "FA_time_mean/D");
     tree->Branch("FA_det",        &container.FA_det[0],       "FA_det[FA_multi]/I");
-    tree->Branch("FA_total",      &container.FA_total[0],     "FA_total[FA_multi]/D");
+    tree->Branch("FA_total",      &container.FA_total[0],     "FA_total[FA_multi]/S");
     tree->Branch("FA_time",       &container.FA_time[0],      "FA_time[FA_multi]/D");
 
     // Veto Wall
