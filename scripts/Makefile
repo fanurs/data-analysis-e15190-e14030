@@ -9,3 +9,4 @@ CXX_FLAGS := -I./include $(CXX_FLAGS) # custom headers
 
 target:
 	$(GXX) calibrate.cpp src/*.cpp -o calibrate.exe $(CXX_FLAGS)
+	$(GXX) remove_tclass.cpp -o remove_tclass.exe $(CXX_FLAGS)

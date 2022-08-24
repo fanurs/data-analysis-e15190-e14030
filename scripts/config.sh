@@ -7,6 +7,7 @@ if [ ! -z $CONDA_PREFIX ]; then
 fi
 
 export PROJECT_DIR=`cd ../; pwd`
+export DATABASE_DIR=$PROJECT_DIR/database
 
 # When using Singularity, ROOT's Docker image
 if [ ! -z $SINGULARITY_NAME ]; then
