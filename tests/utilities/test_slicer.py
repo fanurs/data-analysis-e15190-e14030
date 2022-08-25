@@ -41,3 +41,36 @@ class TestSlicer:
                 [3.0, 3.8],
             ])
         )
+
+        assert np.allclose(
+            create_ranges(low=0, upp=4, width=2, n_steps=3),
+            np.array([
+                [0, 2],
+                [1, 3],
+                [2, 4],
+            ])
+        )
+
+        assert np.allclose(
+            create_ranges(low=0, upp=4, width=2, n_steps=6),
+            np.array([
+                [0.0, 2.0],
+                [0.4, 2.4],
+                [0.8, 2.8],
+                [1.2, 3.2],
+                [1.6, 3.6],
+                [2.0, 4.0],
+            ])
+        )
+
+        assert np.allclose( # step is ignored when n_steps is specified
+            create_ranges(low=0, upp=4, width=2, step=1.0, n_steps=6),
+            np.array([
+                [0.0, 2.0],
+                [0.4, 2.4],
+                [0.8, 2.8],
+                [1.2, 3.2],
+                [1.6, 3.6],
+                [2.0, 4.0],
+            ])
+        )
