@@ -8,6 +8,17 @@ from e15190.utilities import fast_histogram as fh
 
 class PeakFinderGaus1D:
     def __init__(self, x, hist_range, hist_bins):
+        """
+
+        Parameters
+        ----------
+        x : list-like of float
+            x-values of the data
+        hist_range : 2-tuple of float
+            Range of the histogram.
+        hist_bins : int
+            Number of bins of the histogram.
+        """
         self.x = np.array(x)
         self.mean = np.mean(x)
         self.std = np.std(x)
@@ -60,6 +71,30 @@ class PeakFinderGaus1D:
     
     @staticmethod
     def _find_highest_peak(x, y, fit_range=None, kw_rough=None, kw_fine=None) -> np.ndarray:
+        """Returns Gaussian parameters of the highest peak in the histogram.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            The x-values of the histogram.
+        y : np.ndarray
+            The y-values of the histogram.
+        fit_range : 2-tuple of float, default None
+            The range of the histogram to fit. If None, the entire histogram is
+            fit.
+        kw_rough : dict, default None
+            Keyword arguments for the rough fit supplied to
+            ``scipy.optimize.curve_fit``.
+        kw_fine : dict, default None
+            Keyword arguments for the fine fit supplied to
+            ``scipy.optimize.curve_fit``.
+        
+        Returns
+        -------
+        pars : np.ndarray of size 3
+            The Gaussian parameters of the highest peak,
+            ``[amplt, mean, sigma]``.
+        """
         i = np.argmax(y)
         y_max = y[i]
         x_max = x[i]
