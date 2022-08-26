@@ -187,6 +187,39 @@ class Bar(geom.RectangularBar):
         else:
             return self.to_lab_coordinates(local_result)
 
+    def get_empirical_distance_bounds(self, n_pts=50_000, n_iters=6):
+        """Returns the empirical bounds of the relation between local x and distance.
+
+        Parameters
+        ----------
+        n_pts : int, default 50_000
+            The number of points to be used for the empirical calculation.
+        n_iters : int, default 6
+            The number of iterations to be used to refine the bounds.
+
+        Returns
+        -------
+        fit_low : np.array of size 3
+            The coefficients of the lower bound quadratic fit.
+        fit_high : np.array of size 3
+            The coefficients of the upper bound quadratic fit.
+        """
+        pos = np.linspace(-120, 120, n_pts)
+        coords = self.randomize_from_local_x(pos)
+        distance = np.sqrt(np.sum(np.square(coords), axis=1))
+
+        fit_mid = np.polyfit(pos, distance, 2)
+        fit_low, fit_upp = fit_mid, fit_mid
+        for _ in range(n_iters):
+            mask = (distance < np.polyval(fit_low, pos))
+            x, y = pos[mask], distance[mask]
+            fit_low = np.polyfit(x, y, 2)
+
+            mask = (distance > np.polyval(fit_upp, pos))
+            x, y = pos[mask], distance[mask]
+            fit_upp = np.polyfit(x, y, 2)
+        return fit_low[::-1], fit_upp[::-1]
+
 class Wall:
     def __init__(self, AB, contain_pyrex=True, refresh_from_inventor_readings=False):
         """Construct a neutron wall, A or B.
