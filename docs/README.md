@@ -30,6 +30,7 @@ Unless you have installed this repository on your local machine, you will need s
     python -m http.server 6666
     ```
     Here, `6666` is just an arbitrary one-time port number. You may choose whatever you like, as long as it has not been taken by other users.
+    > :exclamation: For whatever reason, invoking `http.server` via the `-m` flag no longer works on Fishtank. If that is the case for you, try using the script at [here](https://gist.github.com/fanurs/2fb530d9f09bfa8dad8aa672f9d3d32c). As always, you can make this script an executable at, for example, `~/.local/bin`, for convenience.
 
 1.
     Now, open up the terminal on your *local* computer. We will be "listening" to the *remote* port number from our *local* computer. On Linux or Mac, open up a terminal and type the following command:
