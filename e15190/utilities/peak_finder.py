@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 import warnings
 
 import numpy as np
@@ -70,7 +70,14 @@ class PeakFinderGaus1D:
         return np.convolve(y, kernel, mode='same') / kernel.sum()
     
     @staticmethod
-    def _find_highest_peak(x, y, fit_range=None, kw_rough=None, kw_fine=None) -> np.ndarray:
+    def _find_highest_peak(
+        x,
+        y,
+        fit_range=None,
+        kw_rough=None,
+        kw_fine=None,
+        error=False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """Returns Gaussian parameters of the highest peak in the histogram.
 
         Parameters
@@ -88,12 +95,15 @@ class PeakFinderGaus1D:
         kw_fine : dict, default None
             Keyword arguments for the fine fit supplied to
             ``scipy.optimize.curve_fit``.
+        error : bool, default False
+            If True, return the errors of the fit too.
         
         Returns
         -------
-        pars : np.ndarray of size 3
+        pars : np.ndarray of size 3 or 2-tuple of np.ndarray both of sizes 3
             The Gaussian parameters of the highest peak,
-            ``[amplt, mean, sigma]``.
+            ``[amplt, mean, sigma]``. If ``error`` is True, the errors of the
+            parameters are returned as well.
         """
         i = np.argmax(y)
         y_max = y[i]
@@ -123,14 +133,15 @@ class PeakFinderGaus1D:
         # fit by varying all parameters
         sigma_init = pars_rough[0]
         try:
-            kw = dict(p0=[y_max, x_max, sigma_init])
+            p0 = np.array([y_max, x_max, sigma_init])
+            kw = dict(p0=p0)
             kw.update(kw_fine or dict())
-            pars, _ = optimize.curve_fit(gaus, x_fit, y_fit, **kw)
+            pars, perr = optimize.curve_fit(gaus, x_fit, y_fit, **kw)
         except RuntimeError:
             warnings.warn(f'Failed to fit peak at {x_max=}')
             return np.array([y_max, x_max, sigma_init])
 
-        return pars
+        return pars if not error else (pars, np.sqrt(np.diag(perr)))
     
     def get_highest_peak(self, fit_range=None) -> np.ndarray:
         x = self.x.copy()
