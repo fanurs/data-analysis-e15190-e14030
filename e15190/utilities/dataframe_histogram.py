@@ -220,7 +220,27 @@ def div(dfa, dfb):
     result[a.yerr_name] = np.abs(result[a.y_name] * result[a.yferr_name])
     return result[[a.x_name, a.y_name, a.yerr_name, a.yferr_name]]
 
-def plot(df, ax=None, **kwargs):
+def errorbar(df, ax=None, **kwargs):
+    """Invoke Matplotlib's errorbar function.
+
+    Automatically fill up ``x``, ``y`` and ``yerr`` in the errorbar function.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The histogram data stored in a dataFrame.
+    ax : matplotlib.axes.Axes, default None
+        The axes to plot on. If None, the current axes will be used.
+    **kwargs :
+        Additional keyword arguments to be passed to
+        `errorbar <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.errorbar.html>`__.
+        Do not provide ``x``, ``y``, or ``yerr``.
+    
+    Returns
+    -------
+    result : matplolib.container.ErrorbarContainer
+        Return value of the errorbar function.
+    """
     if ax is None:
         import matplotlib.pyplot as plt
         ax = plt.gca()
@@ -231,9 +251,41 @@ def plot(df, ax=None, **kwargs):
     )
     kw.update(kwargs)
 
-    return ax.errorbar(
-        hist.x,
-        hist.y,
-        yerr=hist.yerr,
-        **kw,
+    return ax.errorbar(hist.x, hist.y, yerr=hist.yerr, **kw)
+
+def hist(df, ax=None, **kwargs):
+    """Invoke Matplotlib's hist function.
+
+    Automatically fill up ``x``, ``weights``, ``range``, and ``bins`` in the hist function.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The histogram data stored in a dataFrame.
+    ax : matplotlib.axes.Axes, default None
+        The axes to plot on. If None, the current axes will be used.
+    **kwargs :
+        Additional keyword arguments to be passed to
+        `hist <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hist.html>`__.
+        Do not provide ``x``, ``weights``, ``range``, or ``bins``.
+    
+    Returns
+    -------
+    result : matplolib.container.HistContainer
+        Return value of the hist function.
+    """
+    if ax is None:
+        import matplotlib.pyplot as plt
+        ax = plt.gca()
+    hist = Identifier(df, fill_errors=True)
+
+    x = np.array(hist.x)
+    dx = x[1] - x[0]
+    x_range = (x[0] - 0.5 * dx, x[-1] + 0.5 * dx)
+
+    kw = dict(
+        histtype='step',
     )
+    kw.update(kwargs)
+
+    return ax.hist(hist.x, weights=hist.y, range=x_range, bins=len(hist.x), **kw)
