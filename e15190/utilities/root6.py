@@ -82,6 +82,16 @@ class HistogramConversion:
         return self.histo_to_dframe(histo, *args, **kwargs)
 
     def histo_to_dframe(self, histo, *args, **kwargs):
+        lazy_types = [
+            ROOT.RDF.RResultPtr[t]
+            for t in [
+                ROOT.TH1C, ROOT.TH1S, ROOT.TH1I, ROOT.TH1F, ROOT.TH1D,
+                ROOT.TH2C, ROOT.TH2S, ROOT.TH2I, ROOT.TH2F, ROOT.TH2D,
+            ]
+        ]
+        if isinstance(histo, tuple(lazy_types)):
+            histo = histo.GetValue()
+
         if isinstance(histo, ROOT.TH2):
             func = self._histo2d_to_dframe
         elif isinstance(histo, ROOT.TH1):
