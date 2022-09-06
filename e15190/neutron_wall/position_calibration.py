@@ -8,7 +8,7 @@ import warnings
 import sys
 
 import matplotlib as mpl
-mpl_default_backend = mpl.get_backend()
+MPL_DEFAULT_BACKEND = mpl.get_backend()
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -27,7 +27,6 @@ from e15190.utilities import fast_histogram as fh
 from e15190.utilities import local_manager, tables
 from e15190.utilities import ray_triangle_intersection as rti
 from e15190.utilities import styles
-styles.set_matplotlib_style(mpl)
 
 DATABASE_DIR = PROJECT_DIR / 'database/neutron_wall/position_calibration'
 CACHE_DIR = DATABASE_DIR / 'cache'
@@ -459,6 +458,7 @@ class NWBPositionCalibrator:
             verbose = self.verbose
 
         # customize plot style
+        styles.set_matplotlib_style(mpl)
         self.cmap = copy.copy(plt.cm.viridis_r)
         self.cmap.set_under('white')
         mpl_custom = {
