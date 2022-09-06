@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -60,9 +60,13 @@ class TimeOfFlightCalibrator:
         """Declare all relevant functions and variables to the ROOT interpreter.
     
         Functions that are declared are:
+            - GetPositionParam0(bar)
+            - GetPositionParam1(bar)
+            - GetDistParam0(bar)
+            - GetDistParam1(bar)
+            - GetDistParam2(bar)
             - GetPosition(time_L, time_R, p0, p1)
-            - GetParam0(bar)
-            - GetParam1(bar)
+            - GetDistance(pos, p0, p1, p2)
         
         This function is called only when ``ROOT_DECLARED`` is False. The
         variable is set to True after this function is called. To call this
@@ -85,6 +89,7 @@ class TimeOfFlightCalibrator:
         global ROOT_DECLARED
         if ROOT_DECLARED:
             return
+        formatter = lambda x: ', '.join(map(str, x))
         ROOT.gInterpreter.Declare('''
             #pragma cling optimize(3)
             using RInt = ROOT::RVec<int>;
@@ -92,48 +97,30 @@ class TimeOfFlightCalibrator:
 
             const RDouble pos_param0 = {%s};
             const RDouble pos_param1 = {%s};
-            const RDouble dist_low_param0 = {%s};
-            const RDouble dist_low_param1 = {%s};
-            const RDouble dist_low_param2 = {%s};
-            const RDouble dist_upp_param0 = {%s};
-            const RDouble dist_upp_param1 = {%s};
-            const RDouble dist_upp_param2 = {%s};
+            const RDouble dist_param0 = {%s};
+            const RDouble dist_param1 = {%s};
+            const RDouble dist_param2 = {%s};
 
-            RDouble GetPositionParam0(RInt bar) { return ROOT::VecOps::Take(pos_param0, bar - 1); }
-            RDouble GetPositionParam1(RInt bar) { return ROOT::VecOps::Take(pos_param1, bar - 1); }
-            RDouble GetDistLowParam0(RInt bar)  { return ROOT::VecOps::Take(dist_low_param0, bar - 1); }
-            RDouble GetDistLowParam1(RInt bar)  { return ROOT::VecOps::Take(dist_low_param1, bar - 1); }
-            RDouble GetDistLowParam2(RInt bar)  { return ROOT::VecOps::Take(dist_low_param2, bar - 1); }
-            RDouble GetDistUppParam0(RInt bar)  { return ROOT::VecOps::Take(dist_upp_param0, bar - 1); }
-            RDouble GetDistUppParam1(RInt bar)  { return ROOT::VecOps::Take(dist_upp_param1, bar - 1); }
-            RDouble GetDistUppParam2(RInt bar)  { return ROOT::VecOps::Take(dist_upp_param2, bar - 1); }
+            RDouble GetPosParam0(RInt bar)  { return ROOT::VecOps::Take(pos_param0, bar - 1); }
+            RDouble GetPosParam1(RInt bar)  { return ROOT::VecOps::Take(pos_param1, bar - 1); }
+            RDouble GetDistParam0(RInt bar) { return ROOT::VecOps::Take(dist_param0, bar - 1); }
+            RDouble GetDistParam1(RInt bar) { return ROOT::VecOps::Take(dist_param1, bar - 1); }
+            RDouble GetDistParam2(RInt bar) { return ROOT::VecOps::Take(dist_param2, bar - 1); }
 
-            RDouble GetPosition(RDouble time_L, RDouble time_R, RDouble pos_param0, RDouble pos_param1) {
-                return pos_param0 + pos_param1 * (time_L - time_R);
+            RDouble GetPosition(RDouble time_L, RDouble time_R, RDouble p0, RDouble p1) {
+                return p0 + p1 * (time_L - time_R);
             }
 
-            RDouble GetDistance(
-                RDouble pos,
-                RDouble low0, RDouble low1, RDouble low2,
-                RDouble upp0, RDouble upp1, RDouble upp2
-            ) {
-                RDouble low = low0 + low1 * pos + low2 * pos * pos;
-                RDouble upp = upp0 + upp1 * pos + upp2 * pos * pos;
-                RDouble random_nums;
-                for (int i = 0; i < pos.size(); i++) random_nums.push_back(gRandom->Rndm());
-                return low + (upp - low) * random_nums;
+            RDouble GetDistance(RDouble pos, RDouble p0, RDouble p1, RDouble p2) {
+                return p0 + p1 * pos + p2 * pos * pos;
             }
-            ''' % (
-                ', '.join(map(str, self.df_pos_calib['p0'].to_numpy())),
-                ', '.join(map(str, self.df_pos_calib['p1'].to_numpy())),
-                ', '.join(map(str, self.df_emp_distance['low0'].to_numpy())),
-                ', '.join(map(str, self.df_emp_distance['low1'].to_numpy())),
-                ', '.join(map(str, self.df_emp_distance['low2'].to_numpy())),
-                ', '.join(map(str, self.df_emp_distance['upp0'].to_numpy())),
-                ', '.join(map(str, self.df_emp_distance['upp1'].to_numpy())),
-                ', '.join(map(str, self.df_emp_distance['upp2'].to_numpy()))
-
-            )
+            ''' % tuple(map(formatter, [
+                self.df_pos_calib['p0'],
+                self.df_pos_calib['p1'],
+                0.5 * (self.df_emp_distance['low0'] + self.df_emp_distance['upp0']),
+                0.5 * (self.df_emp_distance['low1'] + self.df_emp_distance['upp1']),
+                0.5 * (self.df_emp_distance['low2'] + self.df_emp_distance['upp2']),
+            ]))
         )
         ROOT_DECLARED = True
 
@@ -144,33 +131,16 @@ class TimeOfFlightCalibrator:
             ROOT.EnableImplicitMT()
         self.rdf = ROOT.RDataFrame(tree_name, str(path))
         self.rdf = (self.rdf
-            .Define('p0', f'GetPositionParam0(NW{self.AB}.fnumbar)')
-            .Define('p1', f'GetPositionParam1(NW{self.AB}.fnumbar)')
-            .Define('low0', f'GetDistLowParam0(NW{self.AB}.fnumbar)')
-            .Define('low1', f'GetDistLowParam1(NW{self.AB}.fnumbar)')
-            .Define('low2', f'GetDistLowParam2(NW{self.AB}.fnumbar)')
-            .Define('upp0', f'GetDistUppParam0(NW{self.AB}.fnumbar)')
-            .Define('upp1', f'GetDistUppParam1(NW{self.AB}.fnumbar)')
-            .Define('upp2', f'GetDistUppParam2(NW{self.AB}.fnumbar)')
+            .Define('posParam0', f'GetPosParam0(NW{self.AB}.fnumbar)')
+            .Define('posParam1', f'GetPosParam1(NW{self.AB}.fnumbar)')
+            .Define('distParam0', f'GetDistParam0(NW{self.AB}.fnumbar)')
+            .Define('distParam1', f'GetDistParam1(NW{self.AB}.fnumbar)')
+            .Define('distParam2', f'GetDistParam2(NW{self.AB}.fnumbar)')
 
-            .Define('pos', f'GetPosition(NW{self.AB}.fTimeLeft, NW{self.AB}.fTimeRight, p0, p1)')
-            .Define('dist', f'GetDistance(pos, low0, low1, low2, upp0, upp1, upp2)')
+            .Define('pos', f'GetPosition(NW{self.AB}.fTimeLeft, NW{self.AB}.fTimeRight, posParam0, posParam1)')
+            .Define('dist', f'GetDistance(pos, distParam0, distParam1, distParam2)')
         )
         return self.rdf
-
-    def estimate_distance_resolution(self, bar: int, lazy=True) -> ROOT.TH1:
-        nw_cuts = [
-            f'NW{self.AB}.fnumbar == {bar}',
-            f'pos > {self.POS_RANGE[0]}',
-            f'pos < {self.POS_RANGE[1]}',
-        ]
-        h = (self.rdf
-            .Define('dist2', f'GetDistance(pos, low0, low1, low2, upp0, upp1, upp2)')
-            .Define('nw_cut', ' && '.join(nw_cuts))
-            .Define('dist_diff', f'dist - dist2')
-            .Histo1D(('', '', 200, -10, 10), 'dist_diff')
-        )
-        return h if lazy else h.GetValue()
 
     def get_distance_of_flight_histogram(self, bar, lazy=True):
         nw_cuts = [
@@ -222,7 +192,7 @@ class TimeOfFlightCalibrator:
             .Define('nw_cut', ' && '.join(nw_cuts))
             .Define('tof_raw', f'0.5 * (NW{self.AB}.fTimeLeft + NW{self.AB}.fTimeRight) - ForwardArray.fTimeMean')
             .Define('tof_raw_cut', 'tof_raw[nw_cut]')
-            .Histo1D(('', '', 50 * 10, 0, 50), 'tof_raw_cut')
+            .Histo1D(('', '', 50 * 5, 0, 50), 'tof_raw_cut')
         )
         return h if lazy else h.GetValue()
 
@@ -255,18 +225,34 @@ class TimeOfFlightCalibrator:
         fit_upp = np.polyval(pars[['upp2', 'upp1', 'upp0']], pos)
         return fit_low.min(), fit_upp.max()
 
-    def get_mean_distance_of_flight(self, bar, lazy=True):
+    def get_all_distance_of_flight_stats(self, bar, lazy=True) -> Union[float, ROOT.RDF.RResultPtr[ROOT.Double_t]]:
         nw_cuts = [
             f'NW{self.AB}.fnumbar == {bar}',
             f'pos > {self.POS_RANGE[0]}',
             f'pos < {self.POS_RANGE[1]}',
         ]
-        h = (self.rdf
+        rdf = (self.rdf
             .Define('nw_cut', ' && '.join(nw_cuts))
             .Define('dist_cut', 'dist[nw_cut]')
-            .Mean('dist_cut')
         )
-        return h if lazy else h.GetValue()
+        result = {
+            'mean': rdf.Mean('dist_cut'),
+            'stdev': rdf.StdDev('dist_cut'),
+        }
+        return result if lazy else {k: v.GetValue() for k, v in result.items()}
+    
+    def get_stdev_distance_of_flight(self, bar, lazy=True) -> Union[float, ROOT.RDF.RResultPtr[ROOT.Double_t]]:
+        nw_cuts = [
+            f'NW{self.AB}.fnumbar == {bar}',
+            f'pos > {self.POS_RANGE[0]}',
+            f'pos < {self.POS_RANGE[1]}',
+        ]
+        result = (self.rdf
+            .Define('nw_cut', ' && '.join(nw_cuts))
+            .Define('dist_cut', 'dist[nw_cut]')
+            .StdDev('dist_cut')
+        )
+        return result if lazy else result.GetValue()
 
     def get_all_time_of_flight_histograms(self, bar):
         dist_range = self.get_distance_range(bar)
@@ -281,23 +267,17 @@ class TimeOfFlightCalibrator:
         rand = np.random.RandomState()
         h_all = rt.histo_conversion(bar_tof_histos['all'])
         x_all = self.get_first_peak(h_all.x, h_all.y)
-        print(f'{x_all=}')
         pars = dict()
         for i, (d_range, h) in enumerate(bar_tof_histos.items()):
             h = rt.histo_conversion(h)
             h = h.query(f'x > {x_all - 3} & x < {x_all + 2}')
             ppp = []
             x, y = h.x.to_numpy(), h.y.to_numpy()
-            if i == 8:
-                print(x)
-                print(y)
             idx = np.arange(len(x))
             for _ in range(5):
                 rand.shuffle(idx)
                 par, err = PeakFinderGaus1D._find_highest_peak(x[idx], y[idx], error=True)
                 ppp.append(par[1])
-            if i == 8:
-                print(ppp)
 
             pars[d_range] = {
                 'amplt': par[0], 'mean': par[1], 'sigma': par[2],
@@ -326,13 +306,24 @@ class TimeOfFlightCalibrator:
     def fit(self, bar):
         self.bar = bar
         self.histos = self.get_all_time_of_flight_histograms(self.bar)
-        self.mean_dist_all = self.get_mean_distance_of_flight(self.bar).GetValue()
+
+        self.all_dof_stats = self.get_all_distance_of_flight_stats(self.bar, lazy=False)
         self.histos = {key: h.GetValue() for key, h in self.histos.items()}
+
         self.pg_fit_params = self.get_prompt_gamma_fits(self.histos)
         self.tof_offset, self.tof_offset_err = self.get_speed_of_flight_fit(self.pg_fit_params)
 
-
 class Plotter:
+    """Plotter utility class.
+
+    This is an utility class to plot the results from :py:class:`TimeOfFlightCalibrator`.
+
+    >>> calib = TimeOfFlightCalibrator('B', 4100)
+    >>> calib.fit(bar=24) # will take a while
+    >>> fig, axes = Plotter.plot(calib)
+    >>> plt.show()
+
+    """
     base_layout = '''
         ABCXXX
         DEFXXX
@@ -384,7 +375,7 @@ class Plotter:
         ax.errorbar(
             df.dist, df.tof,
             yerr=df.tof_err,
-            fmt='.',
+            fmt='o',
             color='black',
         )
         x_plt = np.linspace(df.dist.min(), df.dist.max(), 100)
@@ -397,11 +388,17 @@ class Plotter:
             ha='center', va='top',
             fontsize=15,
         )
-
-        ax.axhline(param_all['mean'], color='blue', linestyle='dashed', lw=1, label='all')
-        ax.axvline(obj.mean_dist_all, color='blue', linestyle='dashed', lw=1)
-
-        ax.legend()
+        ax.errorbar(
+            [obj.all_dof_stats['mean']], [param_all['mean']],
+            xerr=[obj.all_dof_stats['stdev']],
+            yerr=[param_all['mean_err']],
+            fmt='o',
+            linewidth=2,
+            color='blue',
+            markerfacecolor='white',
+            label=r'all (not used to fit)',
+        )
+        ax.legend(loc='lower right', fontsize=15)
     
     @classmethod
     def plot(cls, obj):
