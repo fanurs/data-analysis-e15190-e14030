@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+import inspect
 import os
 from pathlib import Path
-from typing import Optional, Tuple, Union
+import traceback
+from typing import Dict, Optional, Tuple, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -11,7 +14,7 @@ from scipy.optimize import curve_fit
 
 from e15190.neutron_wall import geometry as nwgeo
 from e15190.neutron_wall.position_calibration import NWCalibrationReader
-from e15190.utilities import dataframe_histogram as dfh, root6 as rt, slicer, styles
+from e15190.utilities import dataframe_histogram as dfh, root6 as rt, slicer, styles, tables
 from e15190.utilities.peak_finder import PeakFinderGaus1D
 
 MPL_DEFAULT_BACKEND = mpl.get_backend()
@@ -19,6 +22,7 @@ ROOT.gErrorIgnoreLevel = ROOT.kError
 ROOT_DECLARED = False # global variable to prevent multiple ROOT declarations
 
 class TimeOfFlightCalibrator:
+    DATABASE_DIR = '$DATABASE_DIR/neutron_wall/time_of_flight_calibration/'
     SPEED_OF_LIGHT_IN_AIR = 29.9702547 # cm / ns
     POS_RANGE = [-100, 100]
     DIST_RANGE_WIDTH = 8 # cm
@@ -28,6 +32,12 @@ class TimeOfFlightCalibrator:
         self.AB = AB.upper()
         self.ab = AB.lower()
         self.run = run
+
+        self.lazy_items = dict()
+        self.pg_fit_params = dict()
+        self.tof_offset = dict()
+        self.tof_offset_err = dict()
+
         if init_rdf:
             self.declare_all_to_root_interpreter()
             self.create_base_rdf()
@@ -225,7 +235,7 @@ class TimeOfFlightCalibrator:
         fit_upp = np.polyval(pars[['upp2', 'upp1', 'upp0']], pos)
         return fit_low.min(), fit_upp.max()
 
-    def get_all_distance_of_flight_stats(self, bar, lazy=True) -> Union[float, ROOT.RDF.RResultPtr[ROOT.Double_t]]:
+    def get_all_distance_of_flight_stats(self, bar, lazy=True) -> Dict[str, Union[float, ROOT.RDF.RResultPtr[ROOT.Double_t]]]:
         nw_cuts = [
             f'NW{self.AB}.fnumbar == {bar}',
             f'pos > {self.POS_RANGE[0]}',
@@ -254,13 +264,13 @@ class TimeOfFlightCalibrator:
         )
         return result if lazy else result.GetValue()
 
-    def get_all_time_of_flight_histograms(self, bar):
+    def get_all_time_of_flight_histograms(self, bar, lazy=True):
         dist_range = self.get_distance_range(bar)
         dist_ranges = slicer.create_ranges(*dist_range, width=self.DIST_RANGE_WIDTH, n_steps=self.DIST_RANGE_N_STEPS)
         histos = dict()
-        histos['all'] = self.get_time_of_flight_histogram(bar)
+        histos['all'] = self.get_time_of_flight_histogram(bar, lazy=lazy)
         for d_range in dist_ranges:
-            histos[tuple(d_range)] = self.get_time_of_flight_histogram(bar, dist_cut=d_range)
+            histos[tuple(d_range)] = self.get_time_of_flight_histogram(bar, dist_cut=d_range, lazy=lazy)
         return histos
 
     def get_prompt_gamma_fits(self, bar_tof_histos):
@@ -299,19 +309,47 @@ class TimeOfFlightCalibrator:
             df.append([np.mean(d_range), par['mean'], par['mean_err']])
         df = pd.DataFrame(df, columns=['dist', 'tof', 'tof_eff'])
         para, perr = curve_fit(self._speed_of_light_model, df.dist, df.tof, sigma=df.tof_eff, p0=[0])
-        self.tof_offset = para[0]
-        self.tof_offset_err = np.sqrt(np.diag(perr))[0]
-        return self.tof_offset, self.tof_offset_err
+        return para[0], np.sqrt(np.diag(perr))[0]
     
-    def fit(self, bar):
-        self.bar = bar
-        self.histos = self.get_all_time_of_flight_histograms(self.bar)
+    def collect_all_lazy(self, bars):
+        self.lazy_items = {
+            bar: {
+                'histos': self.get_all_time_of_flight_histograms(bar, lazy=True),
+                'all_dof_stats': self.get_all_distance_of_flight_stats(bar, lazy=True),
+            }
+            for bar in bars
+        }
+        return self.lazy_items
 
-        self.all_dof_stats = self.get_all_distance_of_flight_stats(self.bar, lazy=False)
-        self.histos = {key: h.GetValue() for key, h in self.histos.items()}
+    def fit_bar(self, bar):
+        if bar not in self.lazy_items:
+            self.lazy_items[bar] = {
+                'histos': self.get_all_time_of_flight_histograms(bar, lazy=True),
+                'all_dof_stats': self.get_all_distance_of_flight_stats(bar, lazy=True),
+            }
 
-        self.pg_fit_params = self.get_prompt_gamma_fits(self.histos)
-        self.tof_offset, self.tof_offset_err = self.get_speed_of_flight_fit(self.pg_fit_params)
+        histos = {key: h.GetValue() for key, h in self.lazy_items[bar]['histos'].items()}
+
+        self.pg_fit_params[bar] = self.get_prompt_gamma_fits(histos)
+        self.tof_offset[bar], self.tof_offset_err[bar] = self.get_speed_of_flight_fit(self.pg_fit_params[bar])
+    
+    def save_parameters(self, path=None):
+        if path is None:
+            path = Path(os.path.expandvars(self.DATABASE_DIR)) / 'calib_params' / f'run-{self.run:04d}-nw{self.ab}.dat'
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        df = []
+        for (bar, offset), offset_err in zip(self.tof_offset.items(), self.tof_offset_err.values()):
+            df.append([bar, offset, offset_err])
+        df = pd.DataFrame(df, columns=['bar', 'tof_offset', 'tof_offset_err'])
+        tables.to_fwf(
+            df, path,
+            comment=inspect.cleandoc(f'''
+            # run-{self.run:04d} NW{self.AB}
+            # tof offset in unit of ns
+            '''),
+        )
 
 class Plotter:
     """Plotter utility class.
@@ -319,8 +357,8 @@ class Plotter:
     This is an utility class to plot the results from :py:class:`TimeOfFlightCalibrator`.
 
     >>> calib = TimeOfFlightCalibrator('B', 4100)
-    >>> calib.fit(bar=24) # will take a while
-    >>> fig, axes = Plotter.plot(calib)
+    >>> calib.fit_bar(bar=24) # will take a while
+    >>> fig, axes = Plotter.plot(calib, bar=24)
     >>> plt.show()
 
     """
@@ -365,8 +403,12 @@ class Plotter:
         ax.set_title(title)
     
     @staticmethod
-    def plot_speed_of_light_fit(ax, obj):
-        params = obj.pg_fit_params.copy()
+    def plot_speed_of_light_fit(ax, obj, bar):
+        params = obj.pg_fit_params[bar].copy()
+        all_dof_stats = obj.lazy_items[bar]['all_dof_stats'].copy()
+        tof_offset = obj.tof_offset[bar]
+        tof_offset_err = obj.tof_offset_err[bar]
+
         param_all = params.pop('all')
         df = []
         for d_range, param in params.items():
@@ -379,18 +421,18 @@ class Plotter:
             color='black',
         )
         x_plt = np.linspace(df.dist.min(), df.dist.max(), 100)
-        ax.plot(x_plt, obj._speed_of_light_model(x_plt, obj.tof_offset), color='green', lw=1.5)
+        ax.plot(x_plt, obj._speed_of_light_model(x_plt, tof_offset), color='green', lw=1.5)
         ax.set_title(r'$\mathrm{DoF} = c_\mathrm{air}\cdot\mathrm{ToF} - t_0$')
         ax.annotate(
-            r'$t_0 = %.3f \pm %.3f$ ns' % (obj.tof_offset, obj.tof_offset_err),
+            r'$t_0 = %.3f \pm %.3f$ ns' % (tof_offset, tof_offset_err),
             (0.5, 0.95),
             xycoords='axes fraction',
             ha='center', va='top',
             fontsize=15,
         )
         ax.errorbar(
-            [obj.all_dof_stats['mean']], [param_all['mean']],
-            xerr=[obj.all_dof_stats['stdev']],
+            [all_dof_stats['mean'].GetValue()], [param_all['mean']],
+            xerr=[all_dof_stats['stdev'].GetValue()],
             yerr=[param_all['mean_err']],
             fmt='o',
             linewidth=2,
@@ -401,15 +443,15 @@ class Plotter:
         ax.legend(loc='lower right', fontsize=15)
     
     @classmethod
-    def plot(cls, obj):
+    def plot(cls, obj, bar):
         styles.set_matplotlib_style(mpl)
         mpl.rcParams.update({
             'figure.dpi': 200,
             'axes.grid': True,
         })
 
-        histos = obj.histos.copy()
-        params = obj.pg_fit_params.copy()
+        histos = {key: val.GetValue() for key, val in obj.lazy_items[bar]['histos'].items()}
+        params = obj.pg_fit_params[bar].copy()
 
         histo_all = histos.pop('all')
         n_histos = len(histos)
@@ -418,7 +460,7 @@ class Plotter:
         fig, axes = plt.subplot_mosaic(layout, figsize=(15, 10), constrained_layout=True)
 
         ax = axes['X']
-        cls.plot_speed_of_light_fit(ax, obj)
+        cls.plot_speed_of_light_fit(ax, obj, bar)
         ax.set_xlabel('DoF [cm]')
         ax.set_ylabel('Uncalibrated ToF [ns]')
 
@@ -441,3 +483,91 @@ class Plotter:
             if ax_name in ['G', 'H', 'I']:
                 ax.set_xlabel('Uncalibrated ToF [ns]')
         return fig, axes
+    
+    @classmethod
+    def save_plot(cls, obj, bar, path=None):
+        if path is None:
+            path = Path(os.path.expandvars(TimeOfFlightCalibrator.DATABASE_DIR)) / f'gallery/run-{obj.run:04d}/NW{obj.AB}-bar{bar:02d}.png'
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        mpl.use('Agg')
+        fig, _ = cls.plot(obj, bar)
+        plt.savefig(path, dpi=300, bbox_inches='tight')
+        plt.close(fig)
+        mpl.use(MPL_DEFAULT_BACKEND)
+
+class _MainUtilities:
+    @staticmethod
+    def get_args():
+        parser = argparse.ArgumentParser(
+            description='Calibrate the time-of-flight for neutron wall.',
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+        parser.add_argument(
+            'AB',
+            type=str,
+            choices=['A', 'B'],
+            help='"A" or "B". This selects "NWA" or "NWB".',
+        )
+        parser.add_argument(
+            'run',
+            type=int,
+            help='Run number.',
+        )
+        parser.add_argument(
+            '-b', '--bars',
+            nargs='+',
+            type=str,
+            default=['1-24'],
+            help=misc.MainUtilities.wrap('''
+                The bar number(s). Default "1-24". Dash can be used to specify
+                ranges.
+            ''')
+        )
+        parser.add_argument(
+            '-d', '--debug',
+            action='store_true',
+            help=misc.MainUtilities.wrap('''
+                When this flag is set, no output would be saved, i.e.  the
+                calibration results, both the parameters and diagnostic plots,
+                will not be saved.
+            ''')
+        )
+        parser.add_argument(
+            '-o', '--output',
+            default="$DATABASE_DIR/neutron_wall/time_of_flight_calibration/",
+            help=misc.MainUtilities.wrap('''
+                The output directory for the calibration results. Default is
+                "$DATABASE_DIR/neutron_wall/time_of_flight_calibration/".
+            ''')
+        )
+        parser.add_argument(
+            '-s', '--silence',
+            action='store_true',
+            help='To silence the status messages.',
+        )
+
+        args = parser.parse_args()
+        args.bars = sorted(misc.MainUtilities.parse_bars(args.bars))
+        return args
+
+if __name__ == '__main__':
+    import argparse
+    from e15190.utilities import misc
+
+    args = _MainUtilities.get_args()
+    TimeOfFlightCalibrator.DATABASE_DIR = Path(os.path.expandvars(args.output))
+    try:
+        calib = TimeOfFlightCalibrator(args.AB, args.run, init_rdf=True)
+        calib.collect_all_lazy(args.bars)
+        for bar in args.bars:
+            if not args.silence:
+                print(f'Calibrating bar-{bar:02d}...', flush=True)
+            calib.fit_bar(bar)
+            Plotter.save_plot(calib, bar=bar)
+            calib.save_parameters() # save result each time a new bar is calibrated so that we don't everything if the program crashes
+        if not args.silence:
+            print('Done.', flush=True)
+    except Exception as err:
+        print(traceback.format_exc())
