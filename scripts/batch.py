@@ -83,6 +83,15 @@ def get_arguments():
             is 4.
         '''),
     )
+    parser.add_argument(
+        '--good-runs-only',
+        action='store_true',
+        help=inspect.cleandoc(f'''
+            If set, only runs that are marked as "good" in the run database will
+            run. This option can be only be run when e15190 conda environment is
+            active.
+        '''),
+    )
     args = parser.parse_args()
 
     # process the runs
@@ -95,6 +104,10 @@ def get_arguments():
             runs.extend(range(run_range[0], run_range[1] + 1))
         else:
             raise ValueError(f'Unrecognized input: {run_str}')
+    if args.good_runs_only:
+        from e15190.runlog.query import Query
+        mask = Query().are_good(runs)
+        runs = [run for run, is_good in zip(runs, mask) if is_good]
     args.runs = runs
 
     # warn if cores too many
