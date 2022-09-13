@@ -40,3 +40,4 @@ database/local_paths.json
 database/neutron_wall/**/cache
 database/neutron_wall/**/calib_params
 database/neutron_wall/**/gallery
+database/.root_files_prev/
