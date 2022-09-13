@@ -1,15 +1,19 @@
 #!/usr/bin/env python
+from glob import glob
 import inspect
+import json
 import os
 from pathlib import Path
+import re
 import traceback
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import ROOT
+import ruptures as rpt
 from scipy.optimize import curve_fit
 
 from e15190.neutron_wall import geometry as nwgeo
@@ -23,6 +27,7 @@ ROOT_DECLARED = False # global variable to prevent multiple ROOT declarations
 
 class TimeOfFlightCalibrator:
     DATABASE_DIR = '$DATABASE_DIR/neutron_wall/time_of_flight_calibration/'
+    CALIB_FILE_FMT = 'calib_params/run-{run:04d}-nw{ab}.dat'
     SPEED_OF_LIGHT_IN_AIR = 29.9702547 # cm / ns
     POS_RANGE = [-100, 100]
     DIST_RANGE_WIDTH = 8 # cm
@@ -335,7 +340,7 @@ class TimeOfFlightCalibrator:
     
     def save_parameters(self, path=None):
         if path is None:
-            path = Path(os.path.expandvars(self.DATABASE_DIR)) / 'calib_params' / f'run-{self.run:04d}-nw{self.ab}.dat'
+            path = Path(os.path.expandvars(self.DATABASE_DIR)) / self.CALIB_FILE_FMT.format(run=self.run, ab=self.ab)
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -497,6 +502,151 @@ class Plotter:
         plt.close(fig)
         mpl.use(MPL_DEFAULT_BACKEND)
 
+class TimeOfFlightCalibrationReader:
+    def __init__(self, AB, database_dir=None):
+        self.AB = AB.upper()
+        self.ab = AB.lower()
+        if database_dir is None:
+            self.database_dir = os.path.expandvars(TimeOfFlightCalibrator.DATABASE_DIR)
+        self.database_dir = Path(self.database_dir)
+    
+    def _get_run_params(self, run) -> Union[pd.DataFrame, None]:
+        """Returns parameters of a given run.
+
+        Parameters
+        ----------
+        run : int
+            Run number.
+        
+        Returns
+        -------
+        df : pd.DataFrame or None
+            DataFrame with columns 'bar', 'tof_offset', 'tof_offset_err'. If the
+            run is not found or the file is incompleted (not containing all
+            bars, 1 - 24, inclusively), then it returns None.
+        """
+        path = self.database_dir / TimeOfFlightCalibrator.CALIB_FILE_FMT.format(run=run, ab=self.ab)
+        if not path.is_file():
+            return
+        df = pd.read_csv(path, comment='#', delim_whitespace=True)
+        if not np.array_equal(df.bar, np.arange(1, 25)):
+            return None
+        return df
+    
+    def _get_existing_runs(self, pattern=None) -> List:
+        if pattern is None:
+            pattern = TimeOfFlightCalibrator.CALIB_FILE_FMT.format(run=0, ab=self.ab)
+            pattern = pattern.replace('0000', '[0-9]' * 4)
+            pattern = Path(os.path.expandvars(TimeOfFlightCalibrator.DATABASE_DIR)) / pattern
+            pattern = str(pattern)
+        paths = glob(pattern)
+        filenames = map(lambda path: Path(path).name, paths)
+        regex = re.compile(r'\d{4}')
+        runs = map(lambda name: int(regex.findall(name)[0]), filenames)
+        return sorted(runs)
+    
+    def _get_all_runs_params_as_dict(self, pattern=None) -> Dict[int, pd.DataFrame]:
+        result = dict()
+        for run in self._get_existing_runs(pattern=pattern):
+            params = self._get_run_params(run)
+            if params is None:
+                continue
+            result[run] = params
+        return result
+
+    def _transform(self, dict_of_params: Dict[int, pd.DataFrame], col='tof_offset') -> pd.DataFrame:
+        df_result = None
+        for run, df_run in dict_of_params.items():
+            _df = pd.DataFrame([[run, *df_run[col].values]], columns=['run', *df_run.bar.values])
+            df_result = pd.concat([df_result, _df], axis=0)
+        return df_result.set_index('run', drop=True)
+    
+    def read_all_runs_params(self, read_error=False) -> pd.DataFrame:
+        par_dict = self._get_all_runs_params_as_dict()
+        self.pars = self._transform(par_dict, col='tof_offset')
+        if read_error:
+            self.errs = self._transform(par_dict, col='tof_offset_err')
+    
+    def find_breakpoint_runs(self) -> Dict[int, List]:
+        bp_runs = dict()
+        bars = self.pars.columns
+        for bar in bars:
+            runs = self.pars.index.values
+            pars =  self.pars[bar].values
+
+            cpd = rpt.KernelCPD('linear', min_size=2).fit(pars)
+            bp_indices = cpd.predict(pen=1)
+
+            bp = [runs[0], *runs[bp_indices[:-1]], runs[-1] + 1]
+            bp.append(3500) # HARD CODED
+            bp = sorted(bp)
+            bp[0] = 2000 # HARD CODED
+            bp[-1] = 5000 # HARD CODED
+            bp_runs[bar] = bp
+        return bp_runs
+    
+    def calculate_section_params(
+        self,
+        breakpoint_runs: Dict[int, List],
+    ) -> Dict[int, Dict[Tuple[int, int], float]]:
+        mid50_avg = lambda pars: float(np.where(
+            len(pars) > 4,
+            np.mean(pars[(pars > pars.quantile(0.25)) & (pars < pars.quantile(0.75))]),
+            np.mean(pars)
+        ))
+        self.section_params = dict()
+        for bar, bp_runs in breakpoint_runs.items():
+            bar_pars = self.pars[bar]
+            run_ranges = np.vstack([bp_runs[:-1], bp_runs[1:]]).T
+            run_ranges[:, 1] -= 1 # to make ranges inclusive at both ends
+            self.section_params[bar] = dict()
+            for run_range in run_ranges:
+                mask = bar_pars.index.get_level_values('run').isin(range(*run_range))
+                sec_pars = bar_pars[mask]
+                self.section_params[bar][tuple(run_range)] = mid50_avg(sec_pars)
+        return self.section_params
+    
+    def save(self, dat_path=None, json_path=None, return_paths=False):
+        _, dat_path = self.save_as_dat(dat_path, return_path=return_paths)
+        _, json_path = self.save_as_json(json_path, return_path=return_paths)
+        if return_paths:
+            return {'dat': dat_path, 'json': json_path}
+    
+    def save_as_dat(self, path=None, return_path=False):
+        if path is None:
+            path = Path(os.path.expandvars(TimeOfFlightCalibrator.DATABASE_DIR))
+            path /= f'calib_params_nw{self.ab}.dat'
+        path = Path(path)
+        df = []
+        for bar, bar_info in self.section_params.items():
+            for run_range, par in bar_info.items():
+                df.append([bar, *run_range, par])
+        df = pd.DataFrame(df, columns=['bar', 'run_start', 'run_stop', 'tof_offset'])
+        tables.to_fwf(df, path, comment=inspect.cleandoc(f'''
+            # NW{self.AB} time-of-flight calibration parameters
+            # calibrated_tof = 0.5 * (time_L + time_R) - FA_time_mean - tof_offset
+            # Unit:
+            # - tof_offset: ns
+        '''))
+        return df, path if return_path else df
+    
+    def save_as_json(self, path=None, return_path=False):
+        if path is None:
+            path = Path(os.path.expandvars(TimeOfFlightCalibrator.DATABASE_DIR))
+            path /= f'calib_params_nw{self.ab}.json'
+        path = Path(path)
+        dumped = dict()
+        for bar, bar_info in self.section_params.items():
+            dumped[str(bar)] = []
+            for run_range, par in bar_info.items():
+                dumped[str(bar)].append({
+                    'run_range': list(map(int, run_range)),
+                    'tof_offset': round(par, 7),
+                })
+        with open(path, 'w') as file:
+            json.dump(dumped, file, indent=4)
+        return self.section_params, path if return_path else self.section_params
+
 class _MainUtilities:
     @staticmethod
     def get_args():
@@ -547,6 +697,11 @@ class _MainUtilities:
             action='store_true',
             help='To silence the status messages.',
         )
+        parser.add_argument(
+            '--breakpoint',
+            action='store_true',
+            help='Breakpoint finding mode. Run does not matter.',
+        )
 
         args = parser.parse_args()
         args.bars = sorted(misc.MainUtilities.parse_bars(args.bars))
@@ -559,6 +714,18 @@ if __name__ == '__main__':
     args = _MainUtilities.get_args()
     TimeOfFlightCalibrator.DATABASE_DIR = Path(os.path.expandvars(args.output))
     try:
+        if args.breakpoint:
+            reader = TimeOfFlightCalibrationReader(args.AB)
+            reader.read_all_runs_params()
+            bp_runs = reader.find_breakpoint_runs()
+            reader.calculate_section_params(bp_runs)
+            paths = reader.save(return_paths=True)
+            if not args.silence:
+                print('Breakpoint runs have been saved to:')
+                print(paths['dat'])
+                print(paths['json'])
+            exit()
+
         calib = TimeOfFlightCalibrator(args.AB, args.run, init_rdf=True)
         calib.collect_all_lazy(args.bars)
         for bar in args.bars:
