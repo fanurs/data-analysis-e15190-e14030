@@ -869,3 +869,12 @@ class ReactionParser:
         if dst_style == 'Aa10Bb20E100':
             return f'{beam[0].capitalize()}{beam[1]}{target[0].capitalize()}{target[1]}E{energy}'
     
+
+if __name__ == '__main__':
+    # save all good runs to a file in database
+    all_runs = np.arange(2000, 5000)
+    mask = Query().are_good(all_runs)
+    good_runs = all_runs[mask]
+    path = e15190.DATABASE_DIR / 'runlog' / 'good_runs.dat'
+    np.savetxt(path, good_runs, fmt='%d')
+    print(f'Good runs saved to {path}')
