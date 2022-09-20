@@ -69,7 +69,7 @@ def get_arguments():
 
             Consecutive runs can be specified in ranges separated by the
             character "-". Here is an example:
-                > ./batch.py "calibrate.exe -r $RUN" 8-10 11 20 2-5
+                > ./batch.py "calibrate.exe -r RUN" 8-10 11 20 2-5
             This will calibrate the runs 8, 9, 10, 11, 20, 2, 3, 4, 5.
         '''),
     )
@@ -105,9 +105,9 @@ def get_arguments():
         else:
             raise ValueError(f'Unrecognized input: {run_str}')
     if args.good_runs_only:
-        from e15190.runlog.query import Query
-        mask = Query().are_good(runs)
-        runs = [run for run, is_good in zip(runs, mask) if is_good]
+        with open('../database/runlog/good_runs.dat', 'r') as file:
+            good_runs = [int(line) for line in file.readlines() if len(line) > 0]
+        runs = [run for run in runs if run in good_runs]
     args.runs = runs
 
     # warn if cores too many

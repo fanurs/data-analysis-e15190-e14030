@@ -76,6 +76,25 @@ public:
     void write_metadata(TFolder* folder, bool relative_path=true);
 };
 
+class NWTimeOfFlightCalibParamReader : public ParamReader<int> {
+public:
+    char AB;
+    char ab;
+    std::filesystem::path project_dir;
+    std::filesystem::path calib_dir = "database/neutron_wall/time_of_flight_calibration";
+    std::string json_filename = "calib_params_nw%c.json";
+    std::filesystem::path json_path;
+    Json database; // all bars and runs
+    std::unordered_map<int, double> tof_offset; // all bars for a given run; <bar, tof_offset>
+
+    NWTimeOfFlightCalibParamReader(const char AB, bool load_params=true);
+    ~NWTimeOfFlightCalibParamReader();
+
+    void load_tof_offset();
+    void load(int run);
+    void write_metadata(TFolder* folder, bool relative_path=true);
+};
+
 class NWLightOutputCalibParamReader : public ParamReader<int> {
 public:
     char AB;
