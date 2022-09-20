@@ -208,6 +208,75 @@ void NWBPositionCalibParamReader::write_metadata(TFolder* folder, bool relative_
 
 
 
+/****************************************/
+/*****NWTimeOfFlightCalibParamReader*****/
+/****************************************/
+NWTimeOfFlightCalibParamReader::NWTimeOfFlightCalibParamReader(const char AB, bool load_params) {
+    const char* PROJECT_DIR = getenv("PROJECT_DIR");
+    if (PROJECT_DIR == nullptr) {
+        std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
+        exit(1);
+    }
+    this->AB = toupper(AB);
+    this->ab = tolower(this->AB);
+    this->project_dir = PROJECT_DIR;
+    this->calib_dir = this->project_dir / this->calib_dir;
+    this->json_path = this->calib_dir / Form(this->json_filename.c_str(), this->ab);
+
+    if (load_params) {
+        this->load_tof_offset();
+    }
+}
+
+NWTimeOfFlightCalibParamReader::~NWTimeOfFlightCalibParamReader() { }
+
+void NWTimeOfFlightCalibParamReader::load_tof_offset() {
+    /* Read in all TOF offset parameters from .json file to this->database */
+    std::ifstream file(this->json_path.string());
+    if (!file.is_open()) {
+        std::cerr << "ERROR: failed to open " << this->json_path.string() << std::endl;
+        exit(1);
+    }
+    this->database.clear();
+    file >> this->database;
+    file.close();
+}
+
+void NWTimeOfFlightCalibParamReader::load(int run) {
+    /* Load TOF offset parameters for a given run
+     * from this->database to this->tof_offset.
+     */
+    for (auto& [bar, bar_info] : this->database.items()) {
+        bool found = false;
+        for (auto& par_info : bar_info) {
+            auto& run_range = par_info["run_range"];
+            if (run < run_range[0].get<int>() || run > run_range[1].get<int>()) {
+                continue;
+            }
+            this->tof_offset[std::stoi(bar)] = par_info["tof_offset"].get<double>();
+            found = true;
+            break;
+        }
+        if (!found) {
+            std::cerr << Form(
+                "ERROR: run-%04d is not found for NW%c bar%02d",
+                run, this->AB, std::stoi(bar)
+            ) << std::endl;
+        }
+    }
+}
+
+void NWTimeOfFlightCalibParamReader::write_metadata(TFolder* folder, bool relative_path) {
+    std::filesystem::path base_dir = (relative_path) ? this->project_dir : "/";
+    std::filesystem::path path;
+
+    path = std::filesystem::proximate(this->json_path, base_dir);
+    TNamed* path_data = new TNamed(path.string().c_str(), "");
+    folder->Add(path_data);
+}
+
+
+
 /***************************************/
 /*****NWLightOutputCalibParamReader*****/
 /***************************************/

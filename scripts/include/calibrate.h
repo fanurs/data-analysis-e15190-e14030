@@ -69,6 +69,7 @@ struct Container {
     std::array<double, max_multi> NWB_time;
     std::array<double, max_multi> NWB_time_L;
     std::array<double, max_multi> NWB_time_R;
+    std::array<double, max_multi> NWB_tof; /*updated*/
     std::array<double, max_multi> NWB_pos; /*updated*/
     std::array<double, max_multi> NWB_light_GM; /*updated*/
     std::array<double, max_multi> NWB_theta; /*updated*/
@@ -201,9 +202,20 @@ std::filesystem::path get_project_dir(std::string env_var="PROJECT_DIR") {
 
 std::filesystem::path get_input_root_path(
     std::filesystem::path& project_dir,
+    ArgumentParser& argparser
+) {
+    /* Return input ROOT file path under database (tclass removed) */
+    auto path = project_dir / "database" / "root_files_daniele";
+    path /= Form("CalibratedData_%04d.root", argparser.run_num);
+    return path;
+}
+
+std::filesystem::path get_input_root_path(
+    std::filesystem::path& project_dir,
     ArgumentParser& argparser,
     std::string json_key
 ) {
+    /* Return input ROOT file path from original Daniele's framework */
     std::ifstream local_paths_json_file(project_dir / "database/local_paths.json");
     Json local_paths_json;
     try {
@@ -388,6 +400,7 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("NWB_time",      &container.NWB_time[0],     "NWB_time[NWB_multi]/D");
     tree->Branch("NWB_time_L",    &container.NWB_time_L[0],   "NWB_time_L[NWB_multi]/D");
     tree->Branch("NWB_time_R",    &container.NWB_time_R[0],   "NWB_time_R[NWB_multi]/D");
+    tree->Branch("NWB_tof",       &container.NWB_tof[0],      "NWB_tof[NWB_multi]/D");
     tree->Branch("NWB_pos",       &container.NWB_pos[0],      "NWB_pos[NWB_multi]/D");
     tree->Branch("NWB_light_GM",  &container.NWB_light_GM[0], "NWB_light_GM[NWB_multi]/D");
     tree->Branch("NWB_theta",     &container.NWB_theta[0],    "NWB_theta[NWB_multi]/D");

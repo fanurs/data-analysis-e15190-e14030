@@ -21,6 +21,7 @@ using Json = nlohmann::json;
 
 // forward declarations of calibration functions
 double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R);
+double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, double time_L, double time_R, double fa_time);
 double get_light_output(
     NWLightOutputCalibParamReader& nw_pcalib,
     int bar, double total_L, double total_R, double pos
@@ -42,14 +43,17 @@ int main(int argc, char* argv[]) {
 
     // read in parameter readers
     NWBPositionCalibParamReader nwb_pcalib;
+    NWTimeOfFlightCalibParamReader nwb_tcalib('B');
     NWLightOutputCalibParamReader nwb_lcalib('B');
     NWPulseShapeDiscriminationParamReader nwb_psd_reader('B');
     nwb_pcalib.load(argparser.run_num);
+    nwb_tcalib.load(argparser.run_num);
     nwb_lcalib.load(argparser.run_num);
     nwb_psd_reader.load(argparser.run_num);
 
     // read in Daniele's ROOT files (Kuan's version)
-    std::filesystem::path inroot_path = get_input_root_path(project_dir, argparser, "daniele_root_files_dir");
+    // std::filesystem::path inroot_path = get_input_root_path(project_dir, argparser, "daniele_root_files_dir");
+    std::filesystem::path inroot_path = get_input_root_path(project_dir, argparser);
     TChain* intree = get_input_tree(inroot_path.string(), "E15190");
 
     // prepare output (calibrated) ROOT files
@@ -60,9 +64,11 @@ int main(int argc, char* argv[]) {
     TFolder* metadata = gROOT->GetRootFolder()->AddFolder("metadata", "");
     metadata->Add(new TNamed(inroot_path.string().c_str(), "inroot_path"));
     TFolder* position_param_paths = metadata->AddFolder("position_param_paths", "");
+    TFolder* time_of_fligh_param_paths = metadata->AddFolder("time_of_flight_param_paths", "");
     TFolder* light_param_paths = metadata->AddFolder("light_param_path", "");
     TFolder* psd_param_paths = metadata->AddFolder("psd_param_paths", "");
     nwb_pcalib.write_metadata(position_param_paths);
+    nwb_tcalib.write_metadata(time_of_fligh_param_paths);
     nwb_lcalib.write_metadata(light_param_paths);
     nwb_psd_reader.write_metadata(psd_param_paths);
 
@@ -91,6 +97,15 @@ int main(int argc, char* argv[]) {
             evt.NWB_distance[m] = sph_coord[0];
             evt.NWB_theta[m] = sph_coord[1];
             evt.NWB_phi[m] = sph_coord[2];
+
+            // time-of-flight calibration
+            evt.NWB_tof[m] = get_time_of_flight(
+                nwb_tcalib,
+                evt.NWB_bar[m],
+                evt.NWB_time_L[m],
+                evt.NWB_time_R[m],
+                evt.FA_time_mean
+            );
 
             // light output calibration
             evt.NWB_light_GM[m] = get_light_output(
@@ -133,6 +148,10 @@ double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time
     int p1 = nw_pcalib.get(bar, "p1");
     double pos = p0 + p1 * (time_L - time_R);
     return pos;
+}
+
+double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, double time_L, double time_R, double fa_time) {
+    return 0.5 * (time_L + time_R) - fa_time - nw_tcalib.tof_offset[bar];
 }
 
 double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, double total_L, double total_R, double pos) {
