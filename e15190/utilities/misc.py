@@ -3,6 +3,7 @@ import inspect
 import textwrap
 
 import numpy as np
+import pandas as pd
 
 def convert_64_to_32(df):
     for col in df.columns:
@@ -18,6 +19,15 @@ def randomize_columns(df, columns, seed=None):
     rand = np.random.RandomState(seed)
     df[columns] += rand.uniform(-0.5, 0.5, size=df[columns].shape)
     return df
+
+def deco_pdseries_to_nparray(func):
+    """Decorator that converts arguments of type pd.Series to np.ndarray.
+    """
+    def wrapper(*args, **kwargs):
+        new_args = [arg.to_numpy() if isinstance(arg, pd.Series) else arg for arg in args]
+        new_kwargs = {key: val.to_numpy() if isinstance(val, pd.Series) else val for key, val in kwargs.items()}
+        return func(*new_args, **new_kwargs)
+    return wrapper
 
 def runs_hash(runs):
     """Returns a string that uniquely identifies the runs.
