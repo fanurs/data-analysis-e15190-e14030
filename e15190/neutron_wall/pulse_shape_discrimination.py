@@ -2,6 +2,7 @@
 import concurrent.futures
 import hashlib
 import json
+import os
 import pathlib
 import warnings
 
@@ -1886,7 +1887,7 @@ class _MainUtilities:
             'runs',
             nargs='+',
             help=inspect.cleandoc('''
-                Runs to calibrate.
+                Runs to calibrate. Only good runs are used.
 
                 Usually the script needs at least five runs to give reliable
                 calibrations, otherwise there is not enough statistics.
@@ -1894,7 +1895,8 @@ class _MainUtilities:
                 character "-". Here is an example:
                     > ./pulse_shape_discrimination.py B 8-10 11 20 2-5
                 This will calibrate the runs 8, 9, 10, 11, 20, 2, 3, 4, 5, on
-                NWB.
+                NWB. But if, say, run 9 is bad according to the runlog, then
+                only the runs 8, 10, 11, 20, 2, 3, 4, 5 will be used.
             '''),
         )
         parser.add_argument(
