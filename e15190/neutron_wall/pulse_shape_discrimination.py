@@ -6,7 +6,6 @@ import pathlib
 import warnings
 
 import matplotlib as mpl
-mpl_default_backend = mpl.get_backend()
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -22,8 +21,6 @@ from e15190 import PROJECT_DIR
 from e15190.neutron_wall.position_calibration import NWCalibrationReader
 from e15190.utilities import fast_histogram as fh
 from e15190.utilities import styles
-styles.set_matplotlib_style(mpl)
-
 
 class FastTotalRansacEstimator:
     """Custom base estimator object for RANSAC.
@@ -175,7 +172,7 @@ class FastTotalFitter:
             self.estimator = FastTotalRansacEstimatorNeutron(**kwargs)
     
     def _fitted_model(self, x):
-        if np.issubdtype(type(x), np.float) or np.issubdtype(type(x), np.integer):
+        if np.issubdtype(type(x), np.float64) or np.issubdtype(type(x), np.float32) or np.issubdtype(type(x), np.integer):
             X = np.array([[x]])
         if np.array(x).ndim == 1:
             X = np.array(x)[:, None]
@@ -1287,6 +1284,10 @@ class PulseShapeDiscriminator:
 
 class Gallery:
     @staticmethod
+    def set_style():
+        styles.set_matplotlib_style(mpl)
+
+    @staticmethod
     def save_as_png(psd_obj, path=None, cut='light_GM > 3', show_plot=False, save=True):
         """Save a diagnostic plot to the gallery as a PNG file.
 
@@ -1864,7 +1865,6 @@ class Gallery:
         ax_low.set_ylabel('Figure-of-merit')
 
 
-
 class _MainUtilities:
     """Functions, classes and attributes for using this module as a script."""
     @staticmethod
@@ -2054,13 +2054,15 @@ if __name__ == '__main__':
     psd = PulseShapeDiscriminator(args.AB)
 
     read_verbose = (not args.silence)
+    from_cache = (not args.no_cache)
     for bar in args.bars:
         psd.read(
             run=args.runs,
             bar=bar,
-            from_cache=(not args.no_cache),
+            from_cache=from_cache,
             verbose=read_verbose,
         )
+        from_cache = True # the cache reads all bars
         read_verbose = False # only show read status once
 
         if not args.silence:
@@ -2070,6 +2072,7 @@ if __name__ == '__main__':
 
         if not args.debug:
             psd.save_parameters()
+            Gallery.set_style()
             Gallery.save_as_png(psd)
 
         print(' Done', flush=True)
