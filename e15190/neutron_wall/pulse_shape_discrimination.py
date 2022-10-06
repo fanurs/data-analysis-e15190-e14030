@@ -1319,9 +1319,7 @@ class Gallery:
         path.parent.mkdir(parents=True, exist_ok=True)
 
         # determine matplotlib backend
-        if show_plot:
-            mpl.use(mpl_default_backend)
-        else:
+        if not show_plot:
             mpl.use('Agg')
 
         # construct figure
