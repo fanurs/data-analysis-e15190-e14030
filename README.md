@@ -10,7 +10,7 @@
 **Useful links**
 - [:closed_book: Documentation (API reference)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html) <a href="https://www.sphinx-doc.org/"><img src="https://img.shields.io/badge/Powered%20by-Sphinx-1f425f.svg" alt="Sphinx"></a>
 - [:bar_chart: Infographics](https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html) <a href="https://plotly.com/"><img src="https://img.shields.io/badge/Powered%20by-Plotly-3c4d70" alt="Plotly"></a>
-- [:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list) <a href="https://www.php.net/"><img src="https://img.shields.io/badge/Powered%20by-PHP-8892bf" alt="PHP"></a>
+- ~~[:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list) <a href="https://www.php.net/"><img src="https://img.shields.io/badge/Powered%20by-PHP-8892bf" alt="PHP"></a>~~
 - [:radioactive: Experiment homepage (original)](https://groups.nscl.msu.edu/hira/15190-14030/index.htm)
 
 **Background**
