@@ -31,5 +31,4 @@ database/utilities/ipyhtml_widgets/image_displayer_button.html.mako linguist-lan
 ##############################################
 # files to be encrypted by git-crypt
 ##############################################
-database/results/test.secret filter=git-crypt diff=git-crypt
-database/results/test2.secret filter=git-crypt diff=git-crypt
+database/results/*.secret filter=git-crypt diff=git-crypt
