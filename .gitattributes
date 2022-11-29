@@ -25,3 +25,10 @@ tests/utilities/*.py linguist-vendored
 ##############################################
 database/utilities/ipyhtml_widgets/image_displayer_slider.html.mako linguist-language=HTML
 database/utilities/ipyhtml_widgets/image_displayer_button.html.mako linguist-language=HTML
+
+
+
+##############################################
+# files to be encrypted by git-crypt
+##############################################
+database/results/test.secret filter=git-crypt diff=git-crypt
