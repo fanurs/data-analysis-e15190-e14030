@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -78,7 +79,21 @@ class Geometry:
         phi = (phi_width) * (det - 1)
         return phi - 0.5 * phi_width, phi + 0.5 * phi_width
     
-    def draw_coverage(self, **kwargs):
+    def draw_coverage(self, **kwargs) -> Tuple[plt.Figure, plt.Axes]:
+        """Draw the coverage of the Microball.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Keyword arguments passed to `matplotlib.pyplot.subplots`.
+        
+        Returns
+        -------
+        fig : matplotlib.pyplot.Figure
+            The figure.
+        ax : matplotlib.pyplot.Axes
+            The axes.
+        """
         fig, ax = plt.subplots(**kwargs)
         ring_colors = plt.cm.viridis(np.linspace(0.4, 1, len(self.rings_and_dets)))
         for ir, ring in enumerate(self.rings_and_dets):
