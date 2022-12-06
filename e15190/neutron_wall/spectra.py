@@ -334,14 +334,6 @@ class Spectrum:
             conditions.extend(extra_cuts)
         rdf_result = self.rdf.Define('nw_cut', ' && '.join(conditions))
         return self._inplace_rdf_result(rdf_result, inplace)
-
-    def define_time_of_flight(self, inplace=True):
-        """Define the time-of-flight in nanosecond.
-
-        The time-of-flight will be named ``'tof'`` in :py:attr:`rdf`.
-        """
-        rdf_result = self.rdf.Define('tof', f'NW{self.AB}_time - FA_time_min')
-        return self._inplace_rdf_result(rdf_result, inplace)
     
     def define_kinergy(self, inplace=True):
         """Calculate the kinetic energies of neutrons.
@@ -356,10 +348,8 @@ class Spectrum:
         In other words, if you did not remove gammas, then you will get an
         enormously large energy, which is incorrect.
         """
-        if 'tof' not in self.columns:
-            self.define_time_of_flight()
         rdf_result = (self.rdf
-            .Define('beta', f'NW{self.AB}_distance / tof / {constants.c.to("cm/ns").value}')
+            .Define('beta', f'NW{self.AB}_distance / NW{self.AB}_tof / {constants.c.to("cm/ns").value}')
             .Define('energy', f'{ame.mass("n")} / sqrt(1 - beta * beta)')
             .Define('kinergy', f'energy - {ame.mass("n")}')
         )
@@ -447,13 +437,15 @@ class Spectrum:
         norm : bool, default True
             Whether to normalize the efficiency by :math:`2\pi`.
         """
-        nw = nwgeo.Wall(self.AB)
         kw = copy(locals())
+        kw.pop('self')
+        nw = nwgeo.Wall(self.AB)
         if kw['shadowed_bars'] == 'auto':
-            kw['shadowed_bars'] = self.shadow_bar
-        return nw.geometry_efficiency(**kw)
+            kw['shadowed_bars'] = (self.shadow_bar == 'in')
+        return nw.get_geometry_efficiency(**kw)
     
-    def detection_efficiency(self, path=None):
+    @staticmethod
+    def detection_efficiency(path=None):
         """Returns the intrinsic or detection efficiency curve.
 
         This was previously given by SCINFUL-QMD, but now it is given by Geant4
