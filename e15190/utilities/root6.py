@@ -145,7 +145,30 @@ class HistogramConversion:
             0.0
         )
         return df if keep_zeros else df.query(f'{zname} != 0.0').reset_index(drop=True)
-histo_conversion = HistogramConversion()
+
+def histo_conversion(histo, *args, **kwargs):
+    """Automatically convert 1D or 2D ROOT histograms to pandas.DataFrame.
+
+    Parameters
+    ----------
+    histo : ROOT.TH1 or ROOT.TH2 or ROOT.RDF.RResultPtr
+        ROOT histogram to be converted.
+    xname : str, optional
+        Name of the x-axis, by default 'x'.
+    yname : str, optional
+        Name of the y-axis, by default 'y'.
+    zname : str, optional
+        Name of the z-axis, by default 'z'. Only used for 2D histograms.
+    keep_zeros : bool, optional
+        Whether to keep bins with zero content, i.e. z = 0, by default True.
+        Only used for 2D histograms.
+    
+    Returns
+    -------
+    histo : pandas.DataFrame
+        Converted histogram.
+    """
+    return HistogramConversion()(histo, *args, **kwargs)
 
 class TFile:
     def __init__(self, path, mode='READ'):
