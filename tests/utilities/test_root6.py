@@ -26,7 +26,7 @@ class TestHistogramConversion:
         h1 = TH1D('h1', '', 10, 0, 1)
         for x in synthetic_data['x']:
             h1.Fill(x)
-        counts = root6.histo_conversion.histo_to_dframe(h1)['y'].to_numpy()
+        counts = root6.histo_conversion(h1)['y'].to_numpy()
         assert np.allclose(ref_counts, counts)
     
     def test_histo2d(self, synthetic_data):
@@ -38,5 +38,5 @@ class TestHistogramConversion:
         h2 = TH2D('h2', '', 10, 0, 1, 10, 0, 1)
         for x, y in zip(synthetic_data['x'], synthetic_data['y']):
             h2.Fill(x, y)
-        counts = root6.histo_conversion.histo_to_dframe(h2)['z'].to_numpy()
+        counts = root6.histo_conversion(h2)['z'].to_numpy()
         assert np.allclose(ref_counts.flatten(), counts)

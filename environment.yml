@@ -3,7 +3,7 @@ channels:
    - conda-forge
    - anaconda
 dependencies:
-   - python=3.8
+   - python=3.9
    - conda-build
 
    # common scientific tools
@@ -21,7 +21,7 @@ dependencies:
    - pymysql>=1.0.1
    - conda-forge::python-duckdb>=0.2.8
    - uproot>=4.0.7
-   - root=6.22.6
+   - root>=6.26.0
    - mako>=1.1.4
 
    # statistical tools and machine learning
@@ -45,7 +45,4 @@ dependencies:
    - coverage=6.3.2
    - snakeviz=2.0.1
    - sphinx=4.2.0
-   - django>=2.2.5
-
-   # C++ libraries
-   - nlohmann_json=3.9.1
+   - streamlit>=1.15.0
