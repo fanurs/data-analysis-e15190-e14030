@@ -59,6 +59,10 @@ struct Container {
     std::array<double, max_multi> VW_phi;
     std::array<double, max_multi> VW_distance;
 
+    // Neutron Wall A
+    int NWA_multi;
+    std::array<int, max_multi> NWA_bar;
+
     // Neutron Wall B
     int NWB_multi;
     std::array<int, max_multi> NWB_bar;
@@ -274,6 +278,9 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchAddress("VetoWall.fThetaRan",               &container.VW_theta[0]);
     chain->SetBranchAddress("VetoWall.fPhiRan",                 &container.VW_phi[0]);
     chain->SetBranchAddress("VetoWall.fDistRancm",              &container.VW_distance[0]);
+    // Neutron Wall A
+    chain->SetBranchAddress("NWA.fmulti",                       &container.NWA_multi);
+    chain->SetBranchAddress("NWA.fnumbar",                      &container.NWA_bar[0]);
     // Neutron Wall B
     chain->SetBranchAddress("NWB.fmulti",                       &container.NWB_multi);
     chain->SetBranchAddress("NWB.fnumbar",                      &container.NWB_bar[0]);
@@ -329,6 +336,9 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchStatus("VetoWall.fThetaRan", true);
     chain->SetBranchStatus("VetoWall.fPhiRan", true);
     chain->SetBranchStatus("VetoWall.fDistRancm", true);
+    // Neutron Wall A
+    chain->SetBranchStatus("NWA.fmulti", true);
+    chain->SetBranchStatus("NWA.fnumbar", true);
     // Neutron Wall B
     chain->SetBranchStatus("NWB.fmulti", true);
     chain->SetBranchStatus("NWB.fnumbar", true);
@@ -389,6 +399,10 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("VW_theta",      &container.VW_theta[0],     "VW_theta[VW_multi]/D");
     tree->Branch("VW_phi",        &container.VW_phi[0],       "VW_phi[VW_multi]/D");
     tree->Branch("VW_distance",   &container.VW_distance[0],  "VW_distance[VW_multi]/D");
+
+    // Neutron Wall A
+    tree->Branch("NWA_multi",     &container.NWA_multi,       "NWA_multi/I");
+    tree->Branch("NWA_bar",       &container.NWA_bar[0],      "NWA_bar[NWA_multi]/I");
 
     // Neutron Wall B
     tree->Branch("NWB_multi",     &container.NWB_multi,       "NWB_multi/I");
