@@ -57,7 +57,7 @@ def get_arguments():
             The full command to execute in parallel. Use "RUN" (case-sensitive)
             as a placeholder for the run number. The run number will be replaced
             using the format of "%%04d". For example,
-                > ./batch.py "calibrate.exe -r RUN -o ./out_dir/run-RUN.root -n 1200" 8-10
+                > ./batch.py "./calibrate.exe -r RUN -o ./out_dir/run-RUN.root -n 1200" 8-10
             Logging will automatically be exported to "./logs/run-RUN.log".
         '''),
     )
