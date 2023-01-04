@@ -437,11 +437,16 @@ class LabPtransverseRapidity:
     def is_inside(self, normed_rapidity: Union[float, ArrayLike], pt_over_A: Union[float, ArrayLike]) -> Union[bool, ArrayLike]:
         """Check if the given points are inside the phase space.
 
+        Under the hood, this method converts back both normalized rapidity and
+        transverse momentum over A into lab kinetic energy and lab theta angle.
+        Then it checks if the given points are inside the energy cuts and theta
+        cuts.
+
         Parameters
         ----------
         normed_rapidity : Union[float, ArrayLike]
-            The normed rapidity in lab frame. Normalization is done by dividing
-            the beam rapidity.
+            The normalized rapidity in lab frame. Normalization is done by
+            dividing the beam rapidity.
         pt_over_A : Union[float, ArrayLike]
             The transverse momentum per nucleon in MeV/c.
 
@@ -451,19 +456,33 @@ class LabPtransverseRapidity:
             True if the given points are inside the phase space, False
             otherwise. Points on the boundary are considered inside.
         """
-        x, y = map(np.array, (normed_rapidity, pt_over_A))
+        y_hat, pt_A = map(np.array, (normed_rapidity, pt_over_A))
         A = ame.get_A_Z(self.particle).A
         mass = ame.mass(self.particle)
-        kinergy = np.sqrt((y * A)**2 + mass**2) * np.cosh(x * self.beam_rapidity) - mass
-        theta = np.arctan2(y * A, (kinergy + mass) * np.tanh(x * self.beam_rapidity))
+        kinergy = np.sqrt((pt_A * A)**2 + mass**2) * np.cosh(y_hat * self.beam_rapidity) - mass
+        theta = np.arctan2(pt_A * A, (kinergy + mass) * np.tanh(y_hat * self.beam_rapidity))
         return np.all([
-            np.degrees(theta) >= self.lab_theta_range[0],
-            np.degrees(theta) <= self.lab_theta_range[1],
+            theta >= self.lab_theta_range[0],
+            theta <= self.lab_theta_range[1],
             kinergy >= self.lab_kinergy_per_A_ranges[self.particle][0] * A,
             kinergy <= self.lab_kinergy_per_A_ranges[self.particle][1] * A,
         ], axis=0)
 
-    def correct_coverage(self, df_slice):
+    def correct_coverage(self, df_slice: pd.DataFrame) -> pd.DataFrame:
+        """Correct the coverage of the given slice along the transverse momentum axis.
+
+        Parameters
+        ----------
+        df_slice : pandas.DataFrame
+            The slice to correct, with columns 'x', 'y', 'z', 'zerr'. 'x' is the
+            normed rapidity, 'y' is the transverse momentum per nucleon, and 'z'
+            is the yield.
+        
+        Returns
+        -------
+        df_corrected : pandas.DataFrame
+            The corrected slice, with the same columns as the input.
+        """
         df_corrected = df_slice.copy().reset_index(drop=True)
         df_corrected['inside'] = self.is_inside(df_slice.x, df_slice.y)
         scalars = np.ones(len(df_corrected))
