@@ -41,5 +41,6 @@ database/neutron_wall/**/cache
 database/neutron_wall/**/calib_params
 database/neutron_wall/**/gallery
 database/neutron_wall/efficiency/geant4_root_files/
+database/hira/rensheng_espec/
 database/.root_files_prev/
 database/root_files_candidates/
