@@ -18,7 +18,6 @@ from sklearn.linear_model import RANSACRegressor
 from sklearn.preprocessing import StandardScaler
 import uproot
 
-from e15190 import PROJECT_DIR
 from e15190.neutron_wall.position_calibration import NWCalibrationReader
 from e15190.utilities import fast_histogram as fh
 from e15190.utilities import styles
@@ -183,7 +182,7 @@ class FastTotalFitter:
         X = np.array(self.data.total)[:, None]
         y = np.array(self.data.cfast)
         kw = dict(
-            base_estimator=self.estimator,
+            estimator=self.estimator,
             min_samples=0.1,
             residual_threshold=10,
         )
@@ -238,7 +237,7 @@ class FastTotalFitter:
 
 
 class PulseShapeDiscriminator:
-    database_dir = PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'
+    database_dir = '$DATABASE_DIR/neutron_wall/pulse_shape_discrimination'
     root_files_dir = None # the input root files directory (Daniele's ROOT files)
     light_GM_range = [1.0, 200.0] # MeVee
     pos_range = [-120.0, 120.0] # cm
@@ -278,6 +277,7 @@ class PulseShapeDiscriminator:
             'fast_R',
             'light_GM',
         ]
+        self.database_dir = pathlib.Path(os.path.expandvars(self.database_dir))
         self.database_dir.mkdir(parents=True, exist_ok=True)
         self.particles = {'gamma': 0.0, 'neutron': 1.0}
         self.center_line = {'L': None, 'R': None}
@@ -286,7 +286,7 @@ class PulseShapeDiscriminator:
         self.fitter = {'L': None, 'R': None}
 
         # initialize input root files directory
-        path = PROJECT_DIR / 'database/local_paths.json'
+        path = pathlib.Path(os.path.expandvars('$DATABASE_DIR/local_paths.json'))
         with open(path, 'r') as file:
             self.root_files_dir = pathlib.Path(json.load(file)['daniele_root_files_dir'])
     
@@ -533,7 +533,7 @@ class PulseShapeDiscriminator:
             non-reproducible.
         """
         rng = np.random.default_rng(seed=seed)
-        for name, column in self.df.iteritems():
+        for name, column in self.df.items():
             if name not in self.features:
                 continue
             if np.issubdtype(column.dtype, np.integer):
@@ -612,7 +612,7 @@ class PulseShapeDiscriminator:
             The dataframe with the Veto Wall coincidences removed.
         """
         _df = self.df.query('VW_multi == 0')
-        _df.drop('VW_multi', axis=1, inplace=True)
+        _df = _df.drop('VW_multi', axis=1)
         if df is None:
             self.df = _df
         return _df
@@ -1422,7 +1422,9 @@ class Gallery:
         cfast_total = psd_obj.cfast_total[side]
         plt.plot(
             [psd_obj.x_switch_neutron] * 2,
-            [y_range[0], 0.5 * (cfast_total['neutron'](psd_obj.x_switch_neutron) + cfast_total['gamma'](psd_obj.x_switch_neutron))],
+            [y_range[0], *(
+                0.5 * (cfast_total['neutron'](psd_obj.x_switch_neutron) + cfast_total['gamma'](psd_obj.x_switch_neutron))
+            )],
             color='deeppink', linewidth=1.2, linestyle='dashed', zorder=10,
         )
 
@@ -1833,7 +1835,7 @@ class Gallery:
         # plot FOM as a function of light GM with the upper x-axis
         ax_upp.errorbar(
             df_light_fom['light_GM'], df_light_fom['fom'],
-            fmt='o-', color='crimson', linestyle='dashed', linewidth=0.8,
+            marker='o', color='crimson', linestyle='dashed', linewidth=0.8,
         )
         ax_upp.set_xlim(0, 60)
         ax_upp.set_ylim(0.5, 1.5)
@@ -1934,7 +1936,7 @@ class _MainUtilities:
                 The output directory. If not given, the default is
                 "$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination/".
             '''),
-            default=str(PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'),
+            default='$DATABASE_DIR/neutron_wall/pulse_shape_discrimination',
         )
         parser.add_argument(
             '-s', '--silence',
