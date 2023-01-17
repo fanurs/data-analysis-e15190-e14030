@@ -2087,6 +2087,7 @@ class _MainUtilities:
             pars = _MainUtilities.get_calibration_parameters(path)
             ft_pars = pars['parametrized_fast_total']
             pos_pars = pars['position_correction']['centroid_curves']
+            pca_pars = pars['position_correction']['pca']
             positions = pos_pars['positions']
 
             data.append([
@@ -2098,6 +2099,10 @@ class _MainUtilities:
                 *ft_pars['gamma_cfast_L'], # 2 elements
                 *ft_pars['neutron_cfast_R'], # 3 elements
                 *ft_pars['gamma_cfast_R'], # 2 elements
+                *pca_pars['mean'], # 2 elements
+                *pca_pars['components'][0], # 2 elements
+                *pca_pars['components'][1], # 2 elements
+                *pca_pars['xpeaks'], # 2 elements
                 *np.ravel(pos_pars['neutron_centroids']), # as many elements as positions
                 *np.ravel(pos_pars['gamma_centroids']), # as many elements as positions
             ])
@@ -2110,6 +2115,10 @@ class _MainUtilities:
             'g_cfast_L[0]', 'g_cfast_L[1]',
             'n_cfast_R[0]', 'n_cfast_R[1]', 'n_cfast_R[2]',
             'g_cfast_R[0]', 'g_cfast_R[1]',
+            'pca_mean[0]', 'pca_mean[1]',
+            'pca_components[0][0]', 'pca_components[0][1]',
+            'pca_components[1][0]', 'pca_components[1][1]',
+            'pca_xpeaks[0]', 'pca_xpeaks[1]',
             *np.ravel([[f'n_centroid_L({int(pos)})', f'n_centroid_R({int(pos)})'] for pos in positions]),
             *np.ravel([[f'g_centroid_L({int(pos)})', f'g_centroid_R({int(pos)})'] for pos in positions]),
         ])
@@ -2161,6 +2170,7 @@ class _MainUtilities:
                 'cline_L', 'cline_R',
                 'n_cfast_L', 'g_cfast_L',
                 'n_cfast_R', 'g_cfast_R',
+                'pca_mean', 'pca_components', 'pca_xpeaks',
                 'n_centroid_L', 'n_centroid_R',
                 'g_centroid_L', 'g_centroid_R',
             ]
@@ -2182,6 +2192,9 @@ class _MainUtilities:
                 single_row['g_cfast_L'] = str([row[col] for col in param_columns['g_cfast_L']])
                 single_row['n_cfast_R'] = str([row[col] for col in param_columns['n_cfast_R']])
                 single_row['g_cfast_R'] = str([row[col] for col in param_columns['g_cfast_R']])
+                single_row['pca_mean'] = str([row[col] for col in param_columns['pca_mean']])
+                single_row['pca_components'] = np.reshape([row[col] for col in param_columns['pca_components']], (2, -1)).tolist()
+                single_row['pca_xpeaks'] = str([row[col] for col in param_columns['pca_xpeaks']])
                 single_row['centroid_pos_x'] = str([extract_number_in_parenthesis(col) for col in param_columns['n_centroid_L']])
                 single_row['n_centroid_L'] = str([row[col] for col in param_columns['n_centroid_L']])
                 single_row['n_centroid_R'] = str([row[col] for col in param_columns['n_centroid_R']])
