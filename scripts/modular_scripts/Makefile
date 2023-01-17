@@ -1,5 +1,5 @@
 GXX = g++
-CXX_FLAGS = -std=c++17
+CXX_FLAGS = -std=c++20
 CXX_FLAGS := -fconcepts $(CXX_FLAGS)
 CXX_FLAGS := -fPIC $(CXX_FLAGS)
 CXX_FLAGS := -O2 $(CXX_FLAGS)

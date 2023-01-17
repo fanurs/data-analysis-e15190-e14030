@@ -4,6 +4,8 @@ import hashlib
 import json
 import os
 import pathlib
+import re
+from typing import Union
 import warnings
 
 import matplotlib as mpl
@@ -18,7 +20,6 @@ from sklearn.linear_model import RANSACRegressor
 from sklearn.preprocessing import StandardScaler
 import uproot
 
-from e15190 import PROJECT_DIR
 from e15190.neutron_wall.position_calibration import NWCalibrationReader
 from e15190.utilities import fast_histogram as fh
 from e15190.utilities import styles
@@ -183,7 +184,7 @@ class FastTotalFitter:
         X = np.array(self.data.total)[:, None]
         y = np.array(self.data.cfast)
         kw = dict(
-            base_estimator=self.estimator,
+            estimator=self.estimator,
             min_samples=0.1,
             residual_threshold=10,
         )
@@ -238,7 +239,7 @@ class FastTotalFitter:
 
 
 class PulseShapeDiscriminator:
-    database_dir = PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'
+    database_dir = '$DATABASE_DIR/neutron_wall/pulse_shape_discrimination'
     root_files_dir = None # the input root files directory (Daniele's ROOT files)
     light_GM_range = [1.0, 200.0] # MeVee
     pos_range = [-120.0, 120.0] # cm
@@ -278,6 +279,7 @@ class PulseShapeDiscriminator:
             'fast_R',
             'light_GM',
         ]
+        self.database_dir = pathlib.Path(os.path.expandvars(self.database_dir))
         self.database_dir.mkdir(parents=True, exist_ok=True)
         self.particles = {'gamma': 0.0, 'neutron': 1.0}
         self.center_line = {'L': None, 'R': None}
@@ -286,7 +288,7 @@ class PulseShapeDiscriminator:
         self.fitter = {'L': None, 'R': None}
 
         # initialize input root files directory
-        path = PROJECT_DIR / 'database/local_paths.json'
+        path = pathlib.Path(os.path.expandvars('$DATABASE_DIR/local_paths.json'))
         with open(path, 'r') as file:
             self.root_files_dir = pathlib.Path(json.load(file)['daniele_root_files_dir'])
     
@@ -533,7 +535,7 @@ class PulseShapeDiscriminator:
             non-reproducible.
         """
         rng = np.random.default_rng(seed=seed)
-        for name, column in self.df.iteritems():
+        for name, column in self.df.items():
             if name not in self.features:
                 continue
             if np.issubdtype(column.dtype, np.integer):
@@ -612,7 +614,7 @@ class PulseShapeDiscriminator:
             The dataframe with the Veto Wall coincidences removed.
         """
         _df = self.df.query('VW_multi == 0')
-        _df.drop('VW_multi', axis=1, inplace=True)
+        _df = _df.drop('VW_multi', axis=1)
         if df is None:
             self.df = _df
         return _df
@@ -1228,18 +1230,18 @@ class PulseShapeDiscriminator:
             },
         }
 
-        # fast-total relations as polynomials
-        pars['fast_total_polynomial'] = {
-            'L': {
-                'neutron': list(self.fitter['L']['neutron'].ransac.estimator_.par),
-                'gamma': list(self.fitter['L']['gamma'].ransac.estimator_.par),
-            },
-            'R': {
-                'neutron': list(self.fitter['R']['neutron'].ransac.estimator_.par),
-                'gamma': list(self.fitter['R']['gamma'].ransac.estimator_.par),
-            },
+        # parametrized polynomials
+        pars['parametrized_fast_total'] = {
+            'nonlinear_total_L': self.total_threshold['L'],
+            'nonlinear_total_R': self.total_threshold['R'],
+            'x_switch_neutron': self.x_switch_neutron,
+            'center_line_L': self.center_line['L'].convert().coef.tolist(),
+            'center_line_R': self.center_line['R'].convert().coef.tolist(),
+            'neutron_cfast_L': list(self.fitter['L']['neutron'].ransac.estimator_.par),
+            'gamma_cfast_L': list(self.fitter['L']['gamma'].ransac.estimator_.par),
+            'neutron_cfast_R': list(self.fitter['R']['neutron'].ransac.estimator_.par),
+            'gamma_cfast_R': list(self.fitter['R']['gamma'].ransac.estimator_.par),
         }
-
 
         # prepare fast-total relations into JSON serializable
         # Here, we use fine grid of the relations so that any
@@ -1252,10 +1254,10 @@ class PulseShapeDiscriminator:
             'totals': totals,
             'center_line_L': self.center_line['L'](totals),
             'center_line_R': self.center_line['R'](totals),
-            'gamma_cfasts_L': self.cfast_total['L']['gamma'](totals),
-            'neutron_cfasts_L': self.cfast_total['L']['neutron'](totals),
-            'gamma_cfasts_R': self.cfast_total['R']['gamma'](totals),
-            'neutron_cfasts_R': self.cfast_total['R']['neutron'](totals),
+            'gamma_cfast_L': self.cfast_total['L']['gamma'](totals),
+            'neutron_cfast_L': self.cfast_total['L']['neutron'](totals),
+            'gamma_cfast_R': self.cfast_total['R']['gamma'](totals),
+            'neutron_cfast_R': self.cfast_total['R']['neutron'](totals),
         }
 
         # prepare the position correction parameters into JSON serializable
@@ -1422,7 +1424,9 @@ class Gallery:
         cfast_total = psd_obj.cfast_total[side]
         plt.plot(
             [psd_obj.x_switch_neutron] * 2,
-            [y_range[0], 0.5 * (cfast_total['neutron'](psd_obj.x_switch_neutron) + cfast_total['gamma'](psd_obj.x_switch_neutron))],
+            [y_range[0], *(
+                0.5 * (cfast_total['neutron'](psd_obj.x_switch_neutron) + cfast_total['gamma'](psd_obj.x_switch_neutron))
+            )],
             color='deeppink', linewidth=1.2, linestyle='dashed', zorder=10,
         )
 
@@ -1833,7 +1837,7 @@ class Gallery:
         # plot FOM as a function of light GM with the upper x-axis
         ax_upp.errorbar(
             df_light_fom['light_GM'], df_light_fom['fom'],
-            fmt='o-', color='crimson', linestyle='dashed', linewidth=0.8,
+            marker='o', color='crimson', linestyle='dashed', linewidth=0.8,
         )
         ax_upp.set_xlim(0, 60)
         ax_upp.set_ylim(0.5, 1.5)
@@ -1885,12 +1889,10 @@ class _MainUtilities:
             'runs',
             nargs='+',
             help=inspect.cleandoc('''
-                Runs to calibrate. Only good runs are used.
+                Runs to calibrate. Bad runs will be excluded automatically.
 
-                Usually the script needs at least five runs to give reliable
-                calibrations, otherwise there is not enough statistics.
-                Consecutive runs can be specified in ranges separated by the
-                character "-". Here is an example:
+                Please provide at least 5 runs for sufficient statistics.
+                Consecutive runs can be specified in ranges, e.g.:
                     > ./pulse_shape_discrimination.py B 8-10 11 20 2-5
                 This will calibrate the runs 8, 9, 10, 11, 20, 2, 3, 4, 5, on
                 NWB. But if, say, run 9 is bad according to the runlog, then
@@ -1902,29 +1904,26 @@ class _MainUtilities:
             nargs='+',
             help=wrap('''
                 The bar number(s) to calibrate. If not specfiied, all bars,
-                including bar 1 to 24, will be analyzed. Dash "-" can be used to
-                specify ranges, e.g. "1-3 10-12" would make the program
-                analyzes bars 1, 2, 3, 10, 11, 12.
+                including bar 1 to 24, will be analyzed. Similarly, bars can be
+                specified in ranges.
             '''),
             default=['1-24'],
         )
         parser.add_argument(
             '-c', '--no-cache',
             help=wrap('''
-                When this option is given, the script will ignore the HDF5 cache
-                files. All data will be read from the ROOT files. New cache
-                files will then be created. By default, the script will use the
-                cache.
+                When this option is given, new cache files will be created from
+                the ROOT files, overwriting the existing cache files, if any.
             '''),
             action='store_true',
         )
         parser.add_argument(
             '-d', '--debug',
             help=wrap('''
-                When this option is given, no output would be saved. This
-                includes both calibration parameters and gallery. The cached
-                data is not controlled by this option; for that, refer to "-c"
-                or "--no-cache".
+                When this option is given, neither calibration parameters nor
+                diagnostic plots will be saved. The cached data is NOT
+                controlled by this option; for that, refer to "-c" or
+                "--no-cache".
             '''),
             action='store_true',
         )
@@ -1934,7 +1933,7 @@ class _MainUtilities:
                 The output directory. If not given, the default is
                 "$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination/".
             '''),
-            default=str(PROJECT_DIR / 'database/neutron_wall/pulse_shape_discrimination'),
+            default='$PROJECT_DIR/database/neutron_wall/pulse_shape_discrimination',
         )
         parser.add_argument(
             '-s', '--silence',
@@ -1945,7 +1944,7 @@ class _MainUtilities:
             '--ft-breakpoint1',
             type=float,
             help=wrap(f'''
-                The breakpoint 1 for the fast-total fitting ranges.  From this
+                The breakpoint 1 for the fast-total fitting ranges. From this
                 breakpoint onward till the second breakpoint, a smoother
                 convolution is applied (due to lower statistics) to make the
                 peak finding more stable. Default is
@@ -1988,12 +1987,24 @@ class _MainUtilities:
                 "{PulseShapeDiscriminator.x_switch_neutron:.1f}".
             '''),
         )
+        parser.add_argument(
+            '--parameters',
+            action='store_true',
+            help=wrap(f'''
+                Generate a CSV table of the calibration parameters. No
+                calibration will be performed. You still need to provide some
+                run numbers, but they will be ignored.
+            '''),
+        )
         args = parser.parse_args()
 
         # process the wall type
         args.AB = args.AB.upper()
         if args.AB not in ['A', 'B']:
             raise ValueError(f'Invalid wall type: "{args.AB}"')
+        
+        if args.parameters:
+            return args
         
         # process the runs
         runs = []
@@ -2030,7 +2041,174 @@ class _MainUtilities:
         args.bars = bars
 
         return args
+    
+    @staticmethod
+    def get_calibration_parameters(path) -> dict:
+        with open(path, 'r') as file:
+            data = json.load(file)
+        return data
+    
+    @staticmethod
+    def get_batch_folders() -> list[str]:
+        from glob import glob
+        directory = pathlib.Path(os.path.expandvars(PulseShapeDiscriminator.database_dir))
+        return sorted(pathlib.Path(p).name for p in glob(str(directory / 'calib_params/run-*/')))
 
+    @staticmethod
+    def get_run_ranges(AB: Union['A', 'B'], bar: int) -> dict[str, str]:
+        directory = pathlib.Path(os.path.expandvars(PulseShapeDiscriminator.database_dir))
+        batch_folders = _MainUtilities.get_batch_folders()
+        run_ranges = []
+        for batch_folder in batch_folders:
+            path = directory / 'calib_params' / batch_folder / f'NW{AB}-bar{bar:02d}.json'
+            runs = _MainUtilities.get_calibration_parameters(path)['runs']
+            run_ranges.append([min(runs), max(runs)])
+        
+        # join the run ranges
+        run_ranges[0][0] = 2000
+        run_ranges[-1][1] = 4999
+        for i, run_range in enumerate(run_ranges[:-1]):
+            if run_range[1] >= run_ranges[i + 1][0]:
+                raise ValueError(f'Overlapping run ranges: {run_range} and {run_ranges[i + 1]}')
+            if run_range[1] < 3500 and run_ranges[i + 1][0] > 3500:
+                run_ranges[i][1] = 3499
+                run_ranges[i + 1][0] = 3500
+            else:
+                run_ranges[i][1] = run_ranges[i + 1][0] - 1
+        return {batch_folder: run_range for batch_folder, run_range in zip(batch_folders, run_ranges)}
+    
+    @staticmethod
+    def collect_parameters_by_bar(AB: Union['A', 'B'], bar: int) -> pd.DataFrame:
+        directory = pathlib.Path(os.path.expandvars(PulseShapeDiscriminator.database_dir))
+        run_ranges = _MainUtilities.get_run_ranges(AB, bar)
+        data = []
+        for batch_folder, run_range in run_ranges.items():
+            path = directory / 'calib_params' / batch_folder / f'NW{AB}-bar{bar:02d}.json'
+            pars = _MainUtilities.get_calibration_parameters(path)
+            ft_pars = pars['parametrized_fast_total']
+            pos_pars = pars['position_correction']['centroid_curves']
+            pca_pars = pars['position_correction']['pca']
+            positions = pos_pars['positions']
+
+            data.append([
+                bar, *run_range,
+                ft_pars['nonlinear_total_L'], ft_pars['nonlinear_total_R'],
+                *ft_pars['center_line_L'], # 2 elements
+                *ft_pars['center_line_R'], # 2 elements
+                *ft_pars['neutron_cfast_L'], # 3 elements
+                *ft_pars['gamma_cfast_L'], # 2 elements
+                *ft_pars['neutron_cfast_R'], # 3 elements
+                *ft_pars['gamma_cfast_R'], # 2 elements
+                *pca_pars['mean'], # 2 elements
+                *pca_pars['components'][0], # 2 elements
+                *pca_pars['components'][1], # 2 elements
+                *pca_pars['xpeaks'], # 2 elements
+                *np.ravel(pos_pars['neutron_centroids']), # as many elements as positions
+                *np.ravel(pos_pars['gamma_centroids']), # as many elements as positions
+            ])
+        data = pd.DataFrame(data, columns=[
+            f'NW{AB}_bar', 'run_start', 'run_stop',
+            'nonlinear_total_L', 'nonlinear_total_R',
+            'cline_L[0]', 'cline_L[1]',
+            'cline_R[0]', 'cline_R[1]',
+            'n_cfast_L[0]', 'n_cfast_L[1]', 'n_cfast_L[2]',
+            'g_cfast_L[0]', 'g_cfast_L[1]',
+            'n_cfast_R[0]', 'n_cfast_R[1]', 'n_cfast_R[2]',
+            'g_cfast_R[0]', 'g_cfast_R[1]',
+            'pca_mean[0]', 'pca_mean[1]',
+            'pca_components[0][0]', 'pca_components[0][1]',
+            'pca_components[1][0]', 'pca_components[1][1]',
+            'pca_xpeaks[0]', 'pca_xpeaks[1]',
+            *np.ravel([[f'n_centroid_L({int(pos)})', f'n_centroid_R({int(pos)})'] for pos in positions]),
+            *np.ravel([[f'g_centroid_L({int(pos)})', f'g_centroid_R({int(pos)})'] for pos in positions]),
+        ])
+        return data
+
+    @staticmethod
+    def read_manual_run_ranges() -> pd.DataFrame:
+        path = pathlib.Path(os.path.expandvars(PulseShapeDiscriminator.database_dir)) / 'run_ranges.csv'
+        return pd.read_csv(path)
+    
+    @staticmethod
+    def parse_ranges_str(ranges_str: str) -> list[int]:
+        ranges = []
+        for r in ranges_str.split(' '):
+            if '-' in r:
+                start, stop = r.split('-')
+                ranges.extend(range(int(start), int(stop) + 1))
+            else:
+                ranges.append(int(r))
+        return ranges
+    
+    @staticmethod
+    def collect_parameters(AB: Union['A', 'B']) -> pd.DataFrame:
+        result = None
+        for bar in range(1, 24 + 1):
+            result = pd.concat([result, _MainUtilities.collect_parameters_by_bar(AB, bar)])
+        result = result.reset_index(drop=True)
+        df_bad_bars = _MainUtilities.read_manual_run_ranges().query('bad_bars != "None"')
+        for _, row in df_bad_bars.iterrows():
+            runs =  _MainUtilities.parse_ranges_str(row['runs'])
+            bad_bars = _MainUtilities.parse_ranges_str(row['bad_bars'])
+            for bar in bad_bars:
+                idx = list(result.query(f'NW{AB}_bar == {bar} & run_start <= {min(runs)} & run_stop >= {max(runs)}').index)
+                if len(idx) != 1:
+                    raise ValueError(f'Cannot find a unique row for NW{AB}-bar{bar:02d} in runs: {runs}')
+                idx = idx[0]
+                if result.iloc[idx - 1]['run_start'] < 3500 and result.iloc[idx]['run_stop'] > 3500:
+                    # use next run range if the current one is the first 4xxx runs
+                    result.iloc[idx, 3:] = result.iloc[idx + 1, 3:]
+                else:
+                    result.iloc[idx, 3:] = result.iloc[idx - 1, 3:]
+        return result
+    
+    @staticmethod
+    def save_as_json(path, AB: Union['A', 'B'], df: pd.DataFrame):
+        param_columns = {
+            key: [col for col in df.columns if key in col]
+            for key in [
+                'cline_L', 'cline_R',
+                'n_cfast_L', 'g_cfast_L',
+                'n_cfast_R', 'g_cfast_R',
+                'pca_mean', 'pca_components', 'pca_xpeaks',
+                'n_centroid_L', 'n_centroid_R',
+                'g_centroid_L', 'g_centroid_R',
+            ]
+        }
+        regex = re.compile(r'\((-?\d+)\)')
+        extract_number_in_parenthesis = lambda s: int(regex.search(s).group(1))
+        content = dict()
+        for bar in range(1, 24 + 1):
+            df_bar = df.query(f'NW{AB}_bar == {bar}')
+            bar_content = []
+            for _, row in df_bar.iterrows():
+                single_row = dict()
+                single_row['run_range'] = str([row['run_start'], row['run_stop']])
+                single_row['nonlinear_total_L'] = row['nonlinear_total_L']
+                single_row['nonlinear_total_R'] = row['nonlinear_total_R']
+                single_row['cline_L'] = str([row[col] for col in param_columns['cline_L']])
+                single_row['cline_R'] = str([row[col] for col in param_columns['cline_R']])
+                single_row['n_cfast_L'] = str([row[col] for col in param_columns['n_cfast_L']])
+                single_row['g_cfast_L'] = str([row[col] for col in param_columns['g_cfast_L']])
+                single_row['n_cfast_R'] = str([row[col] for col in param_columns['n_cfast_R']])
+                single_row['g_cfast_R'] = str([row[col] for col in param_columns['g_cfast_R']])
+                single_row['pca_mean'] = str([row[col] for col in param_columns['pca_mean']])
+                single_row['pca_components'] = np.reshape([row[col] for col in param_columns['pca_components']], (2, -1)).tolist()
+                single_row['pca_xpeaks'] = str([row[col] for col in param_columns['pca_xpeaks']])
+                single_row['centroid_pos_x'] = str([extract_number_in_parenthesis(col) for col in param_columns['n_centroid_L']])
+                single_row['n_centroid_L'] = str([row[col] for col in param_columns['n_centroid_L']])
+                single_row['n_centroid_R'] = str([row[col] for col in param_columns['n_centroid_R']])
+                single_row['g_centroid_L'] = str([row[col] for col in param_columns['g_centroid_L']])
+                single_row['g_centroid_R'] = str([row[col] for col in param_columns['g_centroid_R']])
+                bar_content.append(single_row)
+            content[bar] = bar_content
+        json_str = json.dumps(content, indent=4)
+        regex_left = re.compile(r'\"\[')
+        regex_right = re.compile(r'\]\"')
+        json_str = regex_right.sub(']', regex_left.sub('[', json_str))
+        with open(path, 'w') as file:
+            file.write(json_str)
+    
 if __name__ == '__main__':
     """
     To use this as a script for analyzing PSD on NWB from, say, run 1000 to
@@ -2048,6 +2226,17 @@ if __name__ == '__main__':
     from e15190.runlog.query import Query
     
     args = _MainUtilities.get_args()
+    if args.parameters:
+        directory = pathlib.Path(os.path.expandvars(PulseShapeDiscriminator.database_dir))
+        path = directory / f'calib_params_nw{args.AB.lower()}.csv'
+        df = _MainUtilities.collect_parameters(args.AB)
+        df.to_csv(path, index=False)
+
+        path = directory / f'calib_params_nw{args.AB.lower()}.json'
+        _MainUtilities.save_as_json(path, args.AB, df)
+
+        print(f'Parameters saved to {path}')
+        exit()
 
     PulseShapeDiscriminator.database_dir = pathlib.Path(args.output)
     PulseShapeDiscriminator.update_hyperparameters(args)

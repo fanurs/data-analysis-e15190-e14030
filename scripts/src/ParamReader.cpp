@@ -378,6 +378,112 @@ void NWLightOutputCalibParamReader::write_metadata(TFolder* folder, bool relativ
 /***********************************************/
 /*****NWPulseShapeDiscriminationParamReader*****/
 /***********************************************/
+double NWPulseShapeDiscriminationParamReader::polynomial(double x, Json& params) {
+    double y = 0;
+    for (int i = 0; i < params.size(); ++i) {
+        y += params[i].get<double>() * std::pow(x, i);
+    }
+    return y;
+}
+
+Json NWPulseShapeDiscriminationParamReader::get_bar_params(int run, int bar) {
+    auto& bar_params = this->database[Form("%d", bar)];
+    Json params;
+    for (auto& run_range_params : bar_params) {
+        auto& run_range = run_range_params["run_range"];
+        int run_start = (int)run_range[0].get<double>();
+        int run_stop = (int)run_range[1].get<double>();
+        if (run >= run_start && run <= run_stop) {
+            params = run_range_params;
+            break;
+        }
+    }
+    if (params.empty()) {
+        std::cerr << Form("Cannot find run %04d for NW%c-bar%02d", run, this->AB, bar) << std::endl;
+        exit(1);
+    }
+    return params;
+}
+
+void NWPulseShapeDiscriminationParamReader::fast_total_interpolation(int bar, Json& params) {
+    auto method = ROOT::Math::Interpolation::kAKIMA;
+
+    std::vector<double> totals;
+    for (double total = -20.0; total <= 4020.0; total += 20.0) {
+        totals.push_back(total);
+    }
+    std::vector<double> fasts;
+
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = this->polynomial(totals[i], params["cline_L"]) + this->polynomial(totals[i], params["g_cfast_L"]);
+        fasts.push_back(fast);
+    }
+    this->gamma_fast_total_L[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = this->polynomial(totals[i], params["cline_L"]) + this->polynomial(totals[i], params["n_cfast_L"]);
+        fasts.push_back(fast);
+    }
+    this->neutron_fast_total_L[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = this->polynomial(totals[i], params["cline_R"]) + this->polynomial(totals[i], params["g_cfast_R"]);
+        fasts.push_back(fast);
+    }
+    this->gamma_fast_total_R[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+
+    fasts.clear();
+    for (int i = 0; i < totals.size(); ++i) {
+        double fast = this->polynomial(totals[i], params["cline_R"]) + this->polynomial(totals[i], params["n_cfast_R"]);
+        fasts.push_back(fast);
+    }
+    this->neutron_fast_total_R[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
+}
+
+void NWPulseShapeDiscriminationParamReader::centroid_interpolation(int bar, Json& params) {
+    auto method = ROOT::Math::Interpolation::kAKIMA;
+
+    std::vector<double> pos_x;
+    for (auto& x: params["centroid_pos_x"]) {
+        pos_x.push_back(x.get<double>());
+    }
+    std::vector<double> coords;
+
+    coords.clear();
+    for (int i = 0; i < pos_x.size(); ++i) {
+        coords.push_back(params["g_centroid_L"][i].get<double>());
+    }
+    this->gamma_vpsd_L[bar] = new ROOT::Math::Interpolator(pos_x, coords, method);
+
+    coords.clear();
+    for (int i = 0; i < pos_x.size(); ++i) {
+        coords.push_back(params["n_centroid_L"][i].get<double>());
+    }
+    this->neutron_vpsd_L[bar] = new ROOT::Math::Interpolator(pos_x, coords, method);
+
+    coords.clear();
+    for (int i = 0; i < pos_x.size(); ++i) {
+        coords.push_back(params["g_centroid_R"][i].get<double>());
+    }
+    this->gamma_vpsd_R[bar] = new ROOT::Math::Interpolator(pos_x, coords, method);
+
+    coords.clear();
+    for (int i = 0; i < pos_x.size(); ++i) {
+        coords.push_back(params["n_centroid_R"][i].get<double>());
+    }
+    this->neutron_vpsd_R[bar] = new ROOT::Math::Interpolator(pos_x, coords, method);
+}
+
+void NWPulseShapeDiscriminationParamReader::process_pca(int bar, Json& params) {
+    this->pca_mean[bar] = {params["pca_mean"][0].get<double>(), params["pca_mean"][1].get<double>()};
+    this->pca_components[bar][0] = {params["pca_components"][0][0].get<double>(), params["pca_components"][0][1].get<double>()};
+    this->pca_components[bar][1] = {params["pca_components"][1][0].get<double>(), params["pca_components"][1][1].get<double>()};
+    this->pca_xpeaks[bar] = {params["pca_xpeaks"][0].get<double>(), params["pca_xpeaks"][1].get<double>()};
+}
+
 NWPulseShapeDiscriminationParamReader::NWPulseShapeDiscriminationParamReader(const char AB) {
     this->AB = toupper(AB);
     this->ab = tolower(this->AB);
@@ -397,155 +503,31 @@ NWPulseShapeDiscriminationParamReader::NWPulseShapeDiscriminationParamReader(con
 
 NWPulseShapeDiscriminationParamReader::~NWPulseShapeDiscriminationParamReader() { }
 
-void NWPulseShapeDiscriminationParamReader::reconstruct_interpolators(int bar) {
-    auto method = ROOT::Math::Interpolation::kAKIMA;
-
-    /*****Fast-total interpolation*****/
-    auto& fast_total = this->database[bar]["fast_total"];
-    auto& totals = fast_total["totals"];
-    std::vector<double> fasts;
-
-    // gamma_L
-    fasts.clear();
-    for (int i = 0; i < totals.size(); ++i) {
-        double fast = fast_total["center_line_L"][i].get<double>() + fast_total["gamma_cfasts_L"][i].get<double>();
-        fasts.push_back(fast);
-    }
-    this->gamma_fast_total_L[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
-
-    // neutron_L
-    fasts.clear();
-    for (int i = 0; i < totals.size(); ++i) {
-        double fast = fast_total["center_line_L"][i].get<double>() + fast_total["neutron_cfasts_L"][i].get<double>();
-        fasts.push_back(fast);
-    }
-    this->neutron_fast_total_L[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
-
-    // gamma_R
-    fasts.clear();
-    for (int i = 0; i < totals.size(); ++i) {
-        double fast = fast_total["center_line_R"][i].get<double>() + fast_total["gamma_cfasts_R"][i].get<double>();
-        fasts.push_back(fast);
-    }
-    this->gamma_fast_total_R[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
-
-    // neutron_R
-    fasts.clear();
-    for (int i = 0; i < totals.size(); ++i) {
-        double fast = fast_total["center_line_R"][i].get<double>() + fast_total["neutron_cfasts_R"][i].get<double>();
-        fasts.push_back(fast);
-    }
-    this->neutron_fast_total_R[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
-
-    /*****VPSD centroids interpolation*****/
-    auto& pos_correction = this->database[bar]["position_correction"];
-    auto& centroids = pos_correction["centroid_curves"];
-    auto& positions = centroids["positions"];
-    std::vector<double> coords;
-
-    // gamma_L
-    coords.clear();
-    for (int i = 0; i < positions.size(); ++i) {
-        coords.push_back(centroids["gamma_centroids"][i][0].get<double>());
-    }
-    this->gamma_vpsd_L[bar] = new ROOT::Math::Interpolator(positions, coords, method);
-
-    // neutron_L
-    coords.clear();
-    for (int i = 0; i < positions.size(); ++i) {
-        coords.push_back(centroids["neutron_centroids"][i][0].get<double>());
-    }
-    this->neutron_vpsd_L[bar] = new ROOT::Math::Interpolator(positions, coords, method);
-
-    // gamma_R
-    coords.clear();
-    for (int i = 0; i < positions.size(); ++i) {
-        coords.push_back(centroids["gamma_centroids"][i][1].get<double>());
-    }
-    this->gamma_vpsd_R[bar] = new ROOT::Math::Interpolator(positions, coords, method);
-
-    // neutron_R
-    coords.clear();
-    for (int i = 0; i < positions.size(); ++i) {
-        coords.push_back(centroids["neutron_centroids"][i][1].get<double>());
-    }
-    this->neutron_vpsd_R[bar] = new ROOT::Math::Interpolator(positions, coords, method);
-}
-
-void NWPulseShapeDiscriminationParamReader::process_pca(int bar) {
-    auto& pca = this->database[bar]["position_correction"]["pca"];
-    this->pca_mean[bar] = {pca["mean"][0].get<double>(), pca["mean"][1].get<double>()};
-    this->pca_components[bar][0] = {pca["components"][0][0].get<double>(), pca["components"][0][1].get<double>()};
-    this->pca_components[bar][1] = {pca["components"][1][0].get<double>(), pca["components"][1][1].get<double>()};
-    this->pca_xpeaks[bar] = {pca["xpeaks"][0].get<double>(), pca["xpeaks"][1].get<double>()};
-}
-
-bool NWPulseShapeDiscriminationParamReader::load_single_bar(int run, int bar) {
-    bool found_run = false;
-    for (auto& batch_dir: std::filesystem::directory_iterator(this->param_dir)) {
-        std::filesystem::path filepath = batch_dir;
-        filepath /= Form("NW%c-bar%02d.json", this->AB, bar);
-
-        // read in JSON file
-        std::ifstream file(filepath.string());
-        if (!file.is_open()) {
-            // if file does not exist, skip
-            // raising an error is unnecessary because
-            // the correct JSON may exist in another directory
-            continue;
-        }
-        Json json_buf;
-        file >> json_buf;
-        file.close();
-
-        // check if run is in this batch
-        auto& runs = json_buf["runs"];
-        if (std::find(runs.begin(), runs.end(), run) != runs.end()) {
-            found_run = true;
-
-            // load in the parameters
-            this->param_paths[bar] = filepath;
-            this->database[bar] = json_buf;
-            this->reconstruct_interpolators(bar);
-            this->process_pca(bar);
-
-            break;
-        }
-    }
-    return found_run;
-}
-
-bool NWPulseShapeDiscriminationParamReader::load(int run, bool ignore_not_found) {
-    bool found_all_bars = true;
-    for (int bar: this->bars) {
-        if (!this->load_single_bar(run, bar)) {
-            found_all_bars = false;
-            this->not_found_bars.push_back(bar);
-        }
-    }
-
-    if (!found_all_bars && !ignore_not_found) {
-        std::cerr << "Failed to load pulse shape discrimination calibration parameters for";
-        std::cerr << Form(" run-%04d, bar(s): ", run);
-        std::string delim = "";
-        for (int bar: this->not_found_bars) {
-            std::cerr << Form("%s%02d", delim.c_str(), bar);
-            delim = ", ";
-        }
-        std::cerr << std::endl;
+void NWPulseShapeDiscriminationParamReader::read_in_calib_params() {
+    this->param_path = this->param_dir / Form("calib_params_nw%c.json", this->ab);
+    std::ifstream database_file(this->param_path.string());
+    if (!database_file.is_open()) {
+        std::cerr << "Failed to open database file: " << this->param_path << std::endl;
         exit(1);
     }
+    database_file >> this->database;
+    database_file.close();
+}
 
-    return found_all_bars;
+void NWPulseShapeDiscriminationParamReader::load(int run) {
+    this->read_in_calib_params();
+    for (int bar: this->bars) {
+        auto params = this->get_bar_params(run, bar);
+        this->fast_total_interpolation(bar, params);
+        this->centroid_interpolation(bar, params);
+        this->process_pca(bar, params);
+    }
 }
 
 void NWPulseShapeDiscriminationParamReader::write_metadata(TFolder* folder, bool relative_path) {
     std::filesystem::path base_dir = (relative_path) ? this->project_dir : "/";
-    std::filesystem::path path;
-    for (const auto& [bar, fullpath] : this->param_paths) {
-        path = std::filesystem::proximate(fullpath, base_dir);
-        TNamed* data = new TNamed(path.string().c_str(), Form("%02d", bar));
-        folder->Add(data);
-    }
+    std::filesystem::path path = std::filesystem::proximate(this->param_path, base_dir);
+    TNamed* data = new TNamed(path.string().c_str(), "PulseShapeDiscrimination_param_path");
+    folder->Add(data);
     return;
 }
