@@ -118,16 +118,24 @@ public:
 class NWPulseShapeDiscriminationParamReader : public ParamReader<int> {
 private:
     std::vector<int> not_found_bars;
+    double polynomial(double x, Json& params);
+    Json get_bar_params(int run, int bar);
+    void fast_total_interpolation(int bar, Json& params);
+    void centroid_interpolation(int bar, Json& params);
+    void process_pca(int bar, Json& params);
+
 public:
     char AB;
     char ab;
     std::vector<int> bars;
     std::filesystem::path project_dir = "";
-    std::filesystem::path param_reldir = "database/neutron_wall/pulse_shape_discrimination/calib_params";
+    std::filesystem::path param_reldir = "database/neutron_wall/pulse_shape_discrimination/";
     std::filesystem::path param_dir; // PROJECT_DIR / param_reldir
-    std::map<int, std::filesystem::path> param_paths; // bar -> full paths to the parameter JSON file
+    std::filesystem::path param_path;
 
-    std::unordered_map<int, Json> database; // bar -> json
+    // std::unordered_map<int, Json> database; // bar -> json
+    // std::unordered_map<int, std::unordered_map<std::string, double>> database; // bar -> <param, value>
+    Json database;
 
     std::unordered_map<int, ROOT::Math::Interpolator*> gamma_fast_total_L; // bar -> interpolator
     std::unordered_map<int, ROOT::Math::Interpolator*> neutron_fast_total_L; // bar -> interpolator
@@ -146,9 +154,7 @@ public:
     NWPulseShapeDiscriminationParamReader(const char AB);
     ~NWPulseShapeDiscriminationParamReader();
 
-    void reconstruct_interpolators(int bar);
-    void process_pca(int bar);
-    bool load_single_bar(int run, int bar);
-    bool load(int run, bool ignore_not_found=false);
+    void load(int run);
+    void read_in_calib_params();
     void write_metadata(TFolder* folder, bool relative_path=true);
 };

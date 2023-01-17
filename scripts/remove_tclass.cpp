@@ -45,11 +45,11 @@ int main(int argc, char* argv[]) {
     int run = std::stoi(argv[1]);
 
     gErrorIgnoreLevel = kError;
-    std::filesystem::path DATABASE_DIR = get_cmd_output("echo $DATABASE_DIR");
-    std::filesystem::path inroot_dir = get_local_path(DATABASE_DIR, "daniele_root_files_dir");
+    std::filesystem::path PROJECT_DIR = get_cmd_output("echo $PROJECT_DIR");
+    std::filesystem::path inroot_dir = get_local_path(PROJECT_DIR / "database", "daniele_root_files_dir");
     std::string filename = Form("CalibratedData_%04d.root", run);
     std::filesystem::path inpath = inroot_dir / filename;
-    std::filesystem::path outpath = DATABASE_DIR / "root_files_daniele" / inpath.filename();
+    std::filesystem::path outpath = PROJECT_DIR / "database/root_files_daniele" / inpath.filename();
 
     std::map<std::string, void*> addr_map;
     auto leaflists = get_leaflists(inpath.string());
