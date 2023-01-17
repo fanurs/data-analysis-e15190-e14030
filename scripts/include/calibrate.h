@@ -54,7 +54,7 @@ struct Container {
     std::array<short, max_multi> VW_total_B; // bottom
     std::array<double, max_multi> VW_time_T;
     std::array<double, max_multi> VW_time_B;
-    std::array<double, max_multi> VW_pos;
+    std::array<double, max_multi> VW_pos_y;
     std::array<double, max_multi> VW_theta;
     std::array<double, max_multi> VW_phi;
     std::array<double, max_multi> VW_distance;
@@ -74,11 +74,13 @@ struct Container {
     std::array<double, max_multi> NWB_time_L;
     std::array<double, max_multi> NWB_time_R;
     std::array<double, max_multi> NWB_tof; /*updated*/
-    std::array<double, max_multi> NWB_pos; /*updated*/
-    std::array<double, max_multi> NWB_light_GM; /*updated*/
+    std::array<double, max_multi> NWB_pos_x; /*updated*/
+    std::array<double, max_multi> NWB_pos_y; /*updated*/
+    std::array<double, max_multi> NWB_pos_z; /*updated*/
+    std::array<double, max_multi> NWB_distance; /*updated*/
     std::array<double, max_multi> NWB_theta; /*updated*/
     std::array<double, max_multi> NWB_phi; /*updated*/
-    std::array<double, max_multi> NWB_distance; /*updated*/
+    std::array<double, max_multi> NWB_light_GM; /*updated*/
     std::array<double, max_multi> NWB_psd; /*updated*/
     std::array<double, max_multi> NWB_psd_perp; /*updated*/
 };
@@ -274,7 +276,7 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchAddress("VetoWall.fBottom",                 &container.VW_total_B[0]);
     chain->SetBranchAddress("VetoWall.fTimeTop",                &container.VW_time_T[0]);
     chain->SetBranchAddress("VetoWall.fTimeBottom",             &container.VW_time_B[0]);
-    chain->SetBranchAddress("VetoWall.fYcm",                    &container.VW_pos[0]);
+    chain->SetBranchAddress("VetoWall.fYcm",                    &container.VW_pos_y[0]);
     chain->SetBranchAddress("VetoWall.fThetaRan",               &container.VW_theta[0]);
     chain->SetBranchAddress("VetoWall.fPhiRan",                 &container.VW_phi[0]);
     chain->SetBranchAddress("VetoWall.fDistRancm",              &container.VW_distance[0]);
@@ -395,7 +397,7 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("VW_total_B",    &container.VW_total_B[0],   "VW_total_B[VW_multi]/S");
     tree->Branch("VW_time_T",     &container.VW_time_T[0],    "VW_time_T[VW_multi]/D");
     tree->Branch("VW_time_B",     &container.VW_time_B[0],    "VW_time_B[VW_multi]/D");
-    tree->Branch("VW_pos",        &container.VW_pos[0],       "VW_pos[VW_multi]/D");
+    tree->Branch("VW_pos_y",      &container.VW_pos_y[0],     "VW_pos_y[VW_multi]/D");
     tree->Branch("VW_theta",      &container.VW_theta[0],     "VW_theta[VW_multi]/D");
     tree->Branch("VW_phi",        &container.VW_phi[0],       "VW_phi[VW_multi]/D");
     tree->Branch("VW_distance",   &container.VW_distance[0],  "VW_distance[VW_multi]/D");
@@ -415,11 +417,13 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("NWB_time_L",    &container.NWB_time_L[0],   "NWB_time_L[NWB_multi]/D");
     tree->Branch("NWB_time_R",    &container.NWB_time_R[0],   "NWB_time_R[NWB_multi]/D");
     tree->Branch("NWB_tof",       &container.NWB_tof[0],      "NWB_tof[NWB_multi]/D");
-    tree->Branch("NWB_pos",       &container.NWB_pos[0],      "NWB_pos[NWB_multi]/D");
-    tree->Branch("NWB_light_GM",  &container.NWB_light_GM[0], "NWB_light_GM[NWB_multi]/D");
+    tree->Branch("NWB_pos_x",     &container.NWB_pos_x[0],    "NWB_pos_x[NWB_multi]/D");
+    tree->Branch("NWB_pos_y",     &container.NWB_pos_y[0],    "NWB_pos_y[NWB_multi]/D");
+    tree->Branch("NWB_pos_z",     &container.NWB_pos_z[0],    "NWB_pos_z[NWB_multi]/D");
+    tree->Branch("NWB_distance",  &container.NWB_distance[0], "NWB_distance[NWB_multi]/D");
     tree->Branch("NWB_theta",     &container.NWB_theta[0],    "NWB_theta[NWB_multi]/D");
     tree->Branch("NWB_phi",       &container.NWB_phi[0],      "NWB_phi[NWB_multi]/D");
-    tree->Branch("NWB_distance",  &container.NWB_distance[0], "NWB_distance[NWB_multi]/D");
+    tree->Branch("NWB_light_GM",  &container.NWB_light_GM[0], "NWB_light_GM[NWB_multi]/D");
     tree->Branch("NWB_psd",       &container.NWB_psd[0],      "NWB_psd[NWB_multi]/D");
     tree->Branch("NWB_psd_perp",  &container.NWB_psd_perp[0], "NWB_psd_perp[NWB_multi]/D");
 

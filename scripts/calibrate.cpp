@@ -10,7 +10,9 @@
 
 // CERN ROOT libraries
 #include "TError.h"
+#include "TMath.h"
 #include "TNamed.h"
+#include "TRandom.h"
 #include "TROOT.h"
 
 // local libraries
@@ -24,16 +26,14 @@ double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time
 double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, double time_L, double time_R, double fa_time);
 double get_light_output(
     NWLightOutputCalibParamReader& nw_pcalib,
-    int bar, double total_L, double total_R, double pos
+    int bar, double total_L, double total_R, double pos_x
 );
 std::array<double, 2> get_psd(
     NWPulseShapeDiscriminationParamReader& psd_reader,
-    int bar, double total_L, double total_R, double fast_L, double fast_R, double pos
+    int bar, double total_L, double total_R, double fast_L, double fast_R, double pos_x
 );
-std::array<double,3> get_global_coordinates(
-    NWBPositionCalibParamReader& nw_pcalib,
-    int bar, double positionX
-);
+std::array<double, 3> randomize_position(double pos_x);
+std::array<double, 3> get_spherical_coordinates(NWBPositionCalibParamReader& nw_pcalib, int bar, std::array<double, 3>& position);
 
 int main(int argc, char* argv[]) {
     // initialization and argument parsing
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     nwb_psd_reader.write_metadata(psd_param_paths);
 
     // main loop
-    srand( (unsigned)time( NULL ) );
+    gRandom->SetSeed((unsigned)time( NULL ));
     ProgressBar progress_bar(argparser, intree->GetEntries());
     Container& evt = container; // a shorter alias; see "calibrate.h"
     for (int ievt = argparser.first_entry; ievt <= progress_bar.last_entry; ++ievt) {
@@ -83,16 +83,16 @@ int main(int argc, char* argv[]) {
         // calibrations
         for (int m = 0; m < evt.NWB_multi; ++m) {
             // position calibration
-            evt.NWB_pos[m] = get_position(
+            evt.NWB_pos_x[m] = get_position(
                 nwb_pcalib,
-                evt.NWB_bar[m],
-                evt.NWB_time_L[m],
-                evt.NWB_time_R[m]
+                evt.NWB_bar[m], evt.NWB_time_L[m], evt.NWB_time_R[m]
             );
-            std::array<double, 3> sph_coord = get_global_coordinates(
+            std::array<double, 3> bar_position = randomize_position(evt.NWB_pos_x[m]);
+            evt.NWB_pos_y[m] = bar_position[1];
+            evt.NWB_pos_z[m] = bar_position[2];
+            std::array<double, 3> sph_coord = get_spherical_coordinates(
                 nwb_pcalib,
-                evt.NWB_bar[m],
-                evt.NWB_pos[m]
+                evt.NWB_bar[m], bar_position
             );
             evt.NWB_distance[m] = sph_coord[0];
             evt.NWB_theta[m] = sph_coord[1];
@@ -101,30 +101,24 @@ int main(int argc, char* argv[]) {
             // time-of-flight calibration
             evt.NWB_tof[m] = get_time_of_flight(
                 nwb_tcalib,
-                evt.NWB_bar[m],
-                evt.NWB_time_L[m],
-                evt.NWB_time_R[m],
-                evt.FA_time_mean
+                evt.NWB_bar[m], evt.NWB_time_L[m], evt.NWB_time_R[m], evt.FA_time_mean
             );
 
             // light output calibration
             evt.NWB_light_GM[m] = get_light_output(
                 nwb_lcalib,
                 evt.NWB_bar[m],
-                double(evt.NWB_total_L[m]),
-                double(evt.NWB_total_R[m]),
-                evt.NWB_pos[m]
+                double(evt.NWB_total_L[m]), double(evt.NWB_total_R[m]),
+                evt.NWB_pos_x[m]
             );
             
             // pulse shape discrimination
             std::array<double, 2> psd = get_psd(
                 nwb_psd_reader,
                 evt.NWB_bar[m],
-                double(evt.NWB_total_L[m]),
-                double(evt.NWB_total_R[m]),
-                double(evt.NWB_fast_L[m]),
-                double(evt.NWB_fast_R[m]),
-                evt.NWB_pos[m]
+                double(evt.NWB_total_L[m]), double(evt.NWB_total_R[m]),
+                double(evt.NWB_fast_L[m]), double(evt.NWB_fast_R[m]),
+                evt.NWB_pos_x[m]
             );
             evt.NWB_psd[m] = psd[0];
             evt.NWB_psd_perp[m] = psd[1];
@@ -154,13 +148,13 @@ double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, do
     return 0.5 * (time_L + time_R) - fa_time - nw_tcalib.tof_offset[bar];
 }
 
-double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, double total_L, double total_R, double pos) {
+double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, double total_L, double total_R, double pos_x) {
     double light_L = total_L;
     double light_R = total_R;
     std::unordered_map<std::string, double> par = nw_lcalib.run_param.at(bar);
 
     // saturation recovery
-    double scalar = exp((2 / par.at("att_length")) * pos + log(par.at("gain_ratio")));
+    double scalar = exp((2 / par.at("att_length")) * pos_x + log(par.at("gain_ratio")));
     double threshold = 4090;
     if (light_L > threshold && light_R < threshold) { light_L = light_R / scalar; }
     if (light_R > threshold && light_L < threshold) { light_R = light_L * scalar; }
@@ -172,7 +166,7 @@ double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, doubl
     // light output calibration
     double light_GM = sqrt(light_L * light_R);
     light_GM *= 4.196; // w.r.t. AmBe 4.196 MeVee
-    light_GM /= par.at("a") + par.at("b") * pos + par.at("c") * pos * pos;
+    light_GM /= par.at("a") + par.at("b") * pos_x + par.at("c") * pos_x * pos_x;
     light_GM = par.at("d") + light_GM * par.at("e");
     
     return light_GM;
@@ -181,16 +175,14 @@ double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, doubl
 std::array<double, 2> get_psd(
     NWPulseShapeDiscriminationParamReader& psd_reader,
     int bar,
-    double total_L,
-    double total_R,
-    double fast_L,
-    double fast_R,
-    double pos
+    double total_L, double total_R,
+    double fast_L, double fast_R,
+    double pos_x
 ) {
     /*****eliminate bad data*****/
     if (total_L < 0 || total_R < 0 || fast_L < 0 || fast_R < 0
         || total_L > 4097 || total_R > 4097 || fast_L > 4097 || fast_R > 4097
-        || pos < -120 || pos > 120
+        || pos_x < -120 || pos_x > 120
     ) {
         return {-9999.0, -9999.0};
     }
@@ -205,10 +197,10 @@ std::array<double, 2> get_psd(
     double vpsd_R = (fast_R - gamma_R) / (neutron_R - gamma_R);
 
     /*****position correction*****/
-    gamma_L = psd_reader.gamma_vpsd_L[bar]->Eval(pos);
-    neutron_L = psd_reader.neutron_vpsd_L[bar]->Eval(pos);
-    gamma_R = psd_reader.gamma_vpsd_R[bar]->Eval(pos);
-    neutron_R = psd_reader.neutron_vpsd_R[bar]->Eval(pos);
+    gamma_L = psd_reader.gamma_vpsd_L[bar]->Eval(pos_x);
+    neutron_L = psd_reader.neutron_vpsd_L[bar]->Eval(pos_x);
+    gamma_R = psd_reader.gamma_vpsd_R[bar]->Eval(pos_x);
+    neutron_R = psd_reader.neutron_vpsd_R[bar]->Eval(pos_x);
 
     std::array<double, 2> xy = {vpsd_L - gamma_L, vpsd_R - gamma_R};
     std::array<double, 2> gn_vec = {neutron_L - gamma_L, neutron_R - gamma_R};
@@ -235,13 +227,15 @@ std::array<double, 2> get_psd(
     return {ppsd, ppsd_perp};
 }
 
-std::array<double, 3> get_global_coordinates(
-    NWBPositionCalibParamReader& nw_pcalib,
-    int bar,
-    double positionX
-) {
-	double posx = positionX;
-    
+std::array<double, 3> randomize_position(double pos_x) {
+    const double y_length = 3 * 2.54; // cm
+    const double z_length = 2.5 * 2.54; // cm
+    double pos_y = gRandom->Uniform(-0.5 * y_length, 0.5 * y_length);
+    double pos_z = gRandom->Uniform(-0.5 * z_length, 0.5 * z_length);
+    return {pos_x, pos_y, pos_z};
+}
+
+std::array<double, 3> get_spherical_coordinates(NWBPositionCalibParamReader& nw_pcalib, int bar, std::array<double, 3>& position) {
     std::array<double, 3> L = {
         nw_pcalib.getL(bar, "L0"), nw_pcalib.getL(bar, "L1"), nw_pcalib.getL(bar, "L2")
     };
@@ -255,18 +249,13 @@ std::array<double, 3> get_global_coordinates(
         nw_pcalib.getZ(bar, "Z0"), nw_pcalib.getZ(bar, "Z1"), nw_pcalib.getZ(bar, "Z2")
     };
     
-    double posy = (double) rand() / RAND_MAX - 0.5;
-    double posz = (double) rand() / RAND_MAX - 0.5;
-    posy *= 3.0 * 2.54; //3.0 inches is the height of the neutron bar
-    posz *= 2.5 * 2.54; //2.5 inches is the width of the neutron bar
+    double lab_x = position[0] * X[0] + position[1] * Y[0] + position[2] * Z[0] + L[0];
+    double lab_y = position[0] * X[1] + position[1] * Y[1] + position[2] * Z[1] + L[1];
+    double lab_z = position[0] * X[2] + position[1] * Y[2] + position[2] * Z[2] + L[2];
     
-    double globalx = posx * (X[0]) + posy * Y[0] + posz * Z[0] + L[0];
-    double globaly = posx * (X[1]) + posy * Y[1] + posz * Z[1] + L[1];
-    double globalz = posx * (X[2]) + posy * Y[2] + posz * Z[2] + L[2];
+    double rho = sqrt(lab_x * lab_x + lab_y * lab_y + lab_z * lab_z);
+    double theta = acos(lab_z / rho) * TMath::RadToDeg();
+    double phi = atan2(lab_y, lab_x) * TMath::RadToDeg();
     
-    double r = sqrt(pow(globalx, 2) + pow(globaly, 2) + pow(globalz, 2));
-    double theta = acos(globalz / r) * (180.0 / 3.141592654);
-    double phi = atan2(globaly, globalx) * (180.0 / 3.141592654);
-    
-    return {r, theta, phi};
+    return {rho, theta, phi};
 }
