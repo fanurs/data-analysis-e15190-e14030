@@ -148,7 +148,7 @@ def emit_isotropic_rays(
         A numpy.ndarray of rays with shape (n_rays, 3).
     """
     rng = np.random.default_rng(random_seed)
-    polars = np.arccos(rng.uniform(*np.cos(polar_range), size=n_rays).clip(-1, 1))
+    polars = np.arccos(rng.uniform(*np.cos(polar_range)[::-1], size=n_rays).clip(-1, 1))
     azimuths = rng.uniform(*azimuth_range, size=n_rays)
     if frame == 'cartesian':
         rays = np.column_stack(geom.spherical_to_cartesian(1.0, polars, azimuths))
