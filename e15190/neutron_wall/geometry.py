@@ -10,7 +10,7 @@ from e15190.utilities import geometry as geom
 from e15190.utilities import tables
 
 class Bar(geom.RectangularBar):
-    edges_x = (-80, 89)
+    edges_x = (-90, 90)
     left_shadow_x = (-50, -15)
     right_shadow_x = (15, 50)
     shadowed_bars = [7, 8, 9, 15, 16, 17]
@@ -244,7 +244,8 @@ class Wall:
         self.ab = self.AB.lower()
         """'a' or 'b' : Neutron wall name in lowercase."""
 
-        self.database_dir = Path(expandvars('$PROJECT_DIR/database/neutron_wall/geometry'))
+        self.database_dir = '$PROJECT_DIR/database/neutron_wall/geometry'
+        self.database_dir = Path(expandvars(self.database_dir))
         """``pathlib.Path`` : ``'$PROJECT_DIR/database/neutron_wall/geometry'``"""
 
         self.path_inventor_readings = self.database_dir / f'inventor_readings_NW{self.AB}.txt'
@@ -279,7 +280,9 @@ class Wall:
         self.database.set_index(index_names, drop=True, inplace=True)
 
         # construct a dictionary of bar objects
-        bar_nums = self.database.index.get_level_values(f'nw{self.ab}-bar')
+        bar_nums = list(self.database.index.get_level_values(f'nw{self.ab}-bar'))
+        if self.AB == 'B':
+            bar_nums.remove(0)  # bar 0 is not used
         self.bars = {
             b: Bar(self.database.loc[b][['x', 'y', 'z']], contain_pyrex=contain_pyrex)
             for b in bar_nums

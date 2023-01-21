@@ -502,7 +502,7 @@ class RectangularBar:
             result = result & (i_components <= +0.5 * dimension[i] + tol)
         return result if len(result) > 1 else result[0]
 
-    def construct_plotly_mesh3d(self):
+    def construct_plotly_mesh3d(self) -> None:
         """Update bar's attribute ``self.triangle_mesh``.
 
         Construct a
@@ -544,7 +544,7 @@ class RectangularBar:
 
         By default, this function would first identify the smallest rectangular
         region in the (theta, phi) space that fully contains the entire bar
-        geometry.  Then, it would randomly emit rays toward this minimal region.
+        geometry. Then, it would randomly emit rays toward this minimal region.
         Both theta range and phi range will be saved, so that user can calculate
         the actual solid angle later on.
 
