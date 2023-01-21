@@ -84,12 +84,14 @@ class BeamTargetReaction:
     @property
     def beam_com_rapidity(self):
         """Returns the (experimentally modified) rapidity of beam w.r.t. the C.O.M.
+
+        See https://github.com/root-project/root/blob/26915b9b018fa8a49893e971c81d0453a30e7277/math/physics/src/TLorentzVector.cxx#L281-L285
         """
         beam_mass = ame.mass((self.beam_A, self.beam_Z))
 
         # in lab frame
         beam_ene = self.beam_kinergy * (beam_mass / ame.amu.to(self.ene_unit).value) + beam_mass
-        beam_mom = (beam_ene**2 - beam_mass**2)**0.5
+        beam_mom = (beam_ene**2 - beam_mass**2)**0.5 # this is just p_z, because px, py = 0
 
         # in com frame; apply Lorentz transform
         beta = self.com_beta
