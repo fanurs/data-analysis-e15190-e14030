@@ -280,7 +280,7 @@ class Wall:
         self.database.set_index(index_names, drop=True, inplace=True)
 
         # construct a dictionary of bar objects
-        bar_nums = list(self.database.index.get_level_values(f'nw{self.ab}-bar'))
+        bar_nums = sorted(set(self.database.index.get_level_values(f'nw{self.ab}-bar')))
         if self.AB == 'B':
             bar_nums.remove(0)  # bar 0 is not used
         self.bars = {
