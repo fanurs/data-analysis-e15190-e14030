@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit, leastsq
@@ -11,6 +9,8 @@ from e15190.utilities import (
 
 class Isoscaling:
     def __init__(self):
+        self.yield_1 = dict()
+        self.yield_2 = dict()
         self.ratios = dict() # {(N, Z): ratio_dataframe}
     
     def _add_first(self, df1, df2):
@@ -49,6 +49,8 @@ class Isoscaling:
         if df2.yerr_name != self.yerr_name:
             raise ValueError(f'df2 has different yerr_name: {df2.yerr_name} (expecting {self.yerr_name})')
 
+        self.yield_1[(N, Z)] = df1.df
+        self.yield_2[(N, Z)] = df2.df
         self.ratios[(N, Z)] = dfh.div(df2.df, df1.df)
     
     def remove(self, N, Z):
@@ -181,3 +183,29 @@ class Isoscaling:
         if fix_normalization:
             return self.fit_with_one_normalization()
         return self.fit_with_independent_normalizations()
+
+    def get_albergo_temperature(self, reaction_idx) -> pd.DataFrame:
+        deuteron = (1, 1)
+        triton = (2, 1)
+        helium3 = (1, 2)
+        helium4 = (2, 2)
+
+        yield_ = self.yield_1 if reaction_idx == 1 else self.yield_2
+        x = None
+        for (N, Z) in [deuteron, triton, helium3, helium4]:
+            if x is None:
+                x = set(yield_[(N, Z)][self.x_name])
+            else:
+                x = x.intersection(yield_[(N, Z)][self.x_name])
+        x = sorted(x)
+
+        df_deuteron = yield_[deuteron].query(f'{self.x_name} in {x}')
+        df_triton = yield_[triton].query(f'{self.x_name} in {x}')
+        df_helium3 = yield_[helium3].query(f'{self.x_name} in {x}')
+        df_helium4 = yield_[helium4].query(f'{self.x_name} in {x}')
+
+        temperature = dfh.div(dfh.mul(df_deuteron, df_helium4), dfh.mul(df_triton, df_helium3))
+        temperature['y'] = 14.29 / np.log(1.59 * temperature['y'])
+        temperature['yerr'] = 14.29 / (temperature['y'] * (np.log(1.59 * temperature['y']))**2)
+        temperature['yferr'] = temperature['yerr'] / temperature['y']
+        return temperature
