@@ -2093,6 +2093,7 @@ class _MainUtilities:
             data.append([
                 bar, *run_range,
                 ft_pars['nonlinear_total_L'], ft_pars['nonlinear_total_R'],
+                ft_pars['x_switch_neutron'],
                 *ft_pars['center_line_L'], # 2 elements
                 *ft_pars['center_line_R'], # 2 elements
                 *ft_pars['neutron_cfast_L'], # 3 elements
@@ -2109,6 +2110,7 @@ class _MainUtilities:
         data = pd.DataFrame(data, columns=[
             f'NW{AB}_bar', 'run_start', 'run_stop',
             'nonlinear_total_L', 'nonlinear_total_R',
+            'x_switch_neutron',
             'cline_L[0]', 'cline_L[1]',
             'cline_R[0]', 'cline_R[1]',
             'n_cfast_L[0]', 'n_cfast_L[1]', 'n_cfast_L[2]',
@@ -2186,6 +2188,7 @@ class _MainUtilities:
                 single_row['run_range'] = str([row['run_start'], row['run_stop']])
                 single_row['nonlinear_total_L'] = row['nonlinear_total_L']
                 single_row['nonlinear_total_R'] = row['nonlinear_total_R']
+                single_row['x_switch_neutron'] = row['x_switch_neutron']
                 single_row['cline_L'] = str([row[col] for col in param_columns['cline_L']])
                 single_row['cline_R'] = str([row[col] for col in param_columns['cline_R']])
                 single_row['n_cfast_L'] = str([row[col] for col in param_columns['n_cfast_L']])

@@ -118,7 +118,10 @@ public:
 class NWPulseShapeDiscriminationParamReader : public ParamReader<int> {
 private:
     std::vector<int> not_found_bars;
+    double polynomial(double x, std::vector<double>& params);
     double polynomial(double x, Json& params);
+    std::vector<double> get_neutron_linear_params(double x_switch_neutron, std::vector<double>& quadratic_params);
+    std::vector<double> get_neutron_linear_params(double x_switch_neutron, Json& quadratic_params);
     Json get_bar_params(int run, int bar);
     void fast_total_interpolation(int bar, Json& params);
     void centroid_interpolation(int bar, Json& params);
