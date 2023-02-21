@@ -378,12 +378,35 @@ void NWLightOutputCalibParamReader::write_metadata(TFolder* folder, bool relativ
 /***********************************************/
 /*****NWPulseShapeDiscriminationParamReader*****/
 /***********************************************/
-double NWPulseShapeDiscriminationParamReader::polynomial(double x, Json& params) {
+double NWPulseShapeDiscriminationParamReader::polynomial(double x, std::vector<double>& params) {
     double y = 0;
     for (int i = 0; i < params.size(); ++i) {
-        y += params[i].get<double>() * std::pow(x, i);
+        y += params[i] * std::pow(x, i);
     }
     return y;
+}
+
+double NWPulseShapeDiscriminationParamReader::polynomial(double x, Json& params) {
+    std::vector<double> params_vec;
+    for (auto& param : params) {
+        params_vec.push_back(param.get<double>());
+    }
+    return this->polynomial(x, params_vec);
+}
+
+std::vector<double> NWPulseShapeDiscriminationParamReader::get_neutron_linear_params(double x_switch_neutron, std::vector<double>& quadratic_params) {
+    auto& quad = quadratic_params;
+    double lin1 = quad[1] + 2 * quad[2] * x_switch_neutron;
+    double lin0 = quad[0] + quad[1] * x_switch_neutron + quad[2] * std::pow(x_switch_neutron, 2) - lin1 * x_switch_neutron;
+    return {lin0, lin1};
+}
+
+std::vector<double> NWPulseShapeDiscriminationParamReader::get_neutron_linear_params(double x_switch_neutron, Json& quadratic_params) {
+    std::vector<double> quadratic_params_vec;
+    for (auto& param : quadratic_params) {
+        quadratic_params_vec.push_back(param.get<double>());
+    }
+    return this->get_neutron_linear_params(x_switch_neutron, quadratic_params_vec);
 }
 
 Json NWPulseShapeDiscriminationParamReader::get_bar_params(int run, int bar) {
@@ -423,7 +446,11 @@ void NWPulseShapeDiscriminationParamReader::fast_total_interpolation(int bar, Js
 
     fasts.clear();
     for (int i = 0; i < totals.size(); ++i) {
-        double fast = this->polynomial(totals[i], params["cline_L"]) + this->polynomial(totals[i], params["n_cfast_L"]);
+        auto& _params = params["n_cfast_L"];
+        if (totals[i] >= params["x_switch_neutron"]) {
+            _params = this->get_neutron_linear_params(params["x_switch_neutron"], _params);
+        }
+        double fast = this->polynomial(totals[i], params["cline_L"]) + this->polynomial(totals[i], _params);
         fasts.push_back(fast);
     }
     this->neutron_fast_total_L[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
@@ -437,7 +464,11 @@ void NWPulseShapeDiscriminationParamReader::fast_total_interpolation(int bar, Js
 
     fasts.clear();
     for (int i = 0; i < totals.size(); ++i) {
-        double fast = this->polynomial(totals[i], params["cline_R"]) + this->polynomial(totals[i], params["n_cfast_R"]);
+        auto& _params = params["n_cfast_R"];
+        if (totals[i] >= params["x_switch_neutron"]) {
+            _params = this->get_neutron_linear_params(params["x_switch_neutron"], _params);
+        }
+        double fast = this->polynomial(totals[i], params["cline_R"]) + this->polynomial(totals[i], _params);
         fasts.push_back(fast);
     }
     this->neutron_fast_total_R[bar] = new ROOT::Math::Interpolator(totals, fasts, method);
