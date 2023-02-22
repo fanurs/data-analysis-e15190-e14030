@@ -208,9 +208,9 @@ std::array<double, 2> get_psd(
 
     // project to gn_vec and gn_rot90
     double x = (xy[0] * gn_vec[0] + xy[1] * gn_vec[1]);
-    x /= (gn_vec[0] * gn_vec[0] + gn_vec[1] * gn_vec[1]);
+    x /= sqrt(gn_vec[0] * gn_vec[0] + gn_vec[1] * gn_vec[1]);
     double y = (xy[0] * gn_rot90[0] + xy[1] * gn_rot90[1]);
-    y /= (gn_rot90[0] * gn_rot90[0] + gn_rot90[1] * gn_rot90[1]);
+    y /= sqrt(gn_rot90[0] * gn_rot90[0] + gn_rot90[1] * gn_rot90[1]);
 
     // PCA transform
     x -= psd_reader.pca_mean[bar][0];
