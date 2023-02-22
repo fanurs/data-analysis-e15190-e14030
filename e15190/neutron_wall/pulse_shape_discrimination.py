@@ -1070,8 +1070,8 @@ class PulseShapeDiscriminator:
         xy = subdf[['vpsd_L', 'vpsd_R']].to_numpy() - g_pos
         gn_vec = n_pos - g_pos
         gn_rot90 = np.vstack([-gn_vec[:, 1], gn_vec[:, 0]]).T
-        x = np.sum(xy * gn_vec, axis=1) / np.sum(np.square(gn_vec), axis=1)
-        y = np.sum(xy * gn_rot90, axis=1) / np.sum(np.square(gn_rot90), axis=1)
+        x = np.sum(xy * gn_vec, axis=1) / np.sqrt(np.sum(np.square(gn_vec), axis=1))
+        y = np.sum(xy * gn_rot90, axis=1) / np.sqrt(np.sum(np.square(gn_rot90), axis=1))
 
         # using PCA to fine tune the centroid positions onto gamma: (0, 0) and neutron: (1, 0)
         mask = (-2 < x) & (x < 3) & (-1 < y) & (y < 1)
