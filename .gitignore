@@ -1,9 +1,12 @@
 # python related temporary files
 __pycache__/
 .ipynb_checkpoints/
+**/logs/
 
 # confidential 
 *.pub
+database/neutron_wall/efficiency/221102-park.txt
+database/neutron_wall/efficiency/efficiency.txt
 
 # data files (usually huge or reproducible)
 wmu_mysql_database.h5
@@ -14,6 +17,7 @@ database_dir/**/*.h5
 *.o
 *.so
 *.exe
+*.zip
 
 # documentation builds
 docs/build/doctrees/*
@@ -28,6 +32,11 @@ env_e15190/
 local/etc
 dev*.py
 scratch/
+database/neutron_wall/efficiency/light_responses/
+database/neutron_wall/efficiency/response/
+database/runlog/cleansed/
+database/runlog/downloads/
+database/runlog/elog_runs_filtered.h5
 
 # pytest related
 .database*
