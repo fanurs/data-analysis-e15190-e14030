@@ -2,7 +2,7 @@ from copy import copy
 import functools
 import json
 from pathlib import Path
-from typing import Callable, Union
+from typing import Callable, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +14,7 @@ import e15190
 from e15190.runlog import query
 from e15190.utilities import (
     atomic_mass_evaluation as ame,
+    dataframe_histogram as dfh,
     fast_histogram as fh,
     root6 as rt6,
     physics,
@@ -168,8 +169,27 @@ class HiraFile:
             hist = file.Get(h_name)
             hist.SetDirectory(0)
             return hist
-        
-class LabKinergyTheta:
+
+_hira_file = HiraFile('ca40ni58e140')
+convert_particle = _hira_file.convert_particle
+
+class HiraDict(dict):
+    """Dictionary of particle in the convention of Hira's file."""
+    def __init__(self, arg=None):
+        if arg is not None:
+            arg = {
+                convert_particle(particle): value
+                for particle, value in arg.items()
+            }
+            super().__init__(arg)
+
+    def __getitem__(self, key):
+        return super().__getitem__(convert_particle(key))
+
+    def __setitem__(self, key, value):
+        super().__setitem__(convert_particle(key), value)
+
+class Spectrum:
     lab_theta_range = np.radians([30.0, 75.0])
     lab_kinergy_per_A_ranges = { # MeV/A
         'p': (20.0, 198.0),
@@ -186,6 +206,7 @@ class LabKinergyTheta:
         '10Be': (22.0, 200.0),
     }
 
+class LabKinergyTheta(Spectrum):
     def __init__(self, reaction, particle, df_hist=None):
         """
         Parameters
@@ -197,7 +218,7 @@ class LabKinergyTheta:
         df_hist : pandas.DataFrame, default None
             DataFrame with columns 'x', 'y', 'z', 'zerr' and 'zferr'. 'x'
             represents the lab kinetic energy, 'y' represents the lab theta
-            angle in degree, 'z' represents the cross section in ??  unit. If
+            angle in degree, 'z' represents the cross section in ?? unit. If
             None, the program attempts to load histogram automatically with the
             keyword 'Ekin'.
         """
@@ -205,7 +226,7 @@ class LabKinergyTheta:
         self.hira_file = HiraFile(reaction)
         self.particle = self.hira_file.convert_particle(particle)
         if df_hist is None:
-            self.df_full = self.hira_file.get_root_histogram(particle=particle, keyword='Ekin')
+            self.df_full = self.hira_file.get_root_histogram(particle=particle, keyword=['Ekin', 'Normalized', 'GeoEff'])
             self.df_full = rt6.histo_conversion(self.df_full)
         else:
             self.df_full = df_hist
@@ -262,8 +283,8 @@ class LabKinergyTheta:
             hist = hist.query(' & '.join([
                 f'x >= {self.lab_kinergy_per_A_ranges[self.particle][0]}',
                 f'x <= {self.lab_kinergy_per_A_ranges[self.particle][1]}',
-                f'y >= {self.lab_theta_range[0]}',
-                f'y <= {self.lab_theta_range[1]}',
+                f'y >= {np.degrees(self.lab_theta_range[0])}',
+                f'y <= {np.degrees(self.lab_theta_range[1])}',
             ]))
         
         cmap = copy(plt.cm.get_cmap(cmap))
@@ -282,23 +303,7 @@ class LabKinergyTheta:
             **kw,
         )
 
-class LabPtransverseRapidity:
-    lab_theta_range = np.radians([30.0, 75.0])
-    lab_kinergy_per_A_ranges = { # MeV/A
-        'p': (20.0, 198.0),
-        'd': (15.0, 263.0 / 2),
-        't': (12.0, 312.0 / 3),
-        '3He': (20.0, 200.0),
-        '4He': (18.0, 200.0),
-        '6He': (13.0, 200.0),
-        '6Li': (22.0, 200.0),
-        '7Li': (22.0, 200.0),
-        '8Li': (22.0, 200.0),
-        '7Be': (22.0, 200.0),
-        '9Be': (22.0, 200.0),
-        '10Be': (22.0, 200.0),
-    }
-
+class LabPtransverseRapidity(Spectrum):
     def __init__(
         self,
         reaction: str,
@@ -324,6 +329,9 @@ class LabPtransverseRapidity:
             default keywords, which are 'rapidity' and 'geoeff'.
         """
         self.reaction = reaction
+        self.beam = query.ReactionParser.read_beam(self.reaction)
+        self.target = query.ReactionParser.read_target(self.reaction)
+        self.beam_energy = query.ReactionParser.read_energy(self.reaction)
         self.hira_file = HiraFile(reaction)
         self.particle = self.hira_file.convert_particle(particle)
         if keyword is None:
@@ -347,10 +355,7 @@ class LabPtransverseRapidity:
         Returns the experimentally modified beam rapidity. The beam direction is
         defined as the +z-axis.
         """
-        beam = query.ReactionParser.read_beam(self.reaction)
-        target = query.ReactionParser.read_target(self.reaction)
-        beam_energy = query.ReactionParser.read_energy(self.reaction)
-        return physics.BeamTargetReaction(beam, target, beam_energy).beam_lab_rapidity
+        return physics.BeamTargetReaction(self.beam, self.target, self.beam_energy).beam_lab_rapidity
     
     @staticmethod
     def theta_curve(theta: float, mass: float) -> Callable[[Union[float, ArrayLike]], Union[float, ArrayLike]]:
@@ -497,25 +502,67 @@ class LabPtransverseRapidity:
         df_corrected['zerr'] *= scalars
         return df_corrected.drop('inside', axis='columns')
     
+    @staticmethod
+    def _drop_spectrum_outliers(df: pd.DataFrame, drop_outliers: float, yname='y') -> pd.DataFrame:
+        """Drop outliers in the dataframe.
+
+        This function assumes outliers only occur at the ends of the spectrum.
+        In other words, if a point in the middle is an outlier, it will not be
+        dropped. This decision is made to keep the resulting spectrum
+        continuous. Empirically, for this purpose, if an outlier happens in the
+        middle, it is likely that there is some problem with the data anyway.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            The dataframe to drop outliers from. Must have a column named defined by
+            `yname`.
+        drop_outliers : float
+            Outliers are defined as points whose ratio to the neighboring point is
+            larger than `drop_outliers`.
+        yname : str, default 'y'
+            The name of the column in `df` that contains the values to check for
+            outliers.
+        """
+        df = df.copy()
+        df = df[df[yname] != 0]
+
+        y = np.array(df[yname])
+        inter_ratio = y[1:] / y[:-1]
+        inlier_links = (inter_ratio < drop_outliers) & (inter_ratio > 1 / drop_outliers)
+
+        args = np.where(inlier_links)
+        inlier_links[:args[0][0]] = False
+        inlier_links[args[0][-1] + 1:] = False
+        inlier_links[args[0][0]:args[0][-1] + 1] = True
+
+        inlier_mask = np.insert(inlier_links, args[0][0], True)
+        return df[inlier_mask]
+
     def get_ptA_spectrum(
         self,
-        rapidity_range=(0.4, 0.6),
-        correct_coverage=True,
-        range=(0, 600),
-        bins=600,
+        rapidity_range: Tuple[float, float],
+        correct_coverage: bool,
+        range: Tuple[float, float],
+        bins: int,
+        drop_outliers: float,
     ):
         """
         Parameters
         ----------
-        rapidity_range : 2-tuple, default is (0.4, 0.6)
+        rapidity_range : 2-tuple of float
             Range of beam-normalized rapidity in lab frame.
-        correct_coverage : bool, default is True
+        correct_coverage : bool
             If ``True``, missing data due to geometric coverage will be
             corrected. If ``False``, correction will not be applied.
-        range : 2-tuple, default is (0, 600)
+        range : 2-tuple
             Histogram range of :math:`p_T/A` in MeV/c.
-        bins : int, default is 600
+        bins : int
             Number of bins for the histogram.
+        drop_outliers : float
+            Outliers are defined as points whose ratio to the neighboring point
+            is larger than `drop_outliers`. If negative, no outliers will be
+            dropped.
 
         Returns
         -------
@@ -535,7 +582,7 @@ class LabPtransverseRapidity:
         d_denom = d_rapidity * d_transverse_momentum
 
         x_edges = np.linspace(*range, bins + 1)
-        return pd.DataFrame({
+        df = pd.DataFrame({
             'x': 0.5 * (x_edges[:-1] + x_edges[1:]),
             'y': h / d_denom,
             'yerr': herr / d_denom,
@@ -545,6 +592,9 @@ class LabPtransverseRapidity:
                 where=(h != 0),
             )
         })
+        if drop_outliers <= 0.0:
+            return df
+        return self._drop_spectrum_outliers(df, drop_outliers, 'y')
     
     def plot2d(self, ax=None, hist=None, cmap='jet', **kwargs):
         if ax is None:
@@ -576,6 +626,7 @@ class LabPtransverseRapidity:
         correct_coverage=True,
         range=(0, 600),
         bins=30,
+        drop_outliers: float = 10.0,
         **kwargs,
     ):
         if ax is None:
@@ -586,6 +637,7 @@ class LabPtransverseRapidity:
                 correct_coverage=correct_coverage,
                 range=range,
                 bins=bins,
+                drop_outliers=drop_outliers,
             )
 
         kw = dict(
@@ -593,3 +645,27 @@ class LabPtransverseRapidity:
         )
         kw.update(kwargs)
         return ax.errorbar(hist.x, hist.y, yerr=hist.yerr, **kw)
+
+class PseudoNeutron(Spectrum):
+    def __init__(self, spectra: dict[str, pd.DataFrame] = None):
+        self.spectra = HiraDict()
+        if spectra is not None:
+            spectra = HiraDict({
+                particle: spectrum
+                for particle, spectrum in spectra.items()
+            })
+            self.spectra.update(spectra)
+
+    def add(self, particle, spectrum: pd.DataFrame):
+        self.spectra[particle] = spectrum
+    
+    def check_all_particles_added(self) -> bool:
+        return set(map(convert_particle, ['p', 't', 'He3'])) == set(self.spectra.keys())
+
+    def get_spectrum(self) -> pd.DataFrame:
+        if not self.check_all_particles_added():
+            raise ValueError('Not all particles added for PseudoNeutron')
+        df = self.spectra['p'].copy()
+        df = dfh.mul(df, self.spectra['t'])
+        df = dfh.div(df, self.spectra['He3'])
+        return df
