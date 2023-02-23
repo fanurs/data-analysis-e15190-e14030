@@ -279,21 +279,14 @@ class TimeOfFlightCalibrator:
         return histos
 
     def get_prompt_gamma_fits(self, bar_tof_histos):
-        rand = np.random.RandomState()
         h_all = rt.histo_conversion(bar_tof_histos['all'])
         x_all = self.get_first_peak(h_all.x, h_all.y)
         pars = dict()
-        for i, (d_range, h) in enumerate(bar_tof_histos.items()):
+        for _, (d_range, h) in enumerate(bar_tof_histos.items()):
             h = rt.histo_conversion(h)
             h = h.query(f'x > {x_all - 3} & x < {x_all + 2}')
-            ppp = []
             x, y = h.x.to_numpy(), h.y.to_numpy()
-            idx = np.arange(len(x))
-            for _ in range(5):
-                rand.shuffle(idx)
-                par, err = PeakFinderGaus1D._find_highest_peak(x[idx], y[idx], error=True)
-                ppp.append(par[1])
-
+            par, err = PeakFinderGaus1D._find_highest_peak(x, y, error=True)
             pars[d_range] = {
                 'amplt': par[0], 'mean': par[1], 'sigma': par[2],
                 'amplt_err': err[0], 'mean_err': err[1], 'sigma_err': err[2],
@@ -313,7 +306,7 @@ class TimeOfFlightCalibrator:
         for d_range, par in pars.items():
             df.append([np.mean(d_range), par['mean'], par['mean_err']])
         df = pd.DataFrame(df, columns=['dist', 'tof', 'tof_eff'])
-        para, perr = curve_fit(self._speed_of_light_model, df.dist, df.tof, sigma=df.tof_eff, p0=[0])
+        para, perr = curve_fit(self._speed_of_light_model, df.dist, df.tof, sigma=df.tof_eff, p0=[0], absolute_sigma=True)
         return para[0], np.sqrt(np.diag(perr))[0]
     
     def collect_all_lazy(self, bars):
