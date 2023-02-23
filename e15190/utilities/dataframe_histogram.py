@@ -1,3 +1,4 @@
+from __future__ import annotations
 import functools
 
 import numpy as np
@@ -124,7 +125,7 @@ def _add_scalar(df, scalar):
     ))
     return result
 
-def add(dfa, dfb):
+def add(dfa: pd.DataFrame, dfb: pd.DataFrame | int | float) -> pd.DataFrame:
     if isinstance(dfb, (int, float)):
         return _add_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
@@ -153,7 +154,7 @@ def _sub_scalar(df, scalar):
     ))
     return result
 
-def sub(dfa, dfb):
+def sub(dfa: pd.DataFrame, dfb: pd.DataFrame | int | float) -> pd.DataFrame:
     if isinstance(dfb, (int, float)):
         return _sub_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
@@ -177,7 +178,7 @@ def _mul_scalar(df, scalar):
         d.yferr_name: d.df[d.yferr_name],
     })
 
-def mul(dfa, dfb):
+def mul(dfa: pd.DataFrame, dfb: pd.DataFrame | int | float) -> pd.DataFrame:
     if isinstance(dfb, (int, float)):
         return _mul_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
@@ -201,7 +202,7 @@ def _div_scalar(df, scalar):
         d.yferr_name: d.df[d.yferr_name],
     })
 
-def div(dfa, dfb):
+def div(dfa: pd.DataFrame, dfb: pd.DataFrame | int | float) -> pd.DataFrame:
     if isinstance(dfb, (int, float)):
         return _div_scalar(dfa, dfb)
     if not same_x_values(dfa, dfb):
