@@ -80,6 +80,9 @@ struct Container {
     std::array<double, max_multi> NWB_distance; /*updated*/
     std::array<double, max_multi> NWB_theta; /*updated*/
     std::array<double, max_multi> NWB_phi; /*updated*/
+    std::array<double, max_multi> NWB_distance_c; /*updated*/
+    std::array<double, max_multi> NWB_theta_c; /*updated*/
+    std::array<double, max_multi> NWB_phi_c; /*updated*/
     std::array<double, max_multi> NWB_light_GM; /*updated*/
     std::array<double, max_multi> NWB_psd; /*updated*/
     std::array<double, max_multi> NWB_psd_perp; /*updated*/
@@ -375,57 +378,60 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("TDC_mb_ds",          &container.TDC_mb_ds,          "TDC_mb_ds/D");
 
     // Microball
-    tree->Branch("MB_multi",      &container.MB_multi,        "MB_multi/I");
-    tree->Branch("MB_ring",       &container.MB_ring[0],      "MB_ring[MB_multi]/I");
-    tree->Branch("MB_det",        &container.MB_det[0],       "MB_det[MB_multi]/I");
-    tree->Branch("MB_tail",       &container.MB_tail[0],      "MB_tail[MB_multi]/S");
-    tree->Branch("MB_fast",       &container.MB_fast[0],      "MB_fast[MB_multi]/S");
-    tree->Branch("MB_time",       &container.MB_time[0],      "MB_time[MB_multi]/S");
+    tree->Branch("MB_multi",        &container.MB_multi,          "MB_multi/I");
+    tree->Branch("MB_ring",         &container.MB_ring[0],        "MB_ring[MB_multi]/I");
+    tree->Branch("MB_det",          &container.MB_det[0],         "MB_det[MB_multi]/I");
+    tree->Branch("MB_tail",         &container.MB_tail[0],        "MB_tail[MB_multi]/S");
+    tree->Branch("MB_fast",         &container.MB_fast[0],        "MB_fast[MB_multi]/S");
+    tree->Branch("MB_time",         &container.MB_time[0],        "MB_time[MB_multi]/S");
 
     // Forward Array
-    tree->Branch("FA_multi",      &container.FA_multi,        "FA_multi/I");
-    tree->Branch("FA_time_min",   &container.FA_time_min,     "FA_time_min/D");
-    tree->Branch("FA_time_mean",  &container.FA_time_mean,    "FA_time_mean/D");
-    tree->Branch("FA_det",        &container.FA_det[0],       "FA_det[FA_multi]/I");
-    tree->Branch("FA_total",      &container.FA_total[0],     "FA_total[FA_multi]/S");
-    tree->Branch("FA_time",       &container.FA_time[0],      "FA_time[FA_multi]/D");
+    tree->Branch("FA_multi",        &container.FA_multi,          "FA_multi/I");
+    tree->Branch("FA_time_min",     &container.FA_time_min,       "FA_time_min/D");
+    tree->Branch("FA_time_mean",    &container.FA_time_mean,      "FA_time_mean/D");
+    tree->Branch("FA_det",          &container.FA_det[0],         "FA_det[FA_multi]/I");
+    tree->Branch("FA_total",        &container.FA_total[0],       "FA_total[FA_multi]/S");
+    tree->Branch("FA_time",         &container.FA_time[0],        "FA_time[FA_multi]/D");
 
     // Veto Wall
-    tree->Branch("VW_multi",      &container.VW_multi,        "VW_multi/I");
-    tree->Branch("VW_bar",        &container.VW_bar[0],       "VW_bar[VW_multi]/I");
-    tree->Branch("VW_total_T",    &container.VW_total_T[0],   "VW_total_T[VW_multi]/S");
-    tree->Branch("VW_total_B",    &container.VW_total_B[0],   "VW_total_B[VW_multi]/S");
-    tree->Branch("VW_time_T",     &container.VW_time_T[0],    "VW_time_T[VW_multi]/D");
-    tree->Branch("VW_time_B",     &container.VW_time_B[0],    "VW_time_B[VW_multi]/D");
-    tree->Branch("VW_pos_y",      &container.VW_pos_y[0],     "VW_pos_y[VW_multi]/D");
-    tree->Branch("VW_theta",      &container.VW_theta[0],     "VW_theta[VW_multi]/D");
-    tree->Branch("VW_phi",        &container.VW_phi[0],       "VW_phi[VW_multi]/D");
-    tree->Branch("VW_distance",   &container.VW_distance[0],  "VW_distance[VW_multi]/D");
+    tree->Branch("VW_multi",        &container.VW_multi,          "VW_multi/I");
+    tree->Branch("VW_bar",          &container.VW_bar[0],         "VW_bar[VW_multi]/I");
+    tree->Branch("VW_total_T",      &container.VW_total_T[0],     "VW_total_T[VW_multi]/S");
+    tree->Branch("VW_total_B",      &container.VW_total_B[0],     "VW_total_B[VW_multi]/S");
+    tree->Branch("VW_time_T",       &container.VW_time_T[0],      "VW_time_T[VW_multi]/D");
+    tree->Branch("VW_time_B",       &container.VW_time_B[0],      "VW_time_B[VW_multi]/D");
+    tree->Branch("VW_pos_y",        &container.VW_pos_y[0],       "VW_pos_y[VW_multi]/D");
+    tree->Branch("VW_theta",        &container.VW_theta[0],       "VW_theta[VW_multi]/D");
+    tree->Branch("VW_phi",          &container.VW_phi[0],         "VW_phi[VW_multi]/D");
+    tree->Branch("VW_distance",     &container.VW_distance[0],    "VW_distance[VW_multi]/D");
 
     // Neutron Wall A
-    tree->Branch("NWA_multi",     &container.NWA_multi,       "NWA_multi/I");
-    tree->Branch("NWA_bar",       &container.NWA_bar[0],      "NWA_bar[NWA_multi]/I");
+    tree->Branch("NWA_multi",       &container.NWA_multi,         "NWA_multi/I");
+    tree->Branch("NWA_bar",         &container.NWA_bar[0],        "NWA_bar[NWA_multi]/I");
 
     // Neutron Wall B
-    tree->Branch("NWB_multi",     &container.NWB_multi,       "NWB_multi/I");
-    tree->Branch("NWB_bar",       &container.NWB_bar[0],      "NWB_bar[NWB_multi]/I");
-    tree->Branch("NWB_total_L",   &container.NWB_total_L[0],  "NWB_total_L[NWB_multi]/S");
-    tree->Branch("NWB_total_R",   &container.NWB_total_R[0],  "NWB_total_R[NWB_multi]/S");
-    tree->Branch("NWB_fast_L",    &container.NWB_fast_L[0],   "NWB_fast_L[NWB_multi]/S");
-    tree->Branch("NWB_fast_R",    &container.NWB_fast_R[0],   "NWB_fast_R[NWB_multi]/S");
-    tree->Branch("NWB_time",      &container.NWB_time[0],     "NWB_time[NWB_multi]/D");
-    tree->Branch("NWB_time_L",    &container.NWB_time_L[0],   "NWB_time_L[NWB_multi]/D");
-    tree->Branch("NWB_time_R",    &container.NWB_time_R[0],   "NWB_time_R[NWB_multi]/D");
-    tree->Branch("NWB_tof",       &container.NWB_tof[0],      "NWB_tof[NWB_multi]/D");
-    tree->Branch("NWB_pos_x",     &container.NWB_pos_x[0],    "NWB_pos_x[NWB_multi]/D");
-    tree->Branch("NWB_pos_y",     &container.NWB_pos_y[0],    "NWB_pos_y[NWB_multi]/D");
-    tree->Branch("NWB_pos_z",     &container.NWB_pos_z[0],    "NWB_pos_z[NWB_multi]/D");
-    tree->Branch("NWB_distance",  &container.NWB_distance[0], "NWB_distance[NWB_multi]/D");
-    tree->Branch("NWB_theta",     &container.NWB_theta[0],    "NWB_theta[NWB_multi]/D");
-    tree->Branch("NWB_phi",       &container.NWB_phi[0],      "NWB_phi[NWB_multi]/D");
-    tree->Branch("NWB_light_GM",  &container.NWB_light_GM[0], "NWB_light_GM[NWB_multi]/D");
-    tree->Branch("NWB_psd",       &container.NWB_psd[0],      "NWB_psd[NWB_multi]/D");
-    tree->Branch("NWB_psd_perp",  &container.NWB_psd_perp[0], "NWB_psd_perp[NWB_multi]/D");
+    tree->Branch("NWB_multi",       &container.NWB_multi,         "NWB_multi/I");
+    tree->Branch("NWB_bar",         &container.NWB_bar[0],        "NWB_bar[NWB_multi]/I");
+    tree->Branch("NWB_total_L",     &container.NWB_total_L[0],    "NWB_total_L[NWB_multi]/S");
+    tree->Branch("NWB_total_R",     &container.NWB_total_R[0],    "NWB_total_R[NWB_multi]/S");
+    tree->Branch("NWB_fast_L",      &container.NWB_fast_L[0],     "NWB_fast_L[NWB_multi]/S");
+    tree->Branch("NWB_fast_R",      &container.NWB_fast_R[0],     "NWB_fast_R[NWB_multi]/S");
+    tree->Branch("NWB_time",        &container.NWB_time[0],       "NWB_time[NWB_multi]/D");
+    tree->Branch("NWB_time_L",      &container.NWB_time_L[0],     "NWB_time_L[NWB_multi]/D");
+    tree->Branch("NWB_time_R",      &container.NWB_time_R[0],     "NWB_time_R[NWB_multi]/D");
+    tree->Branch("NWB_tof",         &container.NWB_tof[0],        "NWB_tof[NWB_multi]/D");
+    tree->Branch("NWB_pos_x",       &container.NWB_pos_x[0],      "NWB_pos_x[NWB_multi]/D");
+    tree->Branch("NWB_pos_y",       &container.NWB_pos_y[0],      "NWB_pos_y[NWB_multi]/D");
+    tree->Branch("NWB_pos_z",       &container.NWB_pos_z[0],      "NWB_pos_z[NWB_multi]/D");
+    tree->Branch("NWB_distance",    &container.NWB_distance[0],   "NWB_distance[NWB_multi]/D");
+    tree->Branch("NWB_theta",       &container.NWB_theta[0],      "NWB_theta[NWB_multi]/D");
+    tree->Branch("NWB_phi",         &container.NWB_phi[0],        "NWB_phi[NWB_multi]/D");
+    tree->Branch("NWB_distance_c",  &container.NWB_distance_c[0], "NWB_distance_c[NWB_multi]/D");
+    tree->Branch("NWB_theta_c",     &container.NWB_theta_c[0],    "NWB_theta_c[NWB_multi]/D");
+    tree->Branch("NWB_phi_c",       &container.NWB_phi_c[0],      "NWB_phi_c[NWB_multi]/D");
+    tree->Branch("NWB_light_GM",    &container.NWB_light_GM[0],   "NWB_light_GM[NWB_multi]/D");
+    tree->Branch("NWB_psd",         &container.NWB_psd[0],        "NWB_psd[NWB_multi]/D");
+    tree->Branch("NWB_psd_perp",    &container.NWB_psd_perp[0],   "NWB_psd_perp[NWB_multi]/D");
 
     return tree;
 }
