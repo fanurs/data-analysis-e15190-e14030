@@ -90,13 +90,15 @@ int main(int argc, char* argv[]) {
             std::array<double, 3> bar_position = randomize_position(evt.NWB_pos_x[m]);
             evt.NWB_pos_y[m] = bar_position[1];
             evt.NWB_pos_z[m] = bar_position[2];
-            std::array<double, 3> sph_coord = get_spherical_coordinates(
-                nwb_pcalib,
-                evt.NWB_bar[m], bar_position
-            );
+            std::array<double, 3> sph_coord = get_spherical_coordinates(nwb_pcalib, evt.NWB_bar[m], bar_position);
             evt.NWB_distance[m] = sph_coord[0];
             evt.NWB_theta[m] = sph_coord[1];
             evt.NWB_phi[m] = sph_coord[2];
+            std::array<double, 3> bar_position_c = {evt.NWB_pos_x[m], 0.0, 0.0};
+            std::array<double, 3> sph_coord_c = get_spherical_coordinates(nwb_pcalib, evt.NWB_bar[m], bar_position_c);
+            evt.NWB_distance_c[m] = sph_coord_c[0];
+            evt.NWB_theta_c[m] = sph_coord_c[1];
+            evt.NWB_phi_c[m] = sph_coord_c[2];
 
             // time-of-flight calibration
             evt.NWB_tof[m] = get_time_of_flight(
