@@ -74,6 +74,10 @@ struct Container {
     std::array<double, max_multi> NWB_time_L;
     std::array<double, max_multi> NWB_time_R;
     /* new / modified branches */
+    std::array<float, max_multi> NWB_totalf_L;
+    std::array<float, max_multi> NWB_totalf_R;
+    std::array<float, max_multi> NWB_fastf_L;
+    std::array<float, max_multi> NWB_fastf_R;
     std::array<float, max_multi> NWB_tof;
     std::array<float, max_multi> NWB_pos_x;
     std::array<float, max_multi> NWB_pos_y;
@@ -421,6 +425,10 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("NWB_time_L",      &container.NWB_time_L[0],     "NWB_time_L[NWB_multi]/D");
     tree->Branch("NWB_time_R",      &container.NWB_time_R[0],     "NWB_time_R[NWB_multi]/D");
     /* new / modified branches */
+    tree->Branch("NWB_totalf_L",    &container.NWB_totalf_L[0],   "NWB_totalf_L[NWB_multi]/F");
+    tree->Branch("NWB_totalf_R",    &container.NWB_totalf_R[0],   "NWB_totalf_R[NWB_multi]/F");
+    tree->Branch("NWB_fastf_L",     &container.NWB_fastf_L[0],    "NWB_fastf_L[NWB_multi]/F");
+    tree->Branch("NWB_fastf_R",     &container.NWB_fastf_R[0],    "NWB_fastf_R[NWB_multi]/F");
     tree->Branch("NWB_tof",         &container.NWB_tof[0],        "NWB_tof[NWB_multi]/F");
     tree->Branch("NWB_pos_x",       &container.NWB_pos_x[0],      "NWB_pos_x[NWB_multi]/F");
     tree->Branch("NWB_pos_y",       &container.NWB_pos_y[0],      "NWB_pos_y[NWB_multi]/F");

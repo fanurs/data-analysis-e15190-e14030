@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <unistd.h>
+#include <unordered_map>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -275,6 +276,70 @@ void NWTimeOfFlightCalibParamReader::write_metadata(TFolder* folder, bool relati
     folder->Add(path_data);
 }
 
+
+/**************************************/
+/*****NWADCPreprocessorParamReader*****/
+/**************************************/
+NWADCPreprocessorParamReader::NWADCPreprocessorParamReader(const char AB) {
+    const char* PROJECT_DIR = getenv("PROJECT_DIR");
+    if (PROJECT_DIR == nullptr) {
+        std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
+        exit(1);
+    }
+    this->AB = toupper(AB);
+    this->ab = tolower(this->AB);
+    this->project_dir = PROJECT_DIR;
+}
+
+NWADCPreprocessorParamReader::~NWADCPreprocessorParamReader() { }
+
+bool NWADCPreprocessorParamReader::load(int run) {
+    this->calib_reldir = this->project_dir / Form(this->calib_reldir.string().c_str(), run);
+    for (int bar = 1; bar <= 24; ++bar) {
+        if (!this->load_bar(bar)) return false;
+    }
+    return true;
+}
+
+bool NWADCPreprocessorParamReader::load_bar(int bar) {
+    this->filepath = this->calib_reldir / Form(this->filename.c_str(), this->ab, bar);
+    std::ifstream file(this->filepath.string());
+    if (!file.is_open()) {
+        std::cerr << "ERROR: failed to open " << this->filepath.string() << std::endl;
+        exit(1);
+    }
+    Json content;
+    file >> content;
+    file.close();
+
+    auto& ct = content["fast_total_L"];
+    this->fast_total_L[bar] = {
+        {"nonlinear_fast_threshold", ct["nonlinear_fast_threshold"].get<double>()},
+        {"stationary_point_x", ct["stationary_point_x"].get<double>()},
+        {"stationary_point_y", ct["stationary_point_y"].get<double>()},
+        {"fit_params[0]", ct["linear_fit_params"][0].get<double>() - ct["quadratic_fit_params"][0].get<double>()},
+        {"fit_params[1]", ct["linear_fit_params"][1].get<double>() - ct["quadratic_fit_params"][1].get<double>()},
+        {"fit_params[2]", -ct["quadratic_fit_params"][2].get<double>()},
+    };
+
+    ct = content["fast_total_R"];
+    this->fast_total_R[bar] = {
+        {"nonlinear_fast_threshold", ct["nonlinear_fast_threshold"].get<double>()},
+        {"stationary_point_x", ct["stationary_point_x"].get<double>()},
+        {"stationary_point_y", ct["stationary_point_y"].get<double>()},
+        {"fit_params[0]", ct["linear_fit_params"][0].get<double>() - ct["quadratic_fit_params"][0].get<double>()},
+        {"fit_params[1]", ct["linear_fit_params"][1].get<double>() - ct["quadratic_fit_params"][1].get<double>()},
+        {"fit_params[2]", -ct["quadratic_fit_params"][2].get<double>()},
+    };
+
+    ct = content["log_ratio_total"];
+    this->log_ratio_total[bar] = {
+        {"attenuation_length", ct["attenuation_length"].get<double>()},
+        {"gain_ratio", ct["gain_ratio"].get<double>()},
+    };
+
+    return true;
+}
 
 
 /***************************************/
