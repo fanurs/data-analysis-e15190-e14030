@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+from concurrent.futures import ThreadPoolExecutor
 import copy
 import argparse
+from glob import glob
 import itertools
 import json
 import os
@@ -24,22 +26,31 @@ from e15190.utilities import (
     styles,
 )
 
-def main():
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('AB', type=str, choices=['A', 'B'])
-    argparser.add_argument('run', type=int)
-    args = argparser.parse_args()
-
+def main_function(AB: Literal['A', 'B'], run: int) -> None:
+    path = str(ADCPreprocessor._get_input_root_path(run))
+    try:
+        tree_name = rt.infer_tree_name(path)
+    except ValueError:
+        print(f'Run {run:04d} has no tree. Exited.', flush=True)
+        exit(1)
+    n_entries = rt.get_n_entries(str(ADCPreprocessor._get_input_root_path(run)), tree_name)
+    if n_entries < 5e5:
+        print(f'Run {run:04d} has only {n_entries} entries. Exited.', flush=True)
+        exit(1)
+    
     gallery = Gallery()
     for bar in range(1, 24 + 1):
-        preprocessor = ADCPreprocessor(args.AB, args.run, bar)
-        preprocessor.alias()
-        preprocessor.filter_neutron_wall_multiplicity()
-        preprocessor.define_randomized_adc()
-        preprocessor.fit()
-        preprocessor.save_parameters()
-        gallery.plot(preprocessor, save=True)
-        print(f'NW{args.AB}-{bar:02d} done.', flush=True)
+        try:
+            preprocessor = ADCPreprocessor(AB, run, bar)
+            preprocessor.alias()
+            preprocessor.filter_neutron_wall_multiplicity()
+            preprocessor.define_randomized_adc()
+            preprocessor.fit()
+            preprocessor.save_parameters()
+            gallery.plot(preprocessor, save=True)
+            print(f'Run {run:04d} NW{AB}-{bar:02d} done.', flush=True)
+        except Exception as e:
+            print(f'Run {run:04d} NW{AB}-{bar:02d} FAILED: {e}', flush=True)
 
 class ADCPreprocessor:
     # input_root_path_fmt = '$DATABASE_DIR/root_files_daniele/CalibratedData_{run:04d}.root'
@@ -425,5 +436,28 @@ class Gallery:
         plt.close()
 
 
+class CalibParameter:
+    @staticmethod
+    def collect_parameters(filepath: str | Path) -> dict:
+        with open(filepath, 'r') as file:
+            return json.load(file)
+
+    @staticmethod
+    def collect_all_parameters_of_bar(AB: Literal['A', 'B'], bar: int, max_workers=None) -> pd.DataFrame:
+        directory = Path(os.path.expandvars(ADCPreprocessor.database_dir))
+        paths = glob(str(directory / f'calib_params/run-*/nw{AB.lower()}-bar{bar:02d}.json'))
+        paths = [Path(path) for path in paths]
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            parameters = {
+                int(path.parent.name[-4:]): executor.submit(CalibParameter.collect_parameters, path)
+                for path in paths
+            }
+        return {run: parameter.result() for run, parameter in parameters.items()}
+
+
 if __name__ == '__main__':
-    main()
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('AB', type=str, choices=['A', 'B'])
+    argparser.add_argument('run', type=int)
+    args = argparser.parse_args()
+    main_function(args.AB, args.run)
