@@ -2,6 +2,7 @@
 from __future__ import annotations
 import copy
 import argparse
+import itertools
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,23 @@ from e15190.utilities import (
     root6 as rt,
     styles,
 )
+
+def main():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('AB', type=str, choices=['A', 'B'])
+    argparser.add_argument('run', type=int)
+    args = argparser.parse_args()
+
+    gallery = Gallery()
+    for bar in range(1, 24 + 1):
+        preprocessor = ADCPreprocessor(args.AB, args.run, bar)
+        preprocessor.alias()
+        preprocessor.filter_neutron_wall_multiplicity()
+        preprocessor.define_randomized_adc()
+        preprocessor.fit()
+        preprocessor.save_parameters()
+        gallery.plot(preprocessor, save=True)
+        print(f'NW{args.AB}-{bar:02d} done.', flush=True)
 
 class ADCPreprocessor:
     # input_root_path_fmt = '$DATABASE_DIR/root_files_daniele/CalibratedData_{run:04d}.root'
@@ -85,13 +103,18 @@ class ADCPreprocessor:
     def get_fit_histograms(self, get_value=False) -> dict[
         str, ROOT.RDF.RResultPtr[ROOT.TH1D] | ROOT.RDF.RResultPtr[ROOT.TH2D] | ROOT.TH1D | ROOT.TH2D
     ]:
-        rdf_bar = self.rdf.Define('base_cut', f'bar == {self.bar} && fastr_L > 0 && fastr_R > 0')
+        rdf_bar = self.rdf.Define('base_cut', f'bar == {self.bar}')
         histograms = {
-            'fastr_totalr_L': rdf_bar.Histo2D(('', '', 2050, 0, 4100, 2050, 0, 4100), 'fastr_L', 'totalr_L', 'base_cut'),
-            'fastr_totalr_R': rdf_bar.Histo2D(('', '', 2050, 0, 4100, 2050, 0, 4100), 'fastr_R', 'totalr_R', 'base_cut'),
-            'log_ratio_totalr': (rdf_bar
+            'fast_total_L': rdf_bar.Histo2D(('', '', 1025, 0, 4100, 1025, 0, 4100), 'fastr_L', 'totalr_L', 'base_cut'),
+            'fast_total_R': rdf_bar.Histo2D(('', '', 1025, 0, 4100, 1025, 0, 4100), 'fastr_R', 'totalr_R', 'base_cut'),
+            'log_ratio_total': (rdf_bar
                 .Filter('VW_multi == 0')
-                .Define('cut', 'base_cut && sqrt(totalr_R * totalr_L) > 25 && totalr_R < 3000 && totalr_L < 3000')
+                .Define('cut', ' && '.join([
+                    'base_cut',
+                    'sqrt(totalr_R * totalr_L) > 25',
+                    'totalr_R < 3000', 'totalr_L < 3000',
+                    'fastr_L > 0', 'fastr_R > 0',
+                ]))
                 .Define('y', 'log(totalr_R / totalr_L)')
                 .Histo2D(('', '', 250, -125, 125, 500, -5, 5), 'pos_x', 'y', 'cut')
             ),
@@ -103,16 +126,16 @@ class ADCPreprocessor:
     def fit(self) -> dict[str, NonLinearCorrector | SaturationCorrector]:
         histograms = self.get_fit_histograms(get_value=True)
         self.correctors = {
-            'fastr_totalr_L': NonLinearCorrector(histograms['fastr_totalr_L']).fit(),
-            'fastr_totalr_R': NonLinearCorrector(histograms['fastr_totalr_R']).fit(),
-            'log_ratio_totalr': SaturationCorrector(histograms['log_ratio_totalr']).fit(),
+            'fast_total_L': NonLinearCorrector(histograms['fast_total_L']).fit(),
+            'fast_total_R': NonLinearCorrector(histograms['fast_total_R']).fit(),
+            'log_ratio_total': SaturationCorrector(histograms['log_ratio_total']).fit(),
         }
         return self.correctors
     
     def define_corrected_adc(self) -> None:
-        ft_L = self.correctors['fastr_totalr_L']
-        ft_R = self.correctors['fastr_totalr_R']
-        lrt = self.correctors['log_ratio_totalr'].model.coef
+        ft_L = self.correctors['fast_total_L']
+        ft_R = self.correctors['fast_total_R']
+        lrt = self.correctors['log_ratio_total'].model.coef
         self.rdf = (self.rdf
             .Define('is_saturated_total_L', 'total_L > 4095.5')
             .Define('is_saturated_total_R', 'total_R > 4095.5')
@@ -122,12 +145,14 @@ class ADCPreprocessor:
             .Define('totalf_L', ' + '.join([
                 'totalr_L',
                 '(is_saturated_total_L && !is_saturated_total_R) * (totalr_R / total_ratio - totalr_L)',
-                f'(!is_saturated_total_L && fastr_L > {ft_L.x_switch}) * ({ft_L.linear_fit.coef[0] - ft_L.quad_p0} + {ft_L.linear_fit.coef[1] - ft_L.quad_p1} * fastr_L + {-ft_L.quad_p2} * fastr_L * fastr_L)',
+                f'(!is_saturated_total_L && fastr_L > {ft_L.x_switch} && fastr_L < {ft_L.stationary_point_x}) * ({ft_L.linear_fit.coef[0] - ft_L.quad_p0} + {ft_L.linear_fit.coef[1] - ft_L.quad_p1} * fastr_L + {-ft_L.quad_p2} * fastr_L * fastr_L)',
+                f'(!is_saturated_total_L && fastr_L > {ft_L.stationary_point_x}) * ({ft_L.stationary_point_y} - totalr_L)',
             ]))
             .Define('totalf_R', ' + '.join([
                 'totalr_R',
                 '(is_saturated_total_R && !is_saturated_total_L) * (totalr_L * total_ratio - totalr_R)',
-                f'(!is_saturated_total_R && fastr_R > {ft_R.x_switch}) * ({ft_R.linear_fit.coef[0] - ft_R.quad_p0} + {ft_R.linear_fit.coef[1] - ft_R.quad_p1} * fastr_R + {-ft_R.quad_p2} * fastr_R * fastr_R)',
+                f'(!is_saturated_total_R && fastr_R > {ft_R.x_switch} && fastr_R < {ft_R.stationary_point_x}) * ({ft_R.linear_fit.coef[0] - ft_R.quad_p0} + {ft_R.linear_fit.coef[1] - ft_R.quad_p1} * fastr_R + {-ft_R.quad_p2} * fastr_R * fastr_R)',
+                f'(!is_saturated_total_R && fastr_R > {ft_R.stationary_point_x}) * ({ft_R.stationary_point_y} - totalr_R)',
             ]))
             .Alias('fastf_L', 'fastr_L')
             .Alias('fastf_R', 'fastr_R')
@@ -136,58 +161,58 @@ class ADCPreprocessor:
     def get_corrected_histograms(self, get_value=False):
         rdf_bar = self.rdf.Define('base_cut', f'bar == {self.bar} && fastf_L > 0 && fastf_R > 0')
         histograms = {
-            # 'fastf_totalf_L': (rdf_bar
-            #     .Define('cut', 'base_cut && totalr_R < 4095.5')
-            #     .Histo2D(('', '', 1125, 0, 4500, 1125, 0, 4500), 'fastf_L', 'totalf_L', 'cut')
-            # ),
-            # 'fastf_totalf_R': (rdf_bar
-            #     .Define('cut', 'base_cut && totalr_L < 4095.5')
-            #     .Histo2D(('', '', 1125, 0, 4500, 1125, 0, 4500), 'fastf_R', 'totalf_R', 'cut')
-            # ),
-            'log_ratio_totalf': (rdf_bar
+            'fast_total_L': (rdf_bar
+                .Define('cut', 'base_cut && totalr_R < 4095.5')
+                .Histo2D(('', '', 1125, 0, 4500, 1125, 0, 4500), 'fastf_L', 'totalf_L', 'cut')
+            ),
+            'fast_total_R': (rdf_bar
+                .Define('cut', 'base_cut && totalr_L < 4095.5')
+                .Histo2D(('', '', 1125, 0, 4500, 1125, 0, 4500), 'fastf_R', 'totalf_R', 'cut')
+            ),
+            'log_ratio_total': (rdf_bar
                 .Filter('VW_multi == 0')
                 .Define('cut', 'base_cut && sqrt(totalf_R * totalf_L) > 25')
                 .Define('y', 'log(totalf_R / totalf_L)')
                 .Histo2D(('', '', 250, -125, 125, 500, -5, 5), 'pos_x', 'y', 'cut')
             ),
-            'totalf_L_R': (rdf_bar
+            'total_L_R': (rdf_bar
                 .Filter('VW_multi == 0')
-                .Histo2D(('', '', 1200, 0, 6000, 1200, 0, 6000), 'totalf_L', 'totalf_R', 'base_cut')
+                .Histo2D(('', '', 600, 0, 6000, 600, 0, 6000), 'totalf_L', 'totalf_R', 'base_cut')
             ),
         }
         if get_value:
             histograms = {k: v.GetValue() for k, v in histograms.items()}
         return histograms
 
-    def save_parameters(self, path: Optional[str | Path] = None) -> None:
+    def save_parameters(self, path: Optional[str | Path] = None) -> Path:
         if path is None:
             path = Path(os.path.expandvars(self.database_dir)) / f'calib_params/run-{self.run:04d}/nw{self.ab}-bar{self.bar:02d}.json'
+        path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
+
+        quad_L = [self.correctors['fast_total_L'].__dict__[k] for k in ['quad_p0', 'quad_p1', 'quad_p2']]
+        quad_R = [self.correctors['fast_total_R'].__dict__[k] for k in ['quad_p0', 'quad_p1', 'quad_p2']]
 
         params = {
             'fast_total_L': {
-                'nonlinear_fast_threshold': self.correctors['fastr_totalr_L'].x_switch,
-                'linear_fit_params': str(list(self.correctors['fastr_totalr_L'].linear_fit.coef)),
-                'quadratic_fit_params': str([
-                    self.correctors['fastr_totalr_L'].quad_p0,
-                    self.correctors['fastr_totalr_L'].quad_p1,
-                    self.correctors['fastr_totalr_L'].quad_p2,
-                ]),
+                'nonlinear_fast_threshold': self.correctors['fast_total_L'].x_switch,
+                'linear_fit_params': str(list(self.correctors['fast_total_L'].linear_fit.coef)),
+                'quadratic_fit_params': str(quad_L),
+                'stationary_point_x': self.correctors['fast_total_L'].stationary_point_x,
+                'stationary_point_y': self.correctors['fast_total_L'].stationary_point_y,
             },
             'fast_total_R': {
-                'nonlinear_fast_threshold': self.correctors['fastr_totalr_R'].x_switch,
-                'linear_fit_params': str(list(self.correctors['fastr_totalr_R'].linear_fit.coef)),
-                'quadratic_fit_params': str([
-                    self.correctors['fastr_totalr_R'].quad_p0,
-                    self.correctors['fastr_totalr_R'].quad_p1,
-                    self.correctors['fastr_totalr_R'].quad_p2,
-                ]),
+                'nonlinear_fast_threshold': self.correctors['fast_total_R'].x_switch,
+                'linear_fit_params': str(list(self.correctors['fast_total_R'].linear_fit.coef)),
+                'quadratic_fit_params': str(quad_R),
+                'stationary_point_x': self.correctors['fast_total_R'].stationary_point_x,
+                'stationary_point_y': self.correctors['fast_total_R'].stationary_point_y,
             },
             'log_ratio_total': {
-                'attenuation_length': self.correctors['log_ratio_totalr'].attenuation_length,
-                'attenuation_length_error': self.correctors['log_ratio_totalr'].attenuation_length_err,
-                'gain_ratio': self.correctors['log_ratio_totalr'].gain_ratio,
-                'gain_ratio_error': self.correctors['log_ratio_totalr'].gain_ratio_err,
+                'attenuation_length': self.correctors['log_ratio_total'].attenuation_length,
+                'attenuation_length_error': self.correctors['log_ratio_total'].attenuation_length_err,
+                'gain_ratio': self.correctors['log_ratio_total'].gain_ratio,
+                'gain_ratio_error': self.correctors['log_ratio_total'].gain_ratio_err,
             },
         }
 
@@ -195,6 +220,7 @@ class ADCPreprocessor:
         json_str = re.sub(r'\]\"', ']', re.sub(r'\"\[', '[', json_str))
         with open(path, 'w') as file:
             file.write(json_str)
+        return path
 
 
 class Corrector:
@@ -220,10 +246,25 @@ class NonLinearCorrector(Corrector):
     @classmethod
     def fast_total_model(cls, x: np.ndarray, lin_p0: float, lin_p1: float, quad_p2: float, x_switch: float) -> np.ndarray:
         quad_p0, quad_p1, quad_p2 = cls.get_quadratic_params(lin_p0, lin_p1, quad_p2, x_switch)
-        return np.where(
-            x < x_switch,
-            lin_p0 + lin_p1 * x,
-            quad_p0 + quad_p1 * x + quad_p2 * x**2,
+        stationary_point_x = -quad_p1 / (2 * quad_p2)
+        stationary_point_y = quad_p0 - quad_p1 ** 2 / (4 * quad_p2)
+        if stationary_point_x < x_switch:
+            return np.where(
+                x < x_switch,
+                lin_p0 + lin_p1 * x,
+                quad_p0 + quad_p1 * x + quad_p2 * x**2,
+            )
+        return np.piecewise(
+            x,
+            [
+                x < x_switch,
+                (x >= x_switch) & (x < stationary_point_x),
+            ],
+            [
+                lambda x: lin_p0 + lin_p1 * x,
+                lambda x: quad_p0 + quad_p1 * x + quad_p2 * x**2,
+                lambda _: stationary_point_y,
+            ]
         )
     
     @classmethod
@@ -235,26 +276,39 @@ class NonLinearCorrector(Corrector):
         min_stationary_point: float,
     ) -> float:
         quad_p2, x_switch = params
-        mse = np.sum(np.square(
-            df_fit.z * (df_fit.y - cls.fast_total_model(df_fit.x, *linear_fit_params, quad_p2, x_switch))
-        )) / len(df_fit)
+        x, y = df_fit.x.to_numpy(), df_fit.y.to_numpy()
+        weights = (x / 4096)**2
+
+        residuals = np.abs(y - cls.fast_total_model(x, *linear_fit_params, quad_p2, x_switch))
+        mask = (residuals < 150) # drop outliers
+        mse = np.sum((weights[mask] * residuals[mask])**2) / np.sum(weights[mask])
         stationary_point = x_switch - 0.5 * linear_fit_params[1] / quad_p2 # -b / 2a, from ax^2 + bx + c = 0
-        penalty = max(0, min_stationary_point - stationary_point) # penalty if stationary point lower than 4095
+        penalty = max(0, min_stationary_point - stationary_point) # penalty if stationary point lower than min_stationary_point
         return mse + (0.1 * penalty)**2
     
-    def fit(self, linear_fit_range: tuple[float, float] = (1000.0, 3000.0)) -> NonLinearCorrector:
+    def fit(self, linear_fit_range: tuple[float, float] = (1200.0, 2500.0), fit_min_threshold=2500.0) -> NonLinearCorrector:
         self.linear_fit = self.get_linear_fit(linear_fit_range)
-        df_fit = self.df_histogram.query(f'x > {linear_fit_range[0]}')
-        self.min_result = minimize(
-            self.cost_function,
-            x0=[-1e-4, 3100],
-            method='Nelder-Mead',
-            bounds=[(-1e-2, 0), (3000, 4000)],
-            args=(df_fit, self.linear_fit.coef, (4096 - self.linear_fit.coef[0]) / self.linear_fit.coef[1]),
-        )
+        df_fit = self.df_histogram.query(f'x > {fit_min_threshold}')
+        best_residuals = np.inf
+        for x0 in itertools.product(
+            [-2e-4, -3e-4, -5e-4, -8e-4, -1e-3, -2e-3, -3e-3, -5e-3, -8e-3],
+            [2600, 2800, 3000, 3200, 3400]
+        ):
+            min_result = minimize(
+                self.cost_function,
+                x0=x0,
+                method='Nelder-Mead',
+                bounds=[(-1e-2, -1e-4), (2500, 4000)],
+                args=(df_fit, self.linear_fit.coef, (4096 - self.linear_fit.coef[0]) / self.linear_fit.coef[1]),
+            )
+            if min_result.fun < best_residuals:
+                best_residuals = min_result.fun
+                self.min_result = min_result
         self.quad_p2, self.x_switch = self.min_result.x
         self.model = lambda x: self.fast_total_model(x, *self.linear_fit.coef, self.quad_p2, self.x_switch)
         self.quad_p0, self.quad_p1, _ = self.get_quadratic_params(*self.linear_fit.coef, self.quad_p2, self.x_switch)
+        self.stationary_point_x = -self.quad_p1 / (2 * self.quad_p2)
+        self.stationary_point_y = self.quad_p0 - self.quad_p1 ** 2 / (4 * self.quad_p2)
         return self
 
 
@@ -304,40 +358,60 @@ class Gallery:
         pp.define_corrected_adc()
         histograms = pp.get_corrected_histograms()
 
-        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(11, 10), constrained_layout=True)
+        fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(11, 15), constrained_layout=True)
         fig.suptitle(f'run-{pp.run:04d}: NW{pp.AB}-{pp.bar:02d}')
 
         ax = axes[0, 0]
-        self.plot_histo2d(ax, pp.correctors['fastr_totalr_L'].histogram)
+        self.plot_histo2d(ax, pp.correctors['fast_total_L'].histogram)
         x_plt = np.linspace(0, 4100, 200)
-        ax.plot(x_plt, pp.correctors['fastr_totalr_L'].model(x_plt), color='black', linewidth=0.8)
-        ax.axvline(pp.correctors['fastr_totalr_L'].x_switch, color='black', linewidth=0.8, linestyle='--')
+        ax.plot(x_plt, pp.correctors['fast_total_L'].model(x_plt), color='black', linewidth=0.8)
+        ax.axvline(pp.correctors['fast_total_L'].x_switch, color='black', linewidth=0.8, linestyle='--')
+        ax.set_xlim(0, 4100)
+        ax.set_ylim(0, 4100)
+        ax.set_xlabel(r'Left FAST [ADC]')
+        ax.set_ylabel(r'Uncorrected left TOTAL [ADC]')
+
+        ax = axes[0, 1]
+        self.plot_histo2d(ax, pp.correctors['fast_total_R'].histogram)
+        x_plt = np.linspace(0, 4100, 200)
+        ax.plot(x_plt, pp.correctors['fast_total_R'].model(x_plt), color='black', linewidth=0.8)
+        ax.axvline(pp.correctors['fast_total_R'].x_switch, color='black', linewidth=0.8, linestyle='--')
+        ax.set_xlim(0, 4100)
+        ax.set_ylim(0, 4100)
+        ax.set_xlabel(r'Right FAST [ADC]')
+        ax.set_ylabel(r'Uncorrected right TOTAL [ADC]')
+
+        ax = axes[1, 0]
+        self.plot_histo2d(ax, histograms['fast_total_L'])
+        x_plt = np.linspace(0, 4100, 200)
+        ax.plot(x_plt, pp.correctors['fast_total_L'].linear_fit(x_plt), color='black', linewidth=0.8)
+        ax.axvline(pp.correctors['fast_total_L'].x_switch, color='black', linewidth=0.8, linestyle='--')
         ax.set_xlim(0, 4100)
         ax.set_ylim(0, 4100)
         ax.set_xlabel(r'Left FAST [ADC]')
         ax.set_ylabel(r'Corrected left TOTAL [ADC]')
 
-        ax = axes[0, 1]
-        self.plot_histo2d(ax, pp.correctors['fastr_totalr_R'].histogram)
+        ax = axes[1, 1]
+        self.plot_histo2d(ax, histograms['fast_total_R'])
         x_plt = np.linspace(0, 4100, 200)
-        ax.plot(x_plt, pp.correctors['fastr_totalr_R'].model(x_plt), color='black', linewidth=0.8)
-        ax.axvline(pp.correctors['fastr_totalr_R'].x_switch, color='black', linewidth=0.8, linestyle='--')
+        ax.plot(x_plt, pp.correctors['fast_total_R'].linear_fit(x_plt), color='black', linewidth=0.8)
+        ax.axvline(pp.correctors['fast_total_R'].x_switch, color='black', linewidth=0.8, linestyle='--')
         ax.set_xlim(0, 4100)
         ax.set_ylim(0, 4100)
         ax.set_xlabel(r'Right FAST [ADC]')
         ax.set_ylabel(r'Corrected right TOTAL [ADC]')
 
-        ax = axes[1, 0]
-        self.plot_histo2d(ax, histograms['log_ratio_totalf'])
+        ax = axes[2, 0]
+        self.plot_histo2d(ax, histograms['log_ratio_total'])
         x_plt = np.linspace(-125, 125, 200)
-        ax.plot(x_plt, pp.correctors['log_ratio_totalr'].model(x_plt), color='black', linewidth=0.8, linestyle='--')
+        ax.plot(x_plt, pp.correctors['log_ratio_total'].model(x_plt), color='black', linewidth=0.8, linestyle='--')
         ax.set_xlim(-125, 125)
         ax.set_ylim(-5, 5)
         ax.set_xlabel(r'Hit position $x$ [cm]')
-        ax.set_ylabel(r'$\ln(Q_2^\mathrm{R}/Q_2^\mathrm{L})$')
+        ax.set_ylabel(r'Corrected $\ln(Q_2^\mathrm{R}/Q_2^\mathrm{L})$')
 
-        ax = axes[1, 1]
-        self.plot_histo2d(ax, histograms['totalf_L_R'])
+        ax = axes[2, 1]
+        self.plot_histo2d(ax, histograms['total_L_R'])
         ax.set_xlim(0, 6000)
         ax.set_ylim(0, 6000)
         ax.set_xlabel(r'Corrected left TOTAL [ADC]')
@@ -348,19 +422,8 @@ class Gallery:
             path = path or Path(os.path.expandvars(pp.database_dir)) / f'gallery/run-{pp.run:04d}/NW{pp.AB}-{pp.bar:02d}.png'
             path.parent.mkdir(parents=True, exist_ok=True)
             fig.savefig(path, dpi=300, bbox_inches='tight')
+        plt.close()
+
 
 if __name__ == '__main__':
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('AB', type=str, choices=['A', 'B'])
-    argparser.add_argument('run', type=int)
-    args = argparser.parse_args()
-
-    gallery = Gallery()
-    for bar in range(1, 3 + 1):
-        preprocessor = ADCPreprocessor(args.AB, args.run, bar)
-        preprocessor.alias()
-        preprocessor.filter_neutron_wall_multiplicity()
-        preprocessor.define_randomized_adc()
-        preprocessor.fit()
-        preprocessor.save_parameters()
-        gallery.plot(preprocessor, save=True)
+    main()
