@@ -119,7 +119,7 @@ class HistogramConversion:
 
         return df
     
-    def _histo2d_to_dframe(self, histo, xname='x', yname='y', zname='z', keep_zeros=True):
+    def _histo2d_to_dframe(self, histo, xname='x', yname='y', zname='z', keep_zeros=True, ignore_errors=False):
         x = np.array([histo.GetXaxis().GetBinCenter(b) for b in range(1, histo.GetNbinsX() + 1)])
         y = np.array([histo.GetYaxis().GetBinCenter(b) for b in range(1, histo.GetNbinsY() + 1)])
         
@@ -127,23 +127,24 @@ class HistogramConversion:
         content = content.reshape(len(x) + 2, len(y) + 2, order='F')
         content = content[1:-1, 1:-1]
         
-        error = np.array([histo.GetBinError(b) for b in range((len(x) + 2) * (len(y) + 2))])
-        error = error.reshape(len(x) + 2, len(y) + 2, order='F')
-        error = error[1:-1, 1:-1]
-        
         xx, yy = np.meshgrid(x, y, indexing='ij')
         df = pd.DataFrame({
             xname: xx.flatten(),
             yname: yy.flatten(),
             zname: content.flatten(),
-            f'{zname}err': error.flatten(),
         })
         mask = (df[zname] != 0.0)
-        df[f'{zname}ferr'] = np.where(
-            mask,
-            np.abs(df[f'{zname}err'] / df[zname]),
-            0.0
-        )
+
+        if not ignore_errors:
+            error = np.array([histo.GetBinError(b) for b in range((len(x) + 2) * (len(y) + 2))])
+            error = error.reshape(len(x) + 2, len(y) + 2, order='F')
+            error = error[1:-1, 1:-1]
+            df[f'{zname}err'] = error.flatten()
+            df[f'{zname}ferr'] = np.where(
+                mask,
+                np.abs(df[f'{zname}err'] / df[zname]),
+                0.0
+            )
         return df if keep_zeros else df.query(f'{zname} != 0.0').reset_index(drop=True)
 
 def histo_conversion(histo, *args, **kwargs):
@@ -159,9 +160,11 @@ def histo_conversion(histo, *args, **kwargs):
         Name of the y-axis, by default 'y'.
     zname : str, optional
         Name of the z-axis, by default 'z'. Only used for 2D histograms.
-    keep_zeros : bool, optional
+    keep_zeros : bool, default True
         Whether to keep bins with zero content, i.e. z = 0, by default True.
         Only used for 2D histograms.
+    ignore_errors : bool, default False
+        Whether to ignore errors. Only used for 2D histograms.
     
     Returns
     -------
