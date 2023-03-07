@@ -11,7 +11,7 @@
 - [:closed_book: Documentation (API reference)](https://fanurs.github.io/data-analysis-e15190-e14030/build/html/index.html) <a href="https://www.sphinx-doc.org/"><img src="https://img.shields.io/badge/Powered%20by-Sphinx-1f425f.svg" alt="Sphinx"></a>
 - [:bar_chart: Infographics](https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html) <a href="https://plotly.com/"><img src="https://img.shields.io/badge/Powered%20by-Plotly-3c4d70" alt="Plotly"></a>
 - [:desktop_computer: Web app](https://fanurs.github.io/data-analysis-e15190-e14030/webapp.html) <a href="https://streamlit.io/"><img src="https://img.shields.io/badge/Powered%20by-Streamlit-ff4b4b" alt="Streamlit"></a>
-- ~~[:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list) <a href="https://www.php.net/"><img src="https://img.shields.io/badge/Powered%20by-PHP-8892bf" alt="PHP"></a>~~
+- ~~[:memo: Run log (WMU)](http://neutronstar.physics.wmich.edu/runlog/index.php?op=list) <a href="https://www.php.net/"><img src="https://img.shields.io/badge/Powered%20by-PHP-8892bf" alt="PHP"></a>~~ Only [static preview](https://htmlpreview.github.io/?https://github.com/fanurs/data-analysis-e15190-e14030/blob/main/database/runlog/downloads/elog.html) is available at the moment.
 - [:radioactive: Experiment homepage (original)](https://groups.nscl.msu.edu/hira/15190-14030/index.htm)
 
 **Background**
