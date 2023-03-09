@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Dict, Literal
 import warnings
+warnings.warn('This submodule is deprecated. Please refer to `e15190.neutron_wall.adc_preprocessing` instead.', DeprecationWarning)
 
 import duckdb as dk
 import matplotlib as mpl
