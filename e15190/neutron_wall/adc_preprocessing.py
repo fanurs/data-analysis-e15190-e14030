@@ -17,6 +17,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from numpy.polynomial import Polynomial
 import pandas as pd
+import ruptures as rpt
 from scipy.optimize import minimize
 import ROOT
 
@@ -27,6 +28,7 @@ from e15190.utilities import (
 )
 
 def main_function(AB: Literal['A', 'B'], run: int) -> None:
+    from time import perf_counter
     path = str(ADCPreprocessor._get_input_root_path(run))
     try:
         tree_name = rt.infer_tree_name(path)
@@ -40,6 +42,11 @@ def main_function(AB: Literal['A', 'B'], run: int) -> None:
     
     gallery = Gallery()
     for bar in range(1, 24 + 1):
+        t0 = perf_counter()
+        plot_path = Path(os.path.expandvars(ADCPreprocessor.database_dir)) / f'gallery/run-{run:04d}/NW{AB}-{bar:02d}.png'
+        if plot_path.exists():
+            print(f'Run {run:04d} NW{AB}-{bar:02d} already done.', flush=True)
+            continue
         try:
             preprocessor = ADCPreprocessor(AB, run, bar)
             preprocessor.alias()
@@ -48,9 +55,9 @@ def main_function(AB: Literal['A', 'B'], run: int) -> None:
             preprocessor.fit()
             preprocessor.save_parameters()
             gallery.plot(preprocessor, save=True)
-            print(f'Run {run:04d} NW{AB}-{bar:02d} done.', flush=True)
-        except Exception as e:
-            print(f'Run {run:04d} NW{AB}-{bar:02d} FAILED: {e}', flush=True)
+            print(f'Run {run:04d} NW{AB}-{bar:02d} done ({perf_counter() - t0:.1f} s)', flush=True)
+        except Exception as err:
+            print(f'Run {run:04d} NW{AB}-{bar:02d} FAILED ({perf_counter() - t0:.1f} s): {err}', flush=True)
 
 class ADCPreprocessor:
     # input_root_path_fmt = '$DATABASE_DIR/root_files_daniele/CalibratedData_{run:04d}.root'
@@ -249,16 +256,21 @@ class NonLinearCorrector(Corrector):
         return Polynomial.fit(df_fit.x, df_fit.y, 1, w=df_fit.z).convert()
 
     @staticmethod
-    def get_quadratic_params(lin_p0: float, lin_p1: float, quad_p2: float, x_switch: float) -> tuple[float, float, float]:
+    def get_quadratic_parameters(lin_p0: float, lin_p1: float, quad_p2: float, x_switch: float) -> tuple[float, float, float]:
         quad_p0 = lin_p0 + quad_p2 * x_switch**2
         quad_p1 = lin_p1 - 2 * quad_p2 * x_switch
         return quad_p0, quad_p1, quad_p2
 
+    @staticmethod
+    def get_stationary_point(quad_p0: float, quad_p1: float, quad_p2: float) -> tuple[float, float]:
+        stationary_point_x = -quad_p1 / (2 * quad_p2)
+        stationary_point_y = quad_p0 - quad_p1**2 / (4 * quad_p2)
+        return stationary_point_x, stationary_point_y
+
     @classmethod
     def fast_total_model(cls, x: np.ndarray, lin_p0: float, lin_p1: float, quad_p2: float, x_switch: float) -> np.ndarray:
-        quad_p0, quad_p1, quad_p2 = cls.get_quadratic_params(lin_p0, lin_p1, quad_p2, x_switch)
-        stationary_point_x = -quad_p1 / (2 * quad_p2)
-        stationary_point_y = quad_p0 - quad_p1 ** 2 / (4 * quad_p2)
+        quad_p0, quad_p1, quad_p2 = cls.get_quadratic_parameters(lin_p0, lin_p1, quad_p2, x_switch)
+        stationary_point_x, stationary_point_y = cls.get_stationary_point(quad_p0, quad_p1, quad_p2)
         if stationary_point_x < x_switch:
             return np.where(
                 x < x_switch,
@@ -317,7 +329,7 @@ class NonLinearCorrector(Corrector):
                 self.min_result = min_result
         self.quad_p2, self.x_switch = self.min_result.x
         self.model = lambda x: self.fast_total_model(x, *self.linear_fit.coef, self.quad_p2, self.x_switch)
-        self.quad_p0, self.quad_p1, _ = self.get_quadratic_params(*self.linear_fit.coef, self.quad_p2, self.x_switch)
+        self.quad_p0, self.quad_p1, _ = self.get_quadratic_parameters(*self.linear_fit.coef, self.quad_p2, self.x_switch)
         self.stationary_point_x = -self.quad_p1 / (2 * self.quad_p2)
         self.stationary_point_y = self.quad_p0 - self.quad_p1 ** 2 / (4 * self.quad_p2)
         return self
@@ -437,27 +449,255 @@ class Gallery:
 
 
 class CalibParameter:
-    @staticmethod
-    def collect_parameters(filepath: str | Path) -> dict:
+    bars = list(range(1, 24 + 1))
+
+    @classmethod
+    def collect_parameters(cls, filepath: str | Path) -> dict:
         with open(filepath, 'r') as file:
             return json.load(file)
 
-    @staticmethod
-    def collect_all_parameters_of_bar(AB: Literal['A', 'B'], bar: int, max_workers=None) -> pd.DataFrame:
+    @classmethod
+    def collect_all_parameters_of_bar(cls, AB: Literal['A', 'B'], bar: int, max_workers=None) -> dict[str, pd.DataFrame]:
         directory = Path(os.path.expandvars(ADCPreprocessor.database_dir))
         paths = glob(str(directory / f'calib_params/run-*/nw{AB.lower()}-bar{bar:02d}.json'))
         paths = [Path(path) for path in paths]
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             parameters = {
-                int(path.parent.name[-4:]): executor.submit(CalibParameter.collect_parameters, path)
+                int(path.parent.name[-4:]): executor.submit(cls.collect_parameters, path)
                 for path in paths
             }
-        return {run: parameter.result() for run, parameter in parameters.items()}
+        parameters = {run: parameter.result() for run, parameter in parameters.items()}
+        parameters = {run: parameters[run] for run in sorted(parameters)}
+        results = {'fast_total_L': [], 'fast_total_R': [], 'log_ratio_total': []}
+        for run, params in parameters.items():
+            for side in ['L', 'R']:
+                par = params[f'fast_total_{side}']
+                results[f'fast_total_{side}'].append([
+                    run, par['nonlinear_fast_threshold'],
+                    *par['linear_fit_params'], *par['quadratic_fit_params'],
+                    par['stationary_point_x'], par['stationary_point_y'],
+                ])
+            par = params['log_ratio_total']
+            results['log_ratio_total'].append([
+                run, par['attenuation_length'], par['attenuation_length_error'], par['gain_ratio'], par['gain_ratio_error'],
+            ])
+        for side in ['L', 'R']:
+            results[f'fast_total_{side}'] = pd.DataFrame(results[f'fast_total_{side}'], columns=[
+                'run', 'nonlinear_fast_threshold',
+                'linear_fit_params[0]', 'linear_fit_params[1]',
+                'quadratic_fit_params[0]', 'quadratic_fit_params[1]', 'quadratic_fit_params[2]',
+                'stationary_point_x', 'stationary_point_y',
+            ]).set_index('run', drop=False, inplace=False)
+        results['log_ratio_total'] = pd.DataFrame(results['log_ratio_total'], columns=[
+            'run', 'attenuation_length', 'attenuation_length_error', 'gain_ratio', 'gain_ratio_error',
+        ]).set_index('run', drop=False, inplace=False)
+        return results
+    
+    @classmethod
+    def collect_all_parameters(cls, AB: Literal['A', 'B'], max_workers=None) -> dict[str, dict[int, pd.DataFrame]]:
+        results = {bar: cls.collect_all_parameters_of_bar(AB, bar, max_workers=max_workers) for bar in cls.bars}
+        names = list(results.values().__iter__().__next__().keys())
+        return {name: {bar: results[bar][name] for bar in cls.bars} for name in names}
+ 
+    @classmethod
+    def _determine_breakpoint_ranges_of_bar(
+        cls,
+        parameters: pd.DataFrame,
+        full_run_range: tuple[int, int],
+        extra_breakpoints: tuple[int, ...],
+        ruptures_kwargs: Optional[dict],
+    ) -> np.ndarray:
+        runs = list(parameters.index)
+
+        # prepare data for change point detection
+        data = []
+        for run in range(full_run_range[0], full_run_range[1] + 1):
+            if run not in runs: continue
+            data.append([run, *parameters.loc[run]])
+        data = pd.DataFrame(data, columns=['run', *parameters.columns]).set_index('run', drop=True, inplace=False)
+        data = (data - data.mean(axis=0)) / data.std(axis=0)
+
+        # change point detection
+        kw = dict(kernel='rbf', min_size=20)
+        if ruptures_kwargs is not None:
+            kw.update(ruptures_kwargs)
+        bp_runs = rpt.KernelCPD(**kw).fit_predict(data.values, pen=1)
+        bp_runs = data.index[bp_runs[1:-1]]
+
+        # add extra breakpoints
+        if extra_breakpoints is not None:
+            bp_runs = sorted([*extra_breakpoints, *bp_runs])
+            for extra_bp in extra_breakpoints:
+                idx = bp_runs.index(extra_bp)
+                if idx <= 0: continue
+                del bp_runs[idx - 1]
+                if idx >= len(bp_runs) - 1: continue
+                del bp_runs[idx]
+
+        # add full run range
+        if full_run_range[0] < bp_runs[0]:
+            bp_runs = [full_run_range[0], *bp_runs]
+        if bp_runs[-1] < full_run_range[1]:
+            bp_runs = [*bp_runs, full_run_range[1]]
+
+        # convert to ranges
+        bp_ranges = np.array(list(zip(bp_runs[:-1], bp_runs[1:])))
+        bp_ranges[:, 0] += 1
+        assert (bp_ranges[:, 0] <= bp_ranges[:, 1]).all()
+        return bp_ranges
+    
+    @classmethod
+    def determine_breakpoints_ranges_of_bar(
+        cls,
+        parameters: pd.DataFrame,
+        full_run_range: tuple[int, int],
+        extra_breakpoints: tuple[int, ...],
+        ruptures_kwargs: Optional[dict] = None,
+        **kwargs,
+    ) -> np.ndarray:
+        if 'run' in parameters.columns:
+            parameters = parameters.set_index('run', inplace=False, drop=True)
+        if 'nonlinear_fast_threshold' in parameters.columns:
+            stationary_point_y_range = kwargs.get('stationary_point_y_range', (3750.0, 4000.0))
+            parameters = parameters[parameters['stationary_point_y'].between(*stationary_point_y_range)]
+            parameters = parameters[
+                ['linear_fit_params[0]', 'linear_fit_params[1]', 'quadratic_fit_params[2]', 'nonlinear_fast_threshold']
+            ] # the other columns are not independent
+            return cls._determine_breakpoint_ranges_of_bar(parameters, full_run_range, extra_breakpoints, ruptures_kwargs)
+        parameters = parameters[['attenuation_length', 'gain_ratio']]
+        return cls._determine_breakpoint_ranges_of_bar(parameters, full_run_range, extra_breakpoints, ruptures_kwargs)
+    
+    @classmethod
+    def determine_breakpoints_ranges(
+        cls,
+        parameters: dict[int, pd.DataFrame],
+        full_run_range: tuple[int, int] = (2000, 5000),
+        extra_breakpoints: Optional[tuple[int, ...]] = (3500, ),
+        ruptures_kwargs: Optional[dict] = None,
+        **kwargs,
+    ) -> dict[int, np.ndarray]:
+        return {
+            bar: cls.determine_breakpoints_ranges_of_bar(
+                parameters[bar], full_run_range, extra_breakpoints, ruptures_kwargs, **kwargs,
+            ) for bar in parameters
+        }
+
+    @classmethod
+    def get_savable_of_bar(cls, breakpoint_ranges: np.ndarray, parameters: pd.DataFrame) -> pd.DataFrame:
+        if 'run' in parameters.columns:
+            parameters = parameters.set_index('run', inplace=False, drop=True)
+        result = []
+        for bp_range in breakpoint_ranges:
+            subparams = np.array(parameters.loc[bp_range[0]:bp_range[1] + 1])
+            quantiles = np.quantile(subparams, [0.25, 0.75], axis=0)
+            mask = (subparams >= quantiles[0]) & (subparams <= quantiles[1])
+            subparams[~mask] = np.nan
+            means = np.nanmean(subparams, axis=0)
+            result.append([*bp_range, *means])
+        return pd.DataFrame(result, columns=['run_start', 'run_stop', *parameters.columns])
+    
+    @classmethod
+    def get_savable(cls, breakpoint_ranges: dict[int, np.ndarray], parameters: dict[int, pd.DataFrame]) -> pd.DataFrame:
+        df = None
+        for (bar, bp_range), (_, params) in zip(breakpoint_ranges.items(), parameters.items()):
+            df_bar = cls.get_savable_of_bar(bp_range, params)
+            # insert bar as first column
+            df_bar.insert(0, 'bar', bar)
+            df = pd.concat([df, df_bar]) if df is not None else df_bar
+        return df
+    
+    @staticmethod
+    def round_by_significant_digits(df: pd.DataFrame, significant_digits: int) -> pd.DataFrame:
+        df_rounded = df.copy()
+        for col, dtype in zip(df_rounded.columns, df_rounded.dtypes):
+            if dtype == np.float64 or dtype == np.float32:
+                col_values = df[col].values
+                magnitude = 10**(significant_digits - 1 - np.floor(np.log10(np.abs(col_values))))
+                df_rounded[col] = np.round(col_values * magnitude) / magnitude
+        return df_rounded
+    
+    @classmethod
+    def save(
+        cls,
+        name: str,
+        breakpoint_ranges: dict[int, np.ndarray],
+        parameters: dict[int, pd.DataFrame],
+        filepath: Optional[str | Path] = None,
+    ) -> Path:
+        df = cls.get_savable(breakpoint_ranges, parameters)
+
+        if name in ['fast_total_L', 'slow_total_R']:
+            independent_columns = [
+                'linear_fit_params[0]', 'linear_fit_params[1]', 'quadratic_fit_params[2]', 'nonlinear_fast_threshold',
+            ]
+            df = df[['bar', 'run_start', 'run_stop', *independent_columns]]
+            df['quadratic_fit_params[0]'], df['quadratic_fit_params[1]'], _ = NonLinearCorrector.get_quadratic_parameters(*[
+                df[col].values for col in  independent_columns
+            ])
+            df['stationary_point_x'], df['stationary_point_y'] = NonLinearCorrector.get_stationary_point(*[
+                df[f'quadratic_fit_params[{i}]'].values for i in range(3)
+            ])
+            df = df[[
+                'bar', 'run_start', 'run_stop',
+                'nonlinear_fast_threshold',
+                'linear_fit_params[0]', 'linear_fit_params[1]',
+                'quadratic_fit_params[0]', 'quadratic_fit_params[1]', 'quadratic_fit_params[2]',
+                'stationary_point_x', 'stationary_point_y',
+            ]]
+        df = cls.round_by_significant_digits(df, 8)
+
+        # determine file path
+        if filepath is None:
+            filepath = Path(os.path.expandvars(ADCPreprocessor.database_dir)) / f'calib_params_{name}.csv'
+        filepath = Path(filepath)
+        if filepath.suffix != '.csv':
+            filepath = filepath.with_suffix('.csv')
+        
+        # save CSV
+        df.to_csv(filepath, index=False)
+
+        # save JSON
+        content = dict()
+        for _, row in df.iterrows():
+            bar_str = str(int(row['bar']))
+            if bar_str not in content:
+                content[bar_str] = []
+            row_content = {
+                'run_range': str([int(row['run_start']), int(row['run_stop'])]),
+            }
+            if name in ['fast_total_L', 'fast_total_R']:
+                row_content.update({
+                    'nonlinear_fast_threshold': float(row['nonlinear_fast_threshold']),
+                    'linear_fit_params': str([float(row[f'linear_fit_params[{i}]']) for i in range(2)]),
+                    'quadratic_fit_params': str([float(row[f'quadratic_fit_params[{i}]']) for i in range(3)]),
+                    'stationary_point_x': float(row['stationary_point_x']),
+                    'stationary_point_y': float(row['stationary_point_y']),
+                })
+            else:
+                row_content.update({
+                    'attenuation_length': float(row['attenuation_length']),
+                    'attenuation_length_error': float(row['attenuation_length_error']),
+                    'gain_ratio': float(row['gain_ratio']),
+                    'gain_ratio_error': float(row['gain_ratio_error']),
+                })
+            content[bar_str].append(row_content)
+        json_str = json.dumps(content, indent=4)
+        json_str = re.sub(r'\]\"', ']', re.sub(r'\"\[', '[', json_str))
+        with open(filepath.with_suffix('.json'), 'w') as file:
+            file.write(json_str)
+        return filepath
 
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
     argparser.add_argument('AB', type=str, choices=['A', 'B'])
     argparser.add_argument('run', type=int)
+    argparser.add_argument('--summary', action='store_true')
     args = argparser.parse_args()
-    main_function(args.AB, args.run)
+    if args.summary:
+        for name in ['fast_total_L', 'fast_total_R', 'log_ratio_total']:
+            paras = CalibParameter.collect_all_parameters(args.AB, max_workers=8)
+            bp_ranges = CalibParameter.determine_breakpoints_ranges(paras[name])
+            CalibParameter.save(name, bp_ranges, paras[name])
+    else:
+        main_function(args.AB, args.run)
