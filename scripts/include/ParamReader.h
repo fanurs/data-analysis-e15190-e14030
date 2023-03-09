@@ -101,9 +101,9 @@ public:
     char ab;
     int run;
     std::filesystem::path project_dir = "";
-    std::filesystem::path calib_reldir = "database/neutron_wall/adc_preprocessing/calib_params/run-%04d";
-    std::string filename = "nw%c-bar%02d.json";
-    std::filesystem::path filepath;
+    std::filesystem::path calib_reldir = "database/neutron_wall/adc_preprocessing/";
+    std::string filename = "calib_params_%s.json";
+    std::vector<std::filesystem::path> filepaths; // to be written as metadata
     std::unordered_map<int, std::unordered_map<std::string, double> > fast_total_L;
     std::unordered_map<int, std::unordered_map<std::string, double> > fast_total_R;
     std::unordered_map<int, std::unordered_map<std::string, double> > log_ratio_total;
@@ -111,9 +111,10 @@ public:
     NWADCPreprocessorParamReader(const char AB);
     ~NWADCPreprocessorParamReader();
 
-    bool load(int run);
-    bool load_bar(int bar);
-    // void write_metadata(TFolder* folder, bool relative_path=true);
+    void load(int run);
+    void load_fast_total(char side);
+    void load_log_ratio_total();
+    void write_metadata(TFolder* folder, bool relative_path=true);
 };
 
 class NWLightOutputCalibParamReader : public ParamReader<int> {
