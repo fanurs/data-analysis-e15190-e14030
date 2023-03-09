@@ -95,23 +95,43 @@ public:
     void write_metadata(TFolder* folder, bool relative_path=true);
 };
 
+class NWADCPreprocessorParamReader {
+public:
+    char AB;
+    char ab;
+    int run;
+    std::filesystem::path project_dir = "";
+    std::filesystem::path calib_reldir = "database/neutron_wall/adc_preprocessing/";
+    std::string filename = "calib_params_%s.json";
+    std::vector<std::filesystem::path> filepaths; // to be written as metadata
+    std::unordered_map<int, std::unordered_map<std::string, double> > fast_total_L;
+    std::unordered_map<int, std::unordered_map<std::string, double> > fast_total_R;
+    std::unordered_map<int, std::unordered_map<std::string, double> > log_ratio_total;
+
+    NWADCPreprocessorParamReader(const char AB);
+    ~NWADCPreprocessorParamReader();
+
+    void load(int run);
+    void load_fast_total(char side);
+    void load_log_ratio_total();
+    void write_metadata(TFolder* folder, bool relative_path=true);
+};
+
 class NWLightOutputCalibParamReader : public ParamReader<int> {
 public:
     char AB;
     char ab;
     std::filesystem::path project_dir = "";
     std::filesystem::path lcalib_reldir = "database/neutron_wall/light_output_calibration";
-    std::string sat_filename = "nw%c_saturation_recovery.csv";
     std::string pul_filename = "nw%c_pulse_height_calibration.dat";
-    std::filesystem::path sat_path, pul_path;
+    std::filesystem::path pul_path;
     std::unordered_map<int, std::unordered_map<std::string, double>> run_param;
 
-    NWLightOutputCalibParamReader(const char AB, bool load_params=true);
+    NWLightOutputCalibParamReader(const char AB);
     ~NWLightOutputCalibParamReader();
 
-    long load_saturation();
     void load_pulse_height();
-    bool load(int run);
+    void load(int run);
     void write_metadata(TFolder* folder, bool relative_path=true);
 };
 

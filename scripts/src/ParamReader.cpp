@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <unistd.h>
+#include <unordered_map>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -276,11 +277,119 @@ void NWTimeOfFlightCalibParamReader::write_metadata(TFolder* folder, bool relati
 }
 
 
+/**************************************/
+/*****NWADCPreprocessorParamReader*****/
+/**************************************/
+NWADCPreprocessorParamReader::NWADCPreprocessorParamReader(const char AB) {
+    const char* PROJECT_DIR = getenv("PROJECT_DIR");
+    if (PROJECT_DIR == nullptr) {
+        std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
+        exit(1);
+    }
+    this->AB = toupper(AB);
+    this->ab = tolower(this->AB);
+    this->project_dir = PROJECT_DIR;
+}
+
+NWADCPreprocessorParamReader::~NWADCPreprocessorParamReader() { }
+
+void NWADCPreprocessorParamReader::load(int run) {
+    this->run = run;
+    this->calib_reldir = this->project_dir / Form(this->calib_reldir.string().c_str(), this->run);
+    this->load_fast_total('L');
+    this->load_fast_total('R');
+    this->load_log_ratio_total();
+    return;
+}
+
+void NWADCPreprocessorParamReader::load_fast_total(char side) {
+    auto filepath = this->calib_reldir / Form(this->filename.c_str(), Form("fast_total_%c", side));
+    this->filepaths.push_back(filepath);
+    std::ifstream file(filepath.string());
+    if (!file.is_open()) {
+        std::cerr << "ERROR: failed to open " << filepath.string() << std::endl;
+        exit(1);
+    }
+    Json content;
+    file >> content;
+    file.close();
+
+    auto& map = (side == 'L') ? this->fast_total_L : this->fast_total_R;
+    for (int bar = 1; bar <= 24; ++bar) {
+        Json& bar_content = content[std::to_string(bar)];
+        Json info;
+        for (auto& chunk : bar_content) {
+            if (chunk["run_range"][0].get<int>() <= this->run && this->run <= chunk["run_range"][1].get<int>()) {
+                info = chunk;
+                break;
+            }
+        }
+        if (info.is_null()) {
+            std::cerr << Form("ERROR: run-%04d is not found for NW%c bar%02d", this->run, this->AB, bar) << std::endl;
+            exit(1);
+        }
+        map[bar] = {
+            {"nonlinear_fast_threshold", info["nonlinear_fast_threshold"].get<double>()},
+            {"stationary_point_x", info["stationary_point_x"].get<double>()},
+            {"stationary_point_y", info["stationary_point_y"].get<double>()},
+            {"fit_params[0]", info["linear_fit_params"][0].get<double>() - info["quadratic_fit_params"][0].get<double>()},
+            {"fit_params[1]", info["linear_fit_params"][1].get<double>() - info["quadratic_fit_params"][1].get<double>()},
+            {"fit_params[2]", -info["quadratic_fit_params"][2].get<double>()},
+        };
+    }
+    return;
+}
+
+void NWADCPreprocessorParamReader::load_log_ratio_total() {
+    auto filepath = this->calib_reldir / Form(this->filename.c_str(), "log_ratio_total");
+    this->filepaths.push_back(filepath);
+    std::ifstream file(filepath.string());
+    if (!file.is_open()) {
+        std::cerr << "ERROR: failed to open " << filepath.string() << std::endl;
+        exit(1);
+    }
+    Json content;
+    file >> content;
+    file.close();
+
+    auto& map = this->log_ratio_total;
+    for (int bar = 1; bar <= 24; ++bar) {
+        Json& bar_content = content[std::to_string(bar)];
+        Json info;
+        for (auto& chunk : bar_content) {
+            if (chunk["run_range"][0].get<int>() <= this->run && this->run <= chunk["run_range"][1].get<int>()) {
+                info = chunk;
+                break;
+            }
+        }
+        if (info.is_null()) {
+            std::cerr << Form("ERROR: run-%04d is not found for NW%c bar%02d", this->run, this->AB, bar) << std::endl;
+            exit(1);
+        }
+        map[bar] = {
+            {"attenuation_length", info["attenuation_length"].get<double>()},
+            {"gain_ratio", info["gain_ratio"].get<double>()},
+        };
+    }
+    return;
+}
+
+void NWADCPreprocessorParamReader::write_metadata(TFolder* folder, bool relative_path) {
+    std::filesystem::path base_dir = (relative_path) ? this->project_dir : "/";
+    std::filesystem::path path;
+    for (auto& filepath : this->filepaths) {
+        path = std::filesystem::proximate(filepath, base_dir);
+        TNamed* named = new TNamed(path.string().c_str(), "");
+        folder->Add(named);
+    }
+    return;
+}
+
 
 /***************************************/
 /*****NWLightOutputCalibParamReader*****/
 /***************************************/
-NWLightOutputCalibParamReader::NWLightOutputCalibParamReader(const char AB, bool load_params) {
+NWLightOutputCalibParamReader::NWLightOutputCalibParamReader(const char AB) {
     const char* PROJECT_DIR = getenv("PROJECT_DIR");
     if (PROJECT_DIR == nullptr) {
         std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
@@ -290,29 +399,10 @@ NWLightOutputCalibParamReader::NWLightOutputCalibParamReader(const char AB, bool
     this->ab = tolower(this->AB);
     this->project_dir = PROJECT_DIR;
     this->lcalib_reldir = this->project_dir / this->lcalib_reldir;
-    this->sat_path = this->lcalib_reldir / Form(this->sat_filename.c_str(), this->ab);
     this->pul_path = this->lcalib_reldir / Form(this->pul_filename.c_str(), this->ab);
-
-    if (load_params) {
-        this->load_saturation();
-        this->load_pulse_height();
-    }
 }
 
 NWLightOutputCalibParamReader::~NWLightOutputCalibParamReader() { }
-
-long NWLightOutputCalibParamReader::load_saturation() {
-    return this->load_from_txt(
-        this->sat_path.c_str(),
-        "bar/I"
-        ":run_start/I:run_stop/I"
-        ":att_length/D:att_length_std/D"
-        ":gain_ratio/D:gain_ratio_std/D"
-        ":log_light_ratio_spread/D:log_light_ratio_spread_std/D",
-        1,
-        ','
-    );
-}
 
 void NWLightOutputCalibParamReader::load_pulse_height() {
     std::vector<std::string> keys = {"a", "b", "c", "d", "e"};
@@ -333,40 +423,15 @@ void NWLightOutputCalibParamReader::load_pulse_height() {
     infile.close();
 }
 
-bool NWLightOutputCalibParamReader::load(int run) {
-    std::vector<std::string> keys = {
-        "att_length",
-        "att_length_std",
-        "gain_ratio",
-        "gain_ratio_std",
-        "log_light_ratio_spread",
-        "log_light_ratio_spread_std"
-    };
-    int n_rows = this->tree->GetEntries();
-    for (int i = 0; i < n_rows; ++i) {
-        this->index_map[i] = i; // to correctly invoke get_value<val_t>
-
-        int run_start = this->get_value<int>(i, "run_start");
-        int run_stop = this->get_value<int>(i, "run_stop");
-        if (!(run_start <= run && run <= run_stop)) { continue; }
-
-        int bar = this->get_value<int>(i, "bar");
-        for (std::string& key : keys) {
-            this->run_param[bar][key] = this->get_value<double>(i, key);
-        }
-    }
-    return true;
+void NWLightOutputCalibParamReader::load(int run) {
+    // run dependency not implemented
+    this->load_pulse_height();
+    return;
 }
 
 void NWLightOutputCalibParamReader::write_metadata(TFolder* folder, bool relative_path) {
     std::filesystem::path base_dir = (relative_path) ? this->project_dir : "/";
-    std::filesystem::path path;
-
-    path = std::filesystem::proximate(this->sat_path, base_dir);
-    TNamed* sat_path_data = new TNamed(path.string().c_str(), "");
-    folder->Add(sat_path_data);
-
-    path = std::filesystem::proximate(this->pul_path, base_dir);
+    std::filesystem::path path = std::filesystem::proximate(this->pul_path, base_dir);
     TNamed* pul_path_data = new TNamed(path.string().c_str(), "");
     folder->Add(pul_path_data);
 

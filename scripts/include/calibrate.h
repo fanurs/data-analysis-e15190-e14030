@@ -73,19 +73,24 @@ struct Container {
     std::array<double, max_multi> NWB_time;
     std::array<double, max_multi> NWB_time_L;
     std::array<double, max_multi> NWB_time_R;
-    std::array<double, max_multi> NWB_tof; /*updated*/
-    std::array<double, max_multi> NWB_pos_x; /*updated*/
-    std::array<double, max_multi> NWB_pos_y; /*updated*/
-    std::array<double, max_multi> NWB_pos_z; /*updated*/
-    std::array<double, max_multi> NWB_distance; /*updated*/
-    std::array<double, max_multi> NWB_theta; /*updated*/
-    std::array<double, max_multi> NWB_phi; /*updated*/
-    std::array<double, max_multi> NWB_distance_c; /*updated*/
-    std::array<double, max_multi> NWB_theta_c; /*updated*/
-    std::array<double, max_multi> NWB_phi_c; /*updated*/
-    std::array<double, max_multi> NWB_light_GM; /*updated*/
-    std::array<double, max_multi> NWB_psd; /*updated*/
-    std::array<double, max_multi> NWB_psd_perp; /*updated*/
+    /* new / modified branches */
+    std::array<float, max_multi> NWB_totalf_L;
+    std::array<float, max_multi> NWB_totalf_R;
+    std::array<float, max_multi> NWB_fastf_L;
+    std::array<float, max_multi> NWB_fastf_R;
+    std::array<float, max_multi> NWB_tof;
+    std::array<float, max_multi> NWB_pos_x;
+    std::array<float, max_multi> NWB_pos_y;
+    std::array<float, max_multi> NWB_pos_z;
+    std::array<float, max_multi> NWB_distance;
+    std::array<float, max_multi> NWB_theta;
+    std::array<float, max_multi> NWB_phi;
+    std::array<float, max_multi> NWB_distance_c;
+    std::array<float, max_multi> NWB_theta_c;
+    std::array<float, max_multi> NWB_phi_c;
+    std::array<float, max_multi> NWB_light_GM;
+    std::array<float, max_multi> NWB_psd;
+    std::array<float, max_multi> NWB_psd_perp;
 };
 Container container;
 
@@ -419,19 +424,24 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("NWB_time",        &container.NWB_time[0],       "NWB_time[NWB_multi]/D");
     tree->Branch("NWB_time_L",      &container.NWB_time_L[0],     "NWB_time_L[NWB_multi]/D");
     tree->Branch("NWB_time_R",      &container.NWB_time_R[0],     "NWB_time_R[NWB_multi]/D");
-    tree->Branch("NWB_tof",         &container.NWB_tof[0],        "NWB_tof[NWB_multi]/D");
-    tree->Branch("NWB_pos_x",       &container.NWB_pos_x[0],      "NWB_pos_x[NWB_multi]/D");
-    tree->Branch("NWB_pos_y",       &container.NWB_pos_y[0],      "NWB_pos_y[NWB_multi]/D");
-    tree->Branch("NWB_pos_z",       &container.NWB_pos_z[0],      "NWB_pos_z[NWB_multi]/D");
-    tree->Branch("NWB_distance",    &container.NWB_distance[0],   "NWB_distance[NWB_multi]/D");
-    tree->Branch("NWB_theta",       &container.NWB_theta[0],      "NWB_theta[NWB_multi]/D");
-    tree->Branch("NWB_phi",         &container.NWB_phi[0],        "NWB_phi[NWB_multi]/D");
-    tree->Branch("NWB_distance_c",  &container.NWB_distance_c[0], "NWB_distance_c[NWB_multi]/D");
-    tree->Branch("NWB_theta_c",     &container.NWB_theta_c[0],    "NWB_theta_c[NWB_multi]/D");
-    tree->Branch("NWB_phi_c",       &container.NWB_phi_c[0],      "NWB_phi_c[NWB_multi]/D");
-    tree->Branch("NWB_light_GM",    &container.NWB_light_GM[0],   "NWB_light_GM[NWB_multi]/D");
-    tree->Branch("NWB_psd",         &container.NWB_psd[0],        "NWB_psd[NWB_multi]/D");
-    tree->Branch("NWB_psd_perp",    &container.NWB_psd_perp[0],   "NWB_psd_perp[NWB_multi]/D");
+    /* new / modified branches */
+    tree->Branch("NWB_totalf_L",    &container.NWB_totalf_L[0],   "NWB_totalf_L[NWB_multi]/F");
+    tree->Branch("NWB_totalf_R",    &container.NWB_totalf_R[0],   "NWB_totalf_R[NWB_multi]/F");
+    tree->Branch("NWB_fastf_L",     &container.NWB_fastf_L[0],    "NWB_fastf_L[NWB_multi]/F");
+    tree->Branch("NWB_fastf_R",     &container.NWB_fastf_R[0],    "NWB_fastf_R[NWB_multi]/F");
+    tree->Branch("NWB_tof",         &container.NWB_tof[0],        "NWB_tof[NWB_multi]/F");
+    tree->Branch("NWB_pos_x",       &container.NWB_pos_x[0],      "NWB_pos_x[NWB_multi]/F");
+    tree->Branch("NWB_pos_y",       &container.NWB_pos_y[0],      "NWB_pos_y[NWB_multi]/F");
+    tree->Branch("NWB_pos_z",       &container.NWB_pos_z[0],      "NWB_pos_z[NWB_multi]/F");
+    tree->Branch("NWB_distance",    &container.NWB_distance[0],   "NWB_distance[NWB_multi]/F");
+    tree->Branch("NWB_theta",       &container.NWB_theta[0],      "NWB_theta[NWB_multi]/F");
+    tree->Branch("NWB_phi",         &container.NWB_phi[0],        "NWB_phi[NWB_multi]/F");
+    tree->Branch("NWB_distance_c",  &container.NWB_distance_c[0], "NWB_distance_c[NWB_multi]/F");
+    tree->Branch("NWB_theta_c",     &container.NWB_theta_c[0],    "NWB_theta_c[NWB_multi]/F");
+    tree->Branch("NWB_phi_c",       &container.NWB_phi_c[0],      "NWB_phi_c[NWB_multi]/F");
+    tree->Branch("NWB_light_GM",    &container.NWB_light_GM[0],   "NWB_light_GM[NWB_multi]/F");
+    tree->Branch("NWB_psd",         &container.NWB_psd[0],        "NWB_psd[NWB_multi]/F");
+    tree->Branch("NWB_psd_perp",    &container.NWB_psd_perp[0],   "NWB_psd_perp[NWB_multi]/F");
 
     return tree;
 }

@@ -24,6 +24,10 @@ using Json = nlohmann::json;
 // forward declarations of calibration functions
 double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R);
 double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, double time_L, double time_R, double fa_time);
+std::array<double, 4> get_corrected_adc(
+    NWADCPreprocessorParamReader& nw_acalib,
+    int bar, short total_L, short total_R, short fast_L, short fast_R, double pos_x
+);
 double get_light_output(
     NWLightOutputCalibParamReader& nw_pcalib,
     int bar, double total_L, double total_R, double pos_x
@@ -44,10 +48,12 @@ int main(int argc, char* argv[]) {
     // read in parameter readers
     NWBPositionCalibParamReader nwb_pcalib;
     NWTimeOfFlightCalibParamReader nwb_tcalib('B');
+    NWADCPreprocessorParamReader nwb_acalib('B');
     NWLightOutputCalibParamReader nwb_lcalib('B');
     NWPulseShapeDiscriminationParamReader nwb_psd_reader('B');
     nwb_pcalib.load(argparser.run_num);
     nwb_tcalib.load(argparser.run_num);
+    nwb_acalib.load(argparser.run_num);
     nwb_lcalib.load(argparser.run_num);
     nwb_psd_reader.load(argparser.run_num);
 
@@ -65,10 +71,12 @@ int main(int argc, char* argv[]) {
     metadata->Add(new TNamed(inroot_path.string().c_str(), "inroot_path"));
     TFolder* position_param_paths = metadata->AddFolder("position_param_paths", "");
     TFolder* time_of_fligh_param_paths = metadata->AddFolder("time_of_flight_param_paths", "");
+    TFolder* adc_param_paths = metadata->AddFolder("adc_param_paths", "");
     TFolder* light_param_paths = metadata->AddFolder("light_param_path", "");
     TFolder* psd_param_paths = metadata->AddFolder("psd_param_paths", "");
     nwb_pcalib.write_metadata(position_param_paths);
     nwb_tcalib.write_metadata(time_of_fligh_param_paths);
+    nwb_acalib.write_metadata(adc_param_paths);
     nwb_lcalib.write_metadata(light_param_paths);
     nwb_psd_reader.write_metadata(psd_param_paths);
 
@@ -106,11 +114,24 @@ int main(int argc, char* argv[]) {
                 evt.NWB_bar[m], evt.NWB_time_L[m], evt.NWB_time_R[m], evt.FA_time_mean
             );
 
+            // adc pre-processing
+            std::array<double, 4> corrected_adc = get_corrected_adc(
+                nwb_acalib,
+                evt.NWB_bar[m],
+                double(evt.NWB_total_L[m]), double(evt.NWB_total_R[m]),
+                double(evt.NWB_fast_L[m]), double(evt.NWB_fast_R[m]),
+                evt.NWB_pos_x[m]
+            );
+            evt.NWB_totalf_L[m] = corrected_adc[0];
+            evt.NWB_totalf_R[m] = corrected_adc[1];
+            evt.NWB_fastf_L[m] = corrected_adc[2];
+            evt.NWB_fastf_R[m] = corrected_adc[3];
+
             // light output calibration
             evt.NWB_light_GM[m] = get_light_output(
                 nwb_lcalib,
                 evt.NWB_bar[m],
-                double(evt.NWB_total_L[m]), double(evt.NWB_total_R[m]),
+                double(evt.NWB_totalf_L[m]), double(evt.NWB_totalf_R[m]),
                 evt.NWB_pos_x[m]
             );
             
@@ -118,8 +139,8 @@ int main(int argc, char* argv[]) {
             std::array<double, 2> psd = get_psd(
                 nwb_psd_reader,
                 evt.NWB_bar[m],
-                double(evt.NWB_total_L[m]), double(evt.NWB_total_R[m]),
-                double(evt.NWB_fast_L[m]), double(evt.NWB_fast_R[m]),
+                double(evt.NWB_totalf_L[m]), double(evt.NWB_totalf_R[m]),
+                double(evt.NWB_fastf_L[m]), double(evt.NWB_fastf_R[m]),
                 evt.NWB_pos_x[m]
             );
             evt.NWB_psd[m] = psd[0];
@@ -150,23 +171,60 @@ double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, do
     return 0.5 * (time_L + time_R) - fa_time - nw_tcalib.tof_offset[bar];
 }
 
+std::array<double, 4> get_corrected_adc(NWADCPreprocessorParamReader& nw_acalib, int bar, short total_L, short total_R, short fast_L, short fast_R, double pos_x) {
+    double totalf_L, totalf_R, fastf_L, fastf_R;
+    auto& ft_L = nw_acalib.fast_total_L[bar];
+    auto& ft_R = nw_acalib.fast_total_R[bar];
+    auto& lrt = nw_acalib.log_ratio_total[bar];
+
+    // randomize ADC
+    auto randomize = [](short raw) {
+        if (raw < 0) return double(raw); // e.g. -9999
+        else if (raw == 0) return raw + gRandom->Uniform(0, 0.5);
+        else if (raw < 4096) return raw + gRandom->Uniform(-0.5, 0.5);
+        else return double(raw);
+    };
+    totalf_L = randomize(total_L);
+    totalf_R = randomize(total_R);
+    fastf_L = randomize(fast_L);
+    fastf_R = randomize(fast_R);
+
+    double ratio_R_L = exp((2 / lrt["attenuation_length"]) * pos_x + log(lrt["gain_ratio"]));
+
+    // correct for total_L
+    if (totalf_L >= 4096 && totalf_R < 4096) {
+        totalf_L = totalf_R / ratio_R_L;
+    }
+    else if (fastf_L > ft_L["nonlinear_fast_threshold"] && fastf_L < ft_L["stationary_point_x"]) {
+        totalf_L += ft_L["fit_params[0]"];
+        totalf_L += ft_L["fit_params[1]"] * fastf_L;
+        totalf_L += ft_L["fit_params[2]"] * fastf_L * fastf_L;
+    }
+    else if (fastf_L > ft_L["stationary_point_x"]) {
+        totalf_L += ft_L["stationary_point_y"] - total_L;
+    }
+
+    // correct for total_R
+    if (totalf_R >= 4096 && totalf_L < 4096) {
+        totalf_R = totalf_L * ratio_R_L;
+    }
+    else if (fastf_R > ft_R["nonlinear_fast_threshold"] && fastf_R < ft_R["stationary_point_x"]) {
+        totalf_R += ft_R["fit_params[0]"];
+        totalf_R += ft_R["fit_params[1]"] * fastf_R;
+        totalf_R += ft_R["fit_params[2]"] * fastf_R * fastf_R;
+    }
+    else if (fastf_R > ft_R["stationary_point_x"]) {
+        totalf_R += ft_R["stationary_point_y"] - total_R;
+    }
+
+    return {totalf_L, totalf_R, fastf_L, fastf_R};
+}
+
 double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, double total_L, double total_R, double pos_x) {
-    double light_L = total_L;
-    double light_R = total_R;
     std::unordered_map<std::string, double> par = nw_lcalib.run_param.at(bar);
 
-    // saturation recovery
-    double scalar = exp((2 / par.at("att_length")) * pos_x + log(par.at("gain_ratio")));
-    double threshold = 4090;
-    if (light_L > threshold && light_R < threshold) { light_L = light_R / scalar; }
-    if (light_R > threshold && light_L < threshold) { light_R = light_L * scalar; }
-
-    // gain matching
-    // Not needed for calibration using Geometric Mean
-    // Gain matching factor will be cancelled out when taking the geometric mean
-
     // light output calibration
-    double light_GM = sqrt(light_L * light_R);
+    double light_GM = sqrt(total_L * total_R);
     light_GM *= 4.196; // w.r.t. AmBe 4.196 MeVee
     light_GM /= par.at("a") + par.at("b") * pos_x + par.at("c") * pos_x * pos_x;
     light_GM = par.at("d") + light_GM * par.at("e");
@@ -182,12 +240,8 @@ std::array<double, 2> get_psd(
     double pos_x
 ) {
     /*****eliminate bad data*****/
-    if (total_L < 0 || total_R < 0 || fast_L < 0 || fast_R < 0
-        || total_L > 4097 || total_R > 4097 || fast_L > 4097 || fast_R > 4097
-        || pos_x < -120 || pos_x > 120
-    ) {
-        return {-9999.0, -9999.0};
-    }
+    if (fast_L < 0 || fast_R < 0 || total_L < 0 || total_R < 0) return {-9999.0, 0.0}; // these are invalid ADC values from original framework
+    if (fast_L > 4095 || fast_R > 4095) return {9999.0, 0.0}; // count as neutrons
 
     /*****value assigning*****/
     double gamma_L = psd_reader.gamma_fast_total_L[bar]->Eval(total_L);
