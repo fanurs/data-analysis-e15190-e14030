@@ -1,0 +1,2762 @@
+{
+    "1": [
+        {
+            "run_range": [2001, 2279],
+            "nonlinear_fast_threshold": 2977.759,
+            "linear_fit_params": [-16.044092, 1.1481868],
+            "quadratic_fit_params": [-6322.9796, 5.3823918, -0.00071067058],
+            "stationary_point_x": 3789.7324,
+            "stationary_point_y": 3868.2435
+        },
+        {
+            "run_range": [2280, 2308],
+            "nonlinear_fast_threshold": 2964.9716,
+            "linear_fit_params": [-3.0256603, 1.1608627],
+            "quadratic_fit_params": [-7394.9965, 6.1345237, -0.00083727507],
+            "stationary_point_x": 3668.0627,
+            "stationary_point_y": 3854.0766
+        },
+        {
+            "run_range": [2309, 2565],
+            "nonlinear_fast_threshold": 2952.5464,
+            "linear_fit_params": [-7.2056846, 1.1604326],
+            "quadratic_fit_params": [-7039.5648, 5.9112133, -0.00080256405],
+            "stationary_point_x": 3699.7117,
+            "stationary_point_y": 3897.1456
+        },
+        {
+            "run_range": [2566, 2720],
+            "nonlinear_fast_threshold": 2983.7349,
+            "linear_fit_params": [-21.977533, 1.1488063],
+            "quadratic_fit_params": [-6420.8398, 5.4369604, -0.0007185266],
+            "stationary_point_x": 3784.6121,
+            "stationary_point_y": 3865.8004
+        },
+        {
+            "run_range": [2721, 3500],
+            "nonlinear_fast_threshold": 2988.7718,
+            "linear_fit_params": [-18.433832, 1.147409],
+            "quadratic_fit_params": [-6658.847, 5.5904491, -0.00074317292],
+            "stationary_point_x": 3761.9198,
+            "stationary_point_y": 3855.1589
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 3010.0656,
+            "linear_fit_params": [-23.254019, 1.1384991],
+            "quadratic_fit_params": [-6616.0252, 5.5286678, -0.000730525],
+            "stationary_point_x": 3787.8395,
+            "stationary_point_y": 3853.6789
+        },
+        {
+            "run_range": [4197, 4269],
+            "nonlinear_fast_threshold": 2854.0181,
+            "linear_fit_params": [-26.645429, 1.2047001],
+            "quadratic_fit_params": [-6948.9247, 6.0511827, -0.00084824026],
+            "stationary_point_x": 3571.2328,
+            "stationary_point_y": 3846.1092
+        },
+        {
+            "run_range": [4270, 4339],
+            "nonlinear_fast_threshold": 2878.6596,
+            "linear_fit_params": [-27.526877, 1.2003774],
+            "quadratic_fit_params": [-7223.907, 6.2063816, -0.0008705643],
+            "stationary_point_x": 3567.7585,
+            "stationary_point_y": 3841.727
+        },
+        {
+            "run_range": [4340, 4413],
+            "nonlinear_fast_threshold": 3157.26,
+            "linear_fit_params": [-13.124668, 1.2243062],
+            "quadratic_fit_params": [-76032.439, 47.504829, -0.0078754894],
+            "stationary_point_x": 3403.6679,
+            "stationary_point_y": 4023.4228
+        },
+        {
+            "run_range": [4414, 4509],
+            "nonlinear_fast_threshold": 3061.686,
+            "linear_fit_params": [-18.731937, 1.2121435],
+            "quadratic_fit_params": [-48962.209, 30.897528, -0.0059498633],
+            "stationary_point_x": 3456.8074,
+            "stationary_point_y": 3957.3806
+        },
+        {
+            "run_range": [4510, 4566],
+            "nonlinear_fast_threshold": 2845.8984,
+            "linear_fit_params": [-17.447069, 1.200256],
+            "quadratic_fit_params": [-6829.789, 5.987806, -0.00084067531],
+            "stationary_point_x": 3563.2229,
+            "stationary_point_y": 3836.0008
+        },
+        {
+            "run_range": [4567, 4622],
+            "nonlinear_fast_threshold": 2927.6335,
+            "linear_fit_params": [-21.756165, 1.1958154],
+            "quadratic_fit_params": [-10645.665, 8.1484141, -0.0011443655],
+            "stationary_point_x": 3584.3542,
+            "stationary_point_y": 3903.8424
+        },
+        {
+            "run_range": [4623, 5000],
+            "nonlinear_fast_threshold": 2878.065,
+            "linear_fit_params": [-19.643328, 1.1935119],
+            "quadratic_fit_params": [-7201.6204, 6.1755536, -0.00086428553],
+            "stationary_point_x": 3577.8682,
+            "stationary_point_y": 3842.2462
+        }
+    ],
+    "2": [
+        {
+            "run_range": [2001, 2282],
+            "nonlinear_fast_threshold": 2826.6645,
+            "linear_fit_params": [-36.521951, 1.236306],
+            "quadratic_fit_params": [-7148.6702, 6.2637897, -0.0008885578],
+            "stationary_point_x": 3523.6235,
+            "stationary_point_y": 3891.0835
+        },
+        {
+            "run_range": [2283, 2565],
+            "nonlinear_fast_threshold": 3053.0368,
+            "linear_fit_params": [-23.717618, 1.2451631],
+            "quadratic_fit_params": [-59976.826, 38.22792, -0.0068048559],
+            "stationary_point_x": 3407.683,
+            "stationary_point_y": 4023.0687
+        },
+        {
+            "run_range": [2566, 2608],
+            "nonlinear_fast_threshold": 2833.0577,
+            "linear_fit_params": [-48.982679, 1.2355236],
+            "quadratic_fit_params": [-6998.1559, 6.1411571, -0.00086579058],
+            "stationary_point_x": 3546.8236,
+            "stationary_point_y": 3891.9779
+        },
+        {
+            "run_range": [2609, 3500],
+            "nonlinear_fast_threshold": 2824.9082,
+            "linear_fit_params": [-50.431213, 1.2378435],
+            "quadratic_fit_params": [-7108.5336, 6.2347086, -0.00088431875],
+            "stationary_point_x": 3524.9283,
+            "stationary_point_y": 3880.907
+        },
+        {
+            "run_range": [3501, 4076],
+            "nonlinear_fast_threshold": 2758.9478,
+            "linear_fit_params": [-51.560812, 1.2587609],
+            "quadratic_fit_params": [-6508.2479, 5.9785893, -0.00086200853],
+            "stationary_point_x": 3479.4605,
+            "stationary_point_y": 3888.623
+        },
+        {
+            "run_range": [4077, 4132],
+            "nonlinear_fast_threshold": 2782.6905,
+            "linear_fit_params": [-53.112922, 1.2551458],
+            "quadratic_fit_params": [-7104.8622, 6.3250509, -0.00091142047],
+            "stationary_point_x": 3470.821,
+            "stationary_point_y": 3870.2836
+        },
+        {
+            "run_range": [4133, 4218],
+            "nonlinear_fast_threshold": 2793.1284,
+            "linear_fit_params": [-57.349908, 1.2497043],
+            "quadratic_fit_params": [-6911.068, 6.1566983, -0.00087840481],
+            "stationary_point_x": 3506.3742,
+            "stationary_point_y": 3877.731
+        },
+        {
+            "run_range": [4219, 4333],
+            "nonlinear_fast_threshold": 2795.121,
+            "linear_fit_params": [-62.691266, 1.2521133],
+            "quadratic_fit_params": [-7236.5939, 6.384909, -0.0009181167],
+            "stationary_point_x": 3478.7559,
+            "stationary_point_y": 3865.055
+        },
+        {
+            "run_range": [4334, 5000],
+            "nonlinear_fast_threshold": 3062.4806,
+            "linear_fit_params": [-36.096073, 1.2610106],
+            "quadratic_fit_params": [-65866.254, 42.186661, -0.0073622483],
+            "stationary_point_x": 3349.6385,
+            "stationary_point_y": 4027.3099
+        }
+    ],
+    "3": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 2902.4181,
+            "linear_fit_params": [-33.345748, 1.1839142],
+            "quadratic_fit_params": [-6428.872, 5.5922834, -0.00075949696],
+            "stationary_point_x": 3682.2518,
+            "stationary_point_y": 3865.5042
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 2867.8898,
+            "linear_fit_params": [-36.458993, 1.1870729],
+            "quadratic_fit_params": [-5739.7932, 5.1607809, -0.00069256533],
+            "stationary_point_x": 3727.365,
+            "stationary_point_y": 3877.8441
+        },
+        {
+            "run_range": [2282, 2358],
+            "nonlinear_fast_threshold": 2803.1578,
+            "linear_fit_params": [-17.879654, 1.1987255],
+            "quadratic_fit_params": [-5312.0547, 4.9723218, -0.00067273685],
+            "stationary_point_x": 3699.4267,
+            "stationary_point_y": 3906.516
+        },
+        {
+            "run_range": [2359, 2385],
+            "nonlinear_fast_threshold": 2856.185,
+            "linear_fit_params": [-12.331343, 1.1956287],
+            "quadratic_fit_params": [-6504.4572, 5.7389643, -0.00079520269],
+            "stationary_point_x": 3616.3805,
+            "stationary_point_y": 3896.5399
+        },
+        {
+            "run_range": [2386, 2565],
+            "nonlinear_fast_threshold": 2817.6322,
+            "linear_fit_params": [-12.020027, 1.1954232],
+            "quadratic_fit_params": [-5572.3471, 5.133111, -0.00069762107],
+            "stationary_point_x": 3686.2771,
+            "stationary_point_y": 3907.1432
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2891.3565,
+            "linear_fit_params": [-45.08588, 1.1869696],
+            "quadratic_fit_params": [-6120.3446, 5.388725, -0.00072654287],
+            "stationary_point_x": 3709.0667,
+            "stationary_point_y": 3871.9317
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 2913.1087,
+            "linear_fit_params": [-50.17932, 1.1883555],
+            "quadratic_fit_params": [-6723.5282, 5.7694321, -0.00078623403],
+            "stationary_point_x": 3669.2994,
+            "stationary_point_y": 3860.3811
+        },
+        {
+            "run_range": [2712, 3500],
+            "nonlinear_fast_threshold": 2870.6969,
+            "linear_fit_params": [-45.984684, 1.1884874],
+            "quadratic_fit_params": [-5835.0614, 5.2221036, -0.00070254939],
+            "stationary_point_x": 3715.9157,
+            "stationary_point_y": 3868.8903
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 2831.7941,
+            "linear_fit_params": [-52.581995, 1.1968658],
+            "quadratic_fit_params": [-5509.019, 5.0555487, -0.00068096561],
+            "stationary_point_x": 3716.7405,
+            "stationary_point_y": 3867.4847
+        },
+        {
+            "run_range": [4197, 4334],
+            "nonlinear_fast_threshold": 2666.954,
+            "linear_fit_params": [-56.852229, 1.2881998],
+            "quadratic_fit_params": [-6227.744, 5.9172864, -0.00086786021],
+            "stationary_point_x": 3410.3612,
+            "stationary_point_y": 3859.1786
+        },
+        {
+            "run_range": [4335, 5000],
+            "nonlinear_fast_threshold": 2918.3104,
+            "linear_fit_params": [-23.829227, 1.2918337],
+            "quadratic_fit_params": [-56840.078, 37.81941, -0.0069533962],
+            "stationary_point_x": 3293.708,
+            "stationary_point_y": 3995.9066
+        }
+    ],
+    "4": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 2878.2126,
+            "linear_fit_params": [-32.345415, 1.226374],
+            "quadratic_fit_params": [-8491.0679, 7.1018348, -0.0010203471],
+            "stationary_point_x": 3480.4854,
+            "stationary_point_y": 3868.1049
+        },
+        {
+            "run_range": [2233, 2289],
+            "nonlinear_fast_threshold": 2867.812,
+            "linear_fit_params": [-28.686151, 1.2265332],
+            "quadratic_fit_params": [-8133.9651, 6.8712062, -0.00098330823],
+            "stationary_point_x": 3495.0076,
+            "stationary_point_y": 3876.6541
+        },
+        {
+            "run_range": [2290, 2353],
+            "nonlinear_fast_threshold": 2939.963,
+            "linear_fit_params": [1.2437673, 1.2298154],
+            "quadratic_fit_params": [-28728.705, 19.34167, -0.0049043413],
+            "stationary_point_x": 3418.1736,
+            "stationary_point_y": 3934.2105
+        },
+        {
+            "run_range": [2354, 2565],
+            "nonlinear_fast_threshold": 3025.9019,
+            "linear_fit_params": [-0.58031484, 1.2313844],
+            "quadratic_fit_params": [-50441.949, 32.322639, -0.0062866588],
+            "stationary_point_x": 3417.2159,
+            "stationary_point_y": 3990.4004
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2900.655,
+            "linear_fit_params": [-30.663881, 1.2229263],
+            "quadratic_fit_params": [-9107.9861, 7.4814199, -0.0010787666],
+            "stationary_point_x": 3468.0992,
+            "stationary_point_y": 3862.5204
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 2918.1128,
+            "linear_fit_params": [-35.897145, 1.2238664],
+            "quadratic_fit_params": [-10146.777, 8.1526867, -0.0011870545],
+            "stationary_point_x": 3434.2419,
+            "stationary_point_y": 3851.4108
+        },
+        {
+            "run_range": [2712, 3500],
+            "nonlinear_fast_threshold": 2896.3572,
+            "linear_fit_params": [-28.946294, 1.2222368],
+            "quadratic_fit_params": [-9157.0298, 7.5241799, -0.0010876993],
+            "stationary_point_x": 3459.4884,
+            "stationary_point_y": 3855.6626
+        },
+        {
+            "run_range": [3501, 4075],
+            "nonlinear_fast_threshold": 2883.1907,
+            "linear_fit_params": [-29.977909, 1.2271962],
+            "quadratic_fit_params": [-9209.6013, 7.5887225, -0.0011038011],
+            "stationary_point_x": 3439.0101,
+            "stationary_point_y": 3850.4129
+        },
+        {
+            "run_range": [4076, 4196],
+            "nonlinear_fast_threshold": 2882.2842,
+            "linear_fit_params": [-35.68668, 1.2294134],
+            "quadratic_fit_params": [-9279.4846, 7.6436423, -0.0011129531],
+            "stationary_point_x": 3434.505,
+            "stationary_point_y": 3846.1671
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 2902.9612,
+            "linear_fit_params": [-41.471127, 1.2267073],
+            "quadratic_fit_params": [-9902.7755, 8.0198104, -0.0011698934],
+            "stationary_point_x": 3428.5784,
+            "stationary_point_y": 3842.8664
+        },
+        {
+            "run_range": [4225, 4340],
+            "nonlinear_fast_threshold": 2913.5968,
+            "linear_fit_params": [-44.558977, 1.227249],
+            "quadratic_fit_params": [-10462.153, 8.3706123, -0.0012246199],
+            "stationary_point_x": 3414.9224,
+            "stationary_point_y": 3839.7943
+        },
+        {
+            "run_range": [4341, 4535],
+            "nonlinear_fast_threshold": 2919.2974,
+            "linear_fit_params": [-12.253275, 1.2396007],
+            "quadratic_fit_params": [-30948.146, 20.766742, -0.0049948798],
+            "stationary_point_x": 3396.4856,
+            "stationary_point_y": 3928.7038
+        },
+        {
+            "run_range": [4536, 4614],
+            "nonlinear_fast_threshold": 2826.0992,
+            "linear_fit_params": [-14.384718, 1.2393727],
+            "quadratic_fit_params": [-8787.4007, 7.4438757, -0.0010972296],
+            "stationary_point_x": 3406.8369,
+            "stationary_point_y": 3859.3212
+        },
+        {
+            "run_range": [4615, 5000],
+            "nonlinear_fast_threshold": 2912.9065,
+            "linear_fit_params": [-14.776259, 1.2405221],
+            "quadratic_fit_params": [-29854.529, 20.079546, -0.0049590571],
+            "stationary_point_x": 3406.5599,
+            "stationary_point_y": 3929.7045
+        }
+    ],
+    "5": [
+        {
+            "run_range": [2001, 2565],
+            "nonlinear_fast_threshold": 2776.2402,
+            "linear_fit_params": [-17.414825, 1.3942722],
+            "quadratic_fit_params": [-57601.454, 41.426194, -0.0075198194],
+            "stationary_point_x": 3001.1426,
+            "stationary_point_y": 4018.4229
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2550.6968,
+            "linear_fit_params": [-43.545601, 1.3902994],
+            "quadratic_fit_params": [-8790.4478, 8.2497881, -0.0013447758],
+            "stationary_point_x": 3067.3972,
+            "stationary_point_y": 3862.0523
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 2566.5228,
+            "linear_fit_params": [-47.067497, 1.3907296],
+            "quadratic_fit_params": [-9614.5461, 8.8452886, -0.0014520663],
+            "stationary_point_x": 3045.4317,
+            "stationary_point_y": 3855.5378
+        },
+        {
+            "run_range": [2712, 3500],
+            "nonlinear_fast_threshold": 2543.0318,
+            "linear_fit_params": [-41.129942, 1.390248],
+            "quadratic_fit_params": [-8710.9179, 8.2093006, -0.0013404969],
+            "stationary_point_x": 3063.2905,
+            "stationary_point_y": 3858.5075
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 2555.2601,
+            "linear_fit_params": [-38.127296, 1.3868601],
+            "quadratic_fit_params": [-9160.761, 8.5299346, -0.0013982348],
+            "stationary_point_x": 3051.6599,
+            "stationary_point_y": 3850.8325
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 2591.4367,
+            "linear_fit_params": [-47.857565, 1.3703393],
+            "quadratic_fit_params": [-9188.5049, 8.421038, -0.0013598201],
+            "stationary_point_x": 3096.7271,
+            "stationary_point_y": 3849.1746
+        },
+        {
+            "run_range": [4225, 4375],
+            "nonlinear_fast_threshold": 2652.9535,
+            "linear_fit_params": [-47.287685, 1.3725239],
+            "quadratic_fit_params": [-19213.422, 15.24846, -0.0046348439],
+            "stationary_point_x": 3050.3638,
+            "stationary_point_y": 3877.3328
+        },
+        {
+            "run_range": [4376, 5000],
+            "nonlinear_fast_threshold": 2933.1397,
+            "linear_fit_params": [-17.656462, 1.3854676],
+            "quadratic_fit_params": [-86054.425, 60.050793, -0.01],
+            "stationary_point_x": 3007.4164,
+            "stationary_point_y": 4098.138
+        }
+    ],
+    "6": [
+        {
+            "run_range": [2001, 2200],
+            "nonlinear_fast_threshold": 2828.8467,
+            "linear_fit_params": [-32.442907, 1.2348344],
+            "quadratic_fit_params": [-7563.7722, 6.5589385, -0.0009408804],
+            "stationary_point_x": 3487.1375,
+            "stationary_point_y": 3870.9918
+        },
+        {
+            "run_range": [2201, 2289],
+            "nonlinear_fast_threshold": 2795.0599,
+            "linear_fit_params": [-32.276902, 1.2360393],
+            "quadratic_fit_params": [-6535.2424, 5.8889186, -0.00083154062],
+            "stationary_point_x": 3543.3957,
+            "stationary_point_y": 3897.4444
+        },
+        {
+            "run_range": [2290, 2565],
+            "nonlinear_fast_threshold": 3165.8001,
+            "linear_fit_params": [-5.1047216, 1.24053],
+            "quadratic_fit_params": [-83196.695, 52.30197, -0.0084477432],
+            "stationary_point_x": 3357.3402,
+            "stationary_point_y": 4057.1078
+        },
+        {
+            "run_range": [2566, 2609],
+            "nonlinear_fast_threshold": 2850.8706,
+            "linear_fit_params": [-36.808696, 1.2320791],
+            "quadratic_fit_params": [-8068.0065, 6.8669395, -0.00098825401],
+            "stationary_point_x": 3474.6477,
+            "stationary_point_y": 3860.4143
+        },
+        {
+            "run_range": [2610, 2633],
+            "nonlinear_fast_threshold": 2829.5743,
+            "linear_fit_params": [-35.198239, 1.2325229],
+            "quadratic_fit_params": [-7347.0768, 6.3976364, -0.00091201871],
+            "stationary_point_x": 3510.4672,
+            "stationary_point_y": 3873.3113
+        },
+        {
+            "run_range": [2634, 2655],
+            "nonlinear_fast_threshold": 2859.2093,
+            "linear_fit_params": [-41.412627, 1.2357271],
+            "quadratic_fit_params": [-8694.3178, 7.2878227, -0.001058306],
+            "stationary_point_x": 3443.1807,
+            "stationary_point_y": 3852.335
+        },
+        {
+            "run_range": [2656, 2827],
+            "nonlinear_fast_threshold": 2849.3556,
+            "linear_fit_params": [-36.00477, 1.2330286],
+            "quadratic_fit_params": [-8277.6773, 7.0169255, -0.0010147382],
+            "stationary_point_x": 3458.332,
+            "stationary_point_y": 3853.2492
+        },
+        {
+            "run_range": [2828, 3500],
+            "nonlinear_fast_threshold": 2833.3183,
+            "linear_fit_params": [-34.37544, 1.2333743],
+            "quadratic_fit_params": [-7660.0239, 6.6185278, -0.00095067528],
+            "stationary_point_x": 3481.8592,
+            "stationary_point_y": 3859.6189
+        },
+        {
+            "run_range": [3501, 4076],
+            "nonlinear_fast_threshold": 2815.3852,
+            "linear_fit_params": [-36.349126, 1.2369055],
+            "quadratic_fit_params": [-7460.057, 6.5004227, -0.00093364849],
+            "stationary_point_x": 3481.9725,
+            "stationary_point_y": 3859.1692
+        },
+        {
+            "run_range": [4077, 4131],
+            "nonlinear_fast_threshold": 2813.7658,
+            "linear_fit_params": [-43.440157, 1.2435202],
+            "quadratic_fit_params": [-7859.7137, 6.8004533, -0.00098760973],
+            "stationary_point_x": 3443.8415,
+            "stationary_point_y": 3847.7223
+        },
+        {
+            "run_range": [4132, 4224],
+            "nonlinear_fast_threshold": 2823.4542,
+            "linear_fit_params": [-41.922774, 1.2380277],
+            "quadratic_fit_params": [-7896.4722, 6.7996487, -0.00098433824],
+            "stationary_point_x": 3454.4408,
+            "stationary_point_y": 3846.0913
+        },
+        {
+            "run_range": [4225, 4354],
+            "nonlinear_fast_threshold": 2835.1647,
+            "linear_fit_params": [-44.440448, 1.2447127],
+            "quadratic_fit_params": [-8857.3276, 7.4594045, -0.001096024],
+            "stationary_point_x": 3403.6325,
+            "stationary_point_y": 3842.7559
+        },
+        {
+            "run_range": [4355, 5000],
+            "nonlinear_fast_threshold": 3161.9033,
+            "linear_fit_params": [-12.725002, 1.2738502],
+            "quadratic_fit_params": [-95147.218, 61.023177, -0.0095295897],
+            "stationary_point_x": 3263.8934,
+            "stationary_point_y": 4089.7903
+        }
+    ],
+    "7": [
+        {
+            "run_range": [2001, 2565],
+            "nonlinear_fast_threshold": 2696.3896,
+            "linear_fit_params": [-17.341315, 1.4067042],
+            "quadratic_fit_params": [-67667.466, 48.795993, -0.0086301696],
+            "stationary_point_x": 2956.778,
+            "stationary_point_y": 4043.3291
+        },
+        {
+            "run_range": [2566, 2624],
+            "nonlinear_fast_threshold": 2500.0,
+            "linear_fit_params": [-43.960727, 1.4021796],
+            "quadratic_fit_params": [-8837.2278, 8.4352988, -0.0014062784],
+            "stationary_point_x": 2999.1067,
+            "stationary_point_y": 3812.1874
+        },
+        {
+            "run_range": [2625, 3500],
+            "nonlinear_fast_threshold": 2500.0,
+            "linear_fit_params": [-45.565345, 1.4100232],
+            "quadratic_fit_params": [-9078.0806, 8.636066, -0.0014452343],
+            "stationary_point_x": 2987.8223,
+            "stationary_point_y": 3825.6366
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 2500.0,
+            "linear_fit_params": [-53.844565, 1.4257211],
+            "quadratic_fit_params": [-10549.127, 9.8211859, -0.0016788843],
+            "stationary_point_x": 2930.2515,
+            "stationary_point_y": 3816.3612
+        },
+        {
+            "run_range": [4197, 4229],
+            "nonlinear_fast_threshold": 2500.0808,
+            "linear_fit_params": [-68.429282, 1.3848625],
+            "quadratic_fit_params": [-6965.9657, 6.9000311, -0.0011026787],
+            "stationary_point_x": 3130.0456,
+            "stationary_point_y": 3830.8056
+        },
+        {
+            "run_range": [4230, 5000],
+            "nonlinear_fast_threshold": 2783.5274,
+            "linear_fit_params": [-39.481364, 1.4537378],
+            "quadratic_fit_params": [-76967.486, 56.718913, -0.0099349699],
+            "stationary_point_x": 2876.1761,
+            "stationary_point_y": 4098.1149
+        }
+    ],
+    "8": [
+        {
+            "run_range": [2001, 2237],
+            "nonlinear_fast_threshold": 2634.5267,
+            "linear_fit_params": [-23.925386, 1.2869959],
+            "quadratic_fit_params": [-5535.4982, 5.4685252, -0.00079365086],
+            "stationary_point_x": 3448.7881,
+            "stationary_point_y": 3906.6365
+        },
+        {
+            "run_range": [2238, 2565],
+            "nonlinear_fast_threshold": 3126.1174,
+            "linear_fit_params": [-4.7462198, 1.2954767],
+            "quadratic_fit_params": [-97716.906, 63.816891, -0.01],
+            "stationary_point_x": 3196.6056,
+            "stationary_point_y": 4098.1603
+        },
+        {
+            "run_range": [2566, 2632],
+            "nonlinear_fast_threshold": 2600.5442,
+            "linear_fit_params": [-28.114031, 1.2810837],
+            "quadratic_fit_params": [-4491.0309, 4.7123211, -0.00065955061],
+            "stationary_point_x": 3573.7221,
+            "stationary_point_y": 3926.7931
+        },
+        {
+            "run_range": [2633, 3500],
+            "nonlinear_fast_threshold": 2620.9799,
+            "linear_fit_params": [-28.222672, 1.280042],
+            "quadratic_fit_params": [-5086.1396, 5.1380469, -0.00073536941],
+            "stationary_point_x": 3497.6521,
+            "stationary_point_y": 3893.4179
+        },
+        {
+            "run_range": [3501, 4074],
+            "nonlinear_fast_threshold": 2608.0459,
+            "linear_fit_params": [-42.438423, 1.307451],
+            "quadratic_fit_params": [-5327.2128, 5.3442802, -0.00077630579],
+            "stationary_point_x": 3440.4549,
+            "stationary_point_y": 3936.7484
+        },
+        {
+            "run_range": [4075, 4194],
+            "nonlinear_fast_threshold": 2527.715,
+            "linear_fit_params": [-47.080907, 1.3311378],
+            "quadratic_fit_params": [-4941.4989, 5.2062214, -0.00076666466],
+            "stationary_point_x": 3399.3718,
+            "stationary_point_y": 3894.8695
+        },
+        {
+            "run_range": [4195, 4224],
+            "nonlinear_fast_threshold": 2598.0763,
+            "linear_fit_params": [-60.363083, 1.3022826],
+            "quadratic_fit_params": [-5301.6886, 5.3322801, -0.0007748872],
+            "stationary_point_x": 3443.2635,
+            "stationary_point_y": 3877.1733
+        },
+        {
+            "run_range": [4225, 5000],
+            "nonlinear_fast_threshold": 2987.6683,
+            "linear_fit_params": [-30.689465, 1.3513778],
+            "quadratic_fit_params": [-86930.265, 59.371926, -0.0097465113],
+            "stationary_point_x": 3083.0161,
+            "stationary_point_y": 4093.327
+        }
+    ],
+    "9": [
+        {
+            "run_range": [2001, 2200],
+            "nonlinear_fast_threshold": 2792.4239,
+            "linear_fit_params": [-29.855523, 1.2344845],
+            "quadratic_fit_params": [-6699.1641, 6.0098296, -0.00085499401],
+            "stationary_point_x": 3515.589,
+            "stationary_point_y": 3866.7477
+        },
+        {
+            "run_range": [2201, 2290],
+            "nonlinear_fast_threshold": 2756.9594,
+            "linear_fit_params": [-23.644796, 1.2342487],
+            "quadratic_fit_params": [-5838.871, 5.4532106, -0.00076537831],
+            "stationary_point_x": 3562.7045,
+            "stationary_point_y": 3887.6019
+        },
+        {
+            "run_range": [2291, 2347],
+            "nonlinear_fast_threshold": 3108.3108,
+            "linear_fit_params": [-3.7008097, 1.2434215],
+            "quadratic_fit_params": [-76768.84, 48.554031, -0.0080781777],
+            "stationary_point_x": 3371.4239,
+            "stationary_point_y": 4038.0901
+        },
+        {
+            "run_range": [2348, 2565],
+            "nonlinear_fast_threshold": 3191.3206,
+            "linear_fit_params": [-1.8387074, 1.2501419],
+            "quadratic_fit_params": [-95003.687, 59.997125, -0.0092255638],
+            "stationary_point_x": 3324.0012,
+            "stationary_point_y": 4081.131
+        },
+        {
+            "run_range": [2566, 2632],
+            "nonlinear_fast_threshold": 2764.2562,
+            "linear_fit_params": [-28.695207, 1.2392054],
+            "quadratic_fit_params": [-6177.7801, 5.6873207, -0.00080482732],
+            "stationary_point_x": 3534.3702,
+            "stationary_point_y": 3871.7234
+        },
+        {
+            "run_range": [2633, 2725],
+            "nonlinear_fast_threshold": 2853.7087,
+            "linear_fit_params": [-29.201486, 1.2259097],
+            "quadratic_fit_params": [-8152.7207, 6.9193796, -0.00099762515],
+            "stationary_point_x": 3468.2703,
+            "stationary_point_y": 3845.8471
+        },
+        {
+            "run_range": [2726, 3500],
+            "nonlinear_fast_threshold": 2783.8345,
+            "linear_fit_params": [-26.67393, 1.2296638],
+            "quadratic_fit_params": [-6366.3762, 5.7851359, -0.00081832382],
+            "stationary_point_x": 3535.3481,
+            "stationary_point_y": 3858.9029
+        },
+        {
+            "run_range": [3501, 4074],
+            "nonlinear_fast_threshold": 2818.1612,
+            "linear_fit_params": [-43.523011, 1.2096053],
+            "quadratic_fit_params": [-5860.7059, 5.3728274, -0.00074407312],
+            "stationary_point_x": 3625.4049,
+            "stationary_point_y": 3870.969
+        },
+        {
+            "run_range": [4075, 4224],
+            "nonlinear_fast_threshold": 2842.4746,
+            "linear_fit_params": [-47.410705, 1.2085995],
+            "quadratic_fit_params": [-6437.4726, 5.7041254, -0.00079064656],
+            "stationary_point_x": 3606.1251,
+            "stationary_point_y": 3851.2355
+        },
+        {
+            "run_range": [4225, 4334],
+            "nonlinear_fast_threshold": 2903.642,
+            "linear_fit_params": [-48.665154, 1.2045738],
+            "quadratic_fit_params": [-7954.96, 6.6494699, -0.00093750882],
+            "stationary_point_x": 3546.7679,
+            "stationary_point_y": 3835.7603
+        },
+        {
+            "run_range": [4335, 4505],
+            "nonlinear_fast_threshold": 3202.0134,
+            "linear_fit_params": [-10.947194, 1.2253688],
+            "quadratic_fit_params": [-85820.537, 53.165607, -0.0082968427],
+            "stationary_point_x": 3399.0805,
+            "stationary_point_y": 4045.3823
+        },
+        {
+            "run_range": [4506, 5000],
+            "nonlinear_fast_threshold": 2783.2748,
+            "linear_fit_params": [-15.466723, 1.2238884],
+            "quadratic_fit_params": [-6619.7649, 5.9684256, -0.00085199021],
+            "stationary_point_x": 3507.7953,
+            "stationary_point_y": 3847.8533
+        }
+    ],
+    "10": [
+        {
+            "run_range": [2001, 2144],
+            "nonlinear_fast_threshold": 2796.9344,
+            "linear_fit_params": [-18.982886, 1.2368925],
+            "quadratic_fit_params": [-7241.4361, 6.3992122, -0.00092253355],
+            "stationary_point_x": 3469.656,
+            "stationary_point_y": 3858.0321
+        },
+        {
+            "run_range": [2145, 2232],
+            "nonlinear_fast_threshold": 2816.9036,
+            "linear_fit_params": [-20.874398, 1.2358199],
+            "quadratic_fit_params": [-7835.2146, 6.782041, -0.00098397298],
+            "stationary_point_x": 3447.1417,
+            "stationary_point_y": 3849.5874
+        },
+        {
+            "run_range": [2233, 2290],
+            "nonlinear_fast_threshold": 2775.7313,
+            "linear_fit_params": [-16.21784, 1.2435901],
+            "quadratic_fit_params": [-6999.4686, 6.2779989, -0.00090764031],
+            "stationary_point_x": 3461.6615,
+            "stationary_point_y": 3870.8533
+        },
+        {
+            "run_range": [2291, 2565],
+            "nonlinear_fast_threshold": 3033.1229,
+            "linear_fit_params": [1.1976938, 1.2528119],
+            "quadratic_fit_params": [-63192.914, 40.682941, -0.0072300741],
+            "stationary_point_x": 3346.1343,
+            "stationary_point_y": 4017.8387
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2811.0807,
+            "linear_fit_params": [-22.05614, 1.2378668],
+            "quadratic_fit_params": [-7767.0801, 6.7480467, -0.00097999015],
+            "stationary_point_x": 3442.8336,
+            "stationary_point_y": 3849.2764
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 2839.5363,
+            "linear_fit_params": [-25.24015, 1.2379644],
+            "quadratic_fit_params": [-8942.6227, 7.5178388, -0.0011056451],
+            "stationary_point_x": 3400.1754,
+            "stationary_point_y": 3836.651
+        },
+        {
+            "run_range": [2712, 2825],
+            "nonlinear_fast_threshold": 2812.2714,
+            "linear_fit_params": [-18.649794, 1.2374065],
+            "quadratic_fit_params": [-7968.0163, 6.8905684, -0.0010050506],
+            "stationary_point_x": 3428.2965,
+            "stationary_point_y": 3843.3113
+        },
+        {
+            "run_range": [2826, 3500],
+            "nonlinear_fast_threshold": 2783.0805,
+            "linear_fit_params": [-18.47963, 1.2381032],
+            "quadratic_fit_params": [-7035.3266, 6.2810018, -0.00090586519],
+            "stationary_point_x": 3464.714,
+            "stationary_point_y": 3851.7172
+        },
+        {
+            "run_range": [3501, 4072],
+            "nonlinear_fast_threshold": 2820.7812,
+            "linear_fit_params": [-17.826682, 1.2290925],
+            "quadratic_fit_params": [-7584.7755, 6.5985548, -0.00095260754],
+            "stationary_point_x": 3463.4175,
+            "stationary_point_y": 3846.6657
+        },
+        {
+            "run_range": [4073, 4122],
+            "nonlinear_fast_threshold": 2822.521,
+            "linear_fit_params": [-24.073897, 1.2337755],
+            "quadratic_fit_params": [-8056.1529, 6.9222527, -0.0010071715],
+            "stationary_point_x": 3437.6103,
+            "stationary_point_y": 3839.0471
+        },
+        {
+            "run_range": [4123, 4224],
+            "nonlinear_fast_threshold": 2834.8532,
+            "linear_fit_params": [-27.568804, 1.2326131],
+            "quadratic_fit_params": [-8474.0202, 7.1968073, -0.0010474177],
+            "stationary_point_x": 3420.9472,
+            "stationary_point_y": 3832.9973
+        },
+        {
+            "run_range": [4225, 4338],
+            "nonlinear_fast_threshold": 2868.4195,
+            "linear_fit_params": [-30.270606, 1.2321174],
+            "quadratic_fit_params": [-9828.7934, 8.0643115, -0.0011910992],
+            "stationary_point_x": 3385.8534,
+            "stationary_point_y": 3823.6319
+        },
+        {
+            "run_range": [4339, 4508],
+            "nonlinear_fast_threshold": 3177.8191,
+            "linear_fit_params": [-9.5077657, 1.2569404],
+            "quadratic_fit_params": [-93145.861, 58.974704, -0.0091681351],
+            "stationary_point_x": 3305.0444,
+            "stationary_point_y": 4072.6151
+        },
+        {
+            "run_range": [4509, 5000],
+            "nonlinear_fast_threshold": 2786.2527,
+            "linear_fit_params": [-9.1082994, 1.2555369],
+            "quadratic_fit_params": [-14754.267, 11.17673, -0.0042900465],
+            "stationary_point_x": 3358.8088,
+            "stationary_point_y": 3869.7739
+        }
+    ],
+    "11": [
+        {
+            "run_range": [2001, 2143],
+            "nonlinear_fast_threshold": 2922.1917,
+            "linear_fit_params": [-28.575691, 1.1745529],
+            "quadratic_fit_params": [-6275.7468, 5.447767, -0.00073082591],
+            "stationary_point_x": 3729.2055,
+            "stationary_point_y": 3877.6562
+        },
+        {
+            "run_range": [2144, 2232],
+            "nonlinear_fast_threshold": 2938.2588,
+            "linear_fit_params": [-31.931159, 1.1742734],
+            "quadratic_fit_params": [-6633.2539, 5.6659153, -0.0007639548],
+            "stationary_point_x": 3708.4969,
+            "stationary_point_y": 3872.2443
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 2915.6915,
+            "linear_fit_params": [-24.297385, 1.1743106],
+            "quadratic_fit_params": [-6071.715, 5.3201151, -0.00071089094],
+            "stationary_point_x": 3740.9969,
+            "stationary_point_y": 3885.2866
+        },
+        {
+            "run_range": [2282, 2346],
+            "nonlinear_fast_threshold": 2882.882,
+            "linear_fit_params": [-3.5628888, 1.1870181],
+            "quadratic_fit_params": [-6568.2515, 5.7412732, -0.00078992904],
+            "stationary_point_x": 3636.4699,
+            "stationary_point_y": 3875.6473
+        },
+        {
+            "run_range": [2347, 2389],
+            "nonlinear_fast_threshold": 2889.101,
+            "linear_fit_params": [-1.3947418, 1.1829087],
+            "quadratic_fit_params": [-6500.0397, 5.6767492, -0.00077726782],
+            "stationary_point_x": 3655.7665,
+            "stationary_point_y": 3885.4461
+        },
+        {
+            "run_range": [2390, 2512],
+            "nonlinear_fast_threshold": 2892.4601,
+            "linear_fit_params": [-5.4609227, 1.1813216],
+            "quadratic_fit_params": [-6370.3065, 5.5843431, -0.00076143748],
+            "stationary_point_x": 3667.9098,
+            "stationary_point_y": 3872.4506
+        },
+        {
+            "run_range": [2513, 2565],
+            "nonlinear_fast_threshold": 2884.0409,
+            "linear_fit_params": [-3.9853003, 1.184523],
+            "quadratic_fit_params": [-6338.0159, 5.5641211, -0.00075836045],
+            "stationary_point_x": 3668.8591,
+            "stationary_point_y": 3886.1211
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2964.2361,
+            "linear_fit_params": [-29.167379, 1.1686363],
+            "quadratic_fit_params": [-6924.9783, 5.8209859, -0.00078466629],
+            "stationary_point_x": 3709.2573,
+            "stationary_point_y": 3870.874
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 2975.1779,
+            "linear_fit_params": [-31.914437, 1.1755665],
+            "quadratic_fit_params": [-7717.2707, 6.3410045, -0.00086804494],
+            "stationary_point_x": 3652.7564,
+            "stationary_point_y": 3862.908
+        },
+        {
+            "run_range": [2712, 2826],
+            "nonlinear_fast_threshold": 2943.2745,
+            "linear_fit_params": [-27.23187, 1.1742091],
+            "quadratic_fit_params": [-6847.8661, 5.8091441, -0.00078719366],
+            "stationary_point_x": 3690.0268,
+            "stationary_point_y": 3869.4748
+        },
+        {
+            "run_range": [2827, 3500],
+            "nonlinear_fast_threshold": 2923.2731,
+            "linear_fit_params": [-28.223987, 1.1755892],
+            "quadratic_fit_params": [-6402.3459, 5.5357403, -0.00074559357],
+            "stationary_point_x": 3712.7416,
+            "stationary_point_y": 3873.0357
+        },
+        {
+            "run_range": [3501, 4072],
+            "nonlinear_fast_threshold": 2949.8738,
+            "linear_fit_params": [-28.901859, 1.1636369],
+            "quadratic_fit_params": [-6240.7491, 5.3847636, -0.00071659347],
+            "stationary_point_x": 3757.3082,
+            "stationary_point_y": 3876.318
+        },
+        {
+            "run_range": [4073, 4103],
+            "nonlinear_fast_threshold": 2942.5821,
+            "linear_fit_params": [-33.340543, 1.1695671],
+            "quadratic_fit_params": [-6507.8721, 5.5693231, -0.00074744704],
+            "stationary_point_x": 3725.9328,
+            "stationary_point_y": 3866.7276
+        },
+        {
+            "run_range": [4104, 4196],
+            "nonlinear_fast_threshold": 2959.4095,
+            "linear_fit_params": [-32.610425, 1.1690029],
+            "quadratic_fit_params": [-6889.5057, 5.8141919, -0.00078432139],
+            "stationary_point_x": 3708.9687,
+            "stationary_point_y": 3866.2784
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 2921.6573,
+            "linear_fit_params": [-45.762887, 1.1830013],
+            "quadratic_fit_params": [-6764.5996, 5.7828293, -0.00078627099],
+            "stationary_point_x": 3677.3342,
+            "stationary_point_y": 3863.5088
+        },
+        {
+            "run_range": [4225, 4253],
+            "nonlinear_fast_threshold": 2961.2732,
+            "linear_fit_params": [-45.786482, 1.1753212],
+            "quadratic_fit_params": [-7156.818, 5.9764581, -0.00081064278],
+            "stationary_point_x": 3686.7652,
+            "stationary_point_y": 3860.0234
+        },
+        {
+            "run_range": [4254, 4275],
+            "nonlinear_fast_threshold": 2961.5594,
+            "linear_fit_params": [-45.914747, 1.1713496],
+            "quadratic_fit_params": [-6932.7251, 5.8232106, -0.00078548014],
+            "stationary_point_x": 3707.7616,
+            "stationary_point_y": 3860.3891
+        },
+        {
+            "run_range": [4276, 4332],
+            "nonlinear_fast_threshold": 2980.6813,
+            "linear_fit_params": [-44.088974, 1.1675484],
+            "quadratic_fit_params": [-7228.1955, 5.9886959, -0.00080880309],
+            "stationary_point_x": 3703.0371,
+            "stationary_point_y": 3858.8768
+        },
+        {
+            "run_range": [4333, 4365],
+            "nonlinear_fast_threshold": 2864.958,
+            "linear_fit_params": [-15.011788, 1.1972494],
+            "quadratic_fit_params": [-6555.5753, 5.775307, -0.00080144575],
+            "stationary_point_x": 3605.3436,
+            "stationary_point_y": 3868.4434
+        },
+        {
+            "run_range": [4366, 4411],
+            "nonlinear_fast_threshold": 2912.0998,
+            "linear_fit_params": [-15.423526, 1.1762857],
+            "quadratic_fit_params": [-6581.4442, 5.68766, -0.00077493353],
+            "stationary_point_x": 3672.4806,
+            "stationary_point_y": 3861.1483
+        },
+        {
+            "run_range": [4412, 4466],
+            "nonlinear_fast_threshold": 2936.0525,
+            "linear_fit_params": [-14.912264, 1.1708883],
+            "quadratic_fit_params": [-6852.5388, 5.8253298, -0.00079226092],
+            "stationary_point_x": 3675.9787,
+            "stationary_point_y": 3856.7185
+        },
+        {
+            "run_range": [4467, 4496],
+            "nonlinear_fast_threshold": 2892.5529,
+            "linear_fit_params": [-16.327258, 1.1716791],
+            "quadratic_fit_params": [-5883.6597, 5.2271122, -0.00070079329],
+            "stationary_point_x": 3730.5785,
+            "stationary_point_y": 3863.3182
+        },
+        {
+            "run_range": [4497, 4521],
+            "nonlinear_fast_threshold": 2939.5619,
+            "linear_fit_params": [-14.950654, 1.1686736],
+            "quadratic_fit_params": [-6830.4798, 5.8034264, -0.00078802542],
+            "stationary_point_x": 3682.5108,
+            "stationary_point_y": 3856.7842
+        },
+        {
+            "run_range": [4522, 4577],
+            "nonlinear_fast_threshold": 2906.4269,
+            "linear_fit_params": [-18.53603, 1.1703222],
+            "quadratic_fit_params": [-6055.5364, 5.3240615, -0.00071468205],
+            "stationary_point_x": 3725.2228,
+            "stationary_point_y": 3861.5268
+        },
+        {
+            "run_range": [4578, 4607],
+            "nonlinear_fast_threshold": 2947.6721,
+            "linear_fit_params": [-16.30977, 1.1674309],
+            "quadratic_fit_params": [-6909.0658, 5.8430505, -0.00079312162],
+            "stationary_point_x": 3695.5373,
+            "stationary_point_y": 3865.2119
+        },
+        {
+            "run_range": [4608, 5000],
+            "nonlinear_fast_threshold": 2904.126,
+            "linear_fit_params": [-18.654561, 1.1696109],
+            "quadratic_fit_params": [-5984.6418, 5.2762075, -0.00070651819],
+            "stationary_point_x": 3733.7158,
+            "stationary_point_y": 3863.0142
+        }
+    ],
+    "12": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 2951.7463,
+            "linear_fit_params": [-21.909283, 1.1752574],
+            "quadratic_fit_params": [-7057.0851, 5.9397198, -0.000806776],
+            "stationary_point_x": 3683.9852,
+            "stationary_point_y": 3876.9492
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 2931.9106,
+            "linear_fit_params": [-16.496189, 1.1747123],
+            "quadratic_fit_params": [-6516.0588, 5.6107693, -0.00075653644],
+            "stationary_point_x": 3707.8989,
+            "stationary_point_y": 3889.7727
+        },
+        {
+            "run_range": [2282, 2347],
+            "nonlinear_fast_threshold": 2880.9408,
+            "linear_fit_params": [-3.7899262, 1.1863439],
+            "quadratic_fit_params": [-6150.3401, 5.4529548, -0.00074047752],
+            "stationary_point_x": 3684.7241,
+            "stationary_point_y": 3896.8368
+        },
+        {
+            "run_range": [2348, 2378],
+            "nonlinear_fast_threshold": 2914.7732,
+            "linear_fit_params": [2.2975636, 1.1816753],
+            "quadratic_fit_params": [-7023.9063, 5.9956721, -0.00082478559],
+            "stationary_point_x": 3651.3553,
+            "stationary_point_y": 3891.8313
+        },
+        {
+            "run_range": [2379, 2518],
+            "nonlinear_fast_threshold": 2897.8341,
+            "linear_fit_params": [-3.2747564, 1.1841926],
+            "quadratic_fit_params": [-6561.4111, 5.7078046, -0.00078007408],
+            "stationary_point_x": 3661.6384,
+            "stationary_point_y": 3883.4762
+        },
+        {
+            "run_range": [2519, 2565],
+            "nonlinear_fast_threshold": 2883.6296,
+            "linear_fit_params": [4.8983711, 1.1816235],
+            "quadratic_fit_params": [-6279.3924, 5.5393163, -0.00075605368],
+            "stationary_point_x": 3662.5458,
+            "stationary_point_y": 3875.6244
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2974.1062,
+            "linear_fit_params": [-23.813016, 1.1731405],
+            "quadratic_fit_params": [-7564.2095, 6.243427, -0.00085232206],
+            "stationary_point_x": 3663.4623,
+            "stationary_point_y": 3869.4711
+        },
+        {
+            "run_range": [2634, 2656],
+            "nonlinear_fast_threshold": 2992.6253,
+            "linear_fit_params": [-27.572632, 1.1748754],
+            "quadratic_fit_params": [-8489.9938, 6.8299782, -0.00094489283],
+            "stationary_point_x": 3614.8994,
+            "stationary_point_y": 3852.8294
+        },
+        {
+            "run_range": [2657, 2832],
+            "nonlinear_fast_threshold": 2975.6554,
+            "linear_fit_params": [-21.012107, 1.1734348],
+            "quadratic_fit_params": [-7918.8641, 6.4806519, -0.00089160928],
+            "stationary_point_x": 3634.7218,
+            "stationary_point_y": 3857.5331
+        },
+        {
+            "run_range": [2833, 3500],
+            "nonlinear_fast_threshold": 2959.9811,
+            "linear_fit_params": [-22.168231, 1.1741477],
+            "quadratic_fit_params": [-7347.7932, 6.1280572, -0.00083742733],
+            "stationary_point_x": 3659.8971,
+            "stationary_point_y": 3863.7587
+        },
+        {
+            "run_range": [3501, 4075],
+            "nonlinear_fast_threshold": 2951.9443,
+            "linear_fit_params": [-20.463428, 1.1796936],
+            "quadratic_fit_params": [-7709.1251, 6.3870071, -0.00088142842],
+            "stationary_point_x": 3620.9222,
+            "stationary_point_y": 3857.7327
+        },
+        {
+            "run_range": [4076, 4264],
+            "nonlinear_fast_threshold": 2968.6393,
+            "linear_fit_params": [-27.379858, 1.1778325],
+            "quadratic_fit_params": [-8141.2537, 6.6471179, -0.00092101948],
+            "stationary_point_x": 3610.6423,
+            "stationary_point_y": 3847.3348
+        },
+        {
+            "run_range": [4265, 4332],
+            "nonlinear_fast_threshold": 2986.5021,
+            "linear_fit_params": [-27.162659, 1.1770821],
+            "quadratic_fit_params": [-8767.996, 7.0357503, -0.00098155519],
+            "stationary_point_x": 3585.4226,
+            "stationary_point_y": 3841.2005
+        },
+        {
+            "run_range": [4333, 4451],
+            "nonlinear_fast_threshold": 2885.5801,
+            "linear_fit_params": [-7.8413612, 1.1926395],
+            "quadratic_fit_params": [-7115.6688, 6.1184252, -0.00085351028],
+            "stationary_point_x": 3587.3919,
+            "stationary_point_y": 3856.2542
+        },
+        {
+            "run_range": [4452, 5000],
+            "nonlinear_fast_threshold": 2887.3983,
+            "linear_fit_params": [-12.584662, 1.1938378],
+            "quadratic_fit_params": [-7186.3948, 6.1611156, -0.000860391],
+            "stationary_point_x": 3585.6033,
+            "stationary_point_y": 3853.9161
+        }
+    ],
+    "13": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 3055.6349,
+            "linear_fit_params": [-16.718664, 1.1494174],
+            "quadratic_fit_params": [-8607.765, 6.7744323, -0.00092051562],
+            "stationary_point_x": 3680.4544,
+            "stationary_point_y": 3854.8128
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 3024.4473,
+            "linear_fit_params": [-18.296452, 1.1529808],
+            "quadratic_fit_params": [-7794.0442, 6.2992187, -0.00085144438],
+            "stationary_point_x": 3701.5606,
+            "stationary_point_y": 3860.9587
+        },
+        {
+            "run_range": [2282, 2307],
+            "nonlinear_fast_threshold": 2928.3037,
+            "linear_fit_params": [-11.836818, 1.1659958],
+            "quadratic_fit_params": [-6053.0021, 5.2894025, -0.00070360785],
+            "stationary_point_x": 3763.1929,
+            "stationary_point_y": 3889.1199
+        },
+        {
+            "run_range": [2308, 2359],
+            "nonlinear_fast_threshold": 2938.7991,
+            "linear_fit_params": [-13.929979, 1.1673627],
+            "quadratic_fit_params": [-6467.4446, 5.5573331, -0.00074691858],
+            "stationary_point_x": 3723.0175,
+            "stationary_point_y": 3875.9974
+        },
+        {
+            "run_range": [2360, 2388],
+            "nonlinear_fast_threshold": 2909.7669,
+            "linear_fit_params": [-10.290215, 1.1646462],
+            "quadratic_fit_params": [-5734.0293, 5.0911424, -0.00067326766],
+            "stationary_point_x": 3785.2491,
+            "stationary_point_y": 3892.5213
+        },
+        {
+            "run_range": [2389, 2516],
+            "nonlinear_fast_threshold": 2955.6803,
+            "linear_fit_params": [-9.7966012, 1.1628396],
+            "quadratic_fit_params": [-6746.5023, 5.7208508, -0.00077099377],
+            "stationary_point_x": 3711.8529,
+            "stationary_point_y": 3866.5776
+        },
+        {
+            "run_range": [2517, 2565],
+            "nonlinear_fast_threshold": 2941.8583,
+            "linear_fit_params": [-10.208179, 1.1649194],
+            "quadratic_fit_params": [-6655.552, 5.6817399, -0.00076726584],
+            "stationary_point_x": 3713.4019,
+            "stationary_point_y": 3868.6717
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 3062.7867,
+            "linear_fit_params": [-22.746057, 1.1508511],
+            "quadratic_fit_params": [-8838.7302, 6.9062296, -0.0009394759],
+            "stationary_point_x": 3676.2672,
+            "stationary_point_y": 3853.7862
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 3060.2491,
+            "linear_fit_params": [-29.098817, 1.1551704],
+            "quadratic_fit_params": [-9152.1515, 7.1150162, -0.0009734871],
+            "stationary_point_x": 3654.3495,
+            "stationary_point_y": 3848.5136
+        },
+        {
+            "run_range": [2712, 3500],
+            "nonlinear_fast_threshold": 3044.7457,
+            "linear_fit_params": [-20.368036, 1.1518108],
+            "quadratic_fit_params": [-8486.0929, 6.7128869, -0.00091323104],
+            "stationary_point_x": 3677.5106,
+            "stationary_point_y": 3850.4371
+        },
+        {
+            "run_range": [3501, 4082],
+            "nonlinear_fast_threshold": 3019.1563,
+            "linear_fit_params": [-19.104166, 1.1567921],
+            "quadratic_fit_params": [-8272.2912, 6.6273748, -0.00090633469],
+            "stationary_point_x": 3659.2074,
+            "stationary_point_y": 3846.2841
+        },
+        {
+            "run_range": [4083, 4196],
+            "nonlinear_fast_threshold": 3018.275,
+            "linear_fit_params": [-24.037202, 1.1608814],
+            "quadratic_fit_params": [-8413.6538, 6.7169136, -0.00092023087],
+            "stationary_point_x": 3649.4451,
+            "stationary_point_y": 3844.9346
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 3031.6374,
+            "linear_fit_params": [-15.50986, 1.1521186],
+            "quadratic_fit_params": [-8432.2593, 6.6938326, -0.00091201613],
+            "stationary_point_x": 3670.1339,
+            "stationary_point_y": 3843.7756
+        },
+        {
+            "run_range": [4225, 4332],
+            "nonlinear_fast_threshold": 3054.6556,
+            "linear_fit_params": [-18.838135, 1.1495658],
+            "quadratic_fit_params": [-8913.5401, 6.9735363, -0.00095330052],
+            "stationary_point_x": 3658.2866,
+            "stationary_point_y": 3840.4208
+        },
+        {
+            "run_range": [4333, 4357],
+            "nonlinear_fast_threshold": 2966.4451,
+            "linear_fit_params": [-16.487824, 1.151064],
+            "quadratic_fit_params": [-6588.2371, 5.5852639, -0.00074748634],
+            "stationary_point_x": 3742.8611,
+            "stationary_point_y": 3848.7147
+        },
+        {
+            "run_range": [4358, 4383],
+            "nonlinear_fast_threshold": 2965.0479,
+            "linear_fit_params": [-13.117899, 1.1473725],
+            "quadratic_fit_params": [-6257.8671, 5.3568884, -0.00070951245],
+            "stationary_point_x": 3776.7908,
+            "stationary_point_y": 3856.0967
+        },
+        {
+            "run_range": [4384, 4472],
+            "nonlinear_fast_threshold": 2965.994,
+            "linear_fit_params": [-17.922086, 1.1491617],
+            "quadratic_fit_params": [-6264.0383, 5.359254, -0.00070952568],
+            "stationary_point_x": 3778.1819,
+            "stationary_point_y": 3856.7693
+        },
+        {
+            "run_range": [4473, 4622],
+            "nonlinear_fast_threshold": 2986.6066,
+            "linear_fit_params": [-14.736667, 1.1466122],
+            "quadratic_fit_params": [-6731.7505, 5.6443038, -0.00075295614],
+            "stationary_point_x": 3749.1768,
+            "stationary_point_y": 3850.3974
+        },
+        {
+            "run_range": [4623, 5000],
+            "nonlinear_fast_threshold": 2966.1927,
+            "linear_fit_params": [-13.961381, 1.1485246],
+            "quadratic_fit_params": [-6286.9675, 5.3782812, -0.00071303982],
+            "stationary_point_x": 3772.1934,
+            "stationary_point_y": 3855.142
+        }
+    ],
+    "14": [
+        {
+            "run_range": [2001, 2259],
+            "nonlinear_fast_threshold": 3048.215,
+            "linear_fit_params": [-35.412048, 1.134228],
+            "quadratic_fit_params": [-6964.4902, 5.6795659, -0.00074530151],
+            "stationary_point_x": 3812.0048,
+            "stationary_point_y": 3856.3016
+        },
+        {
+            "run_range": [2260, 2281],
+            "nonlinear_fast_threshold": 3005.0177,
+            "linear_fit_params": [-35.385233, 1.1370896],
+            "quadratic_fit_params": [-5908.3572, 5.0435532, -0.0006498362],
+            "stationary_point_x": 3882.6941,
+            "stationary_point_y": 3878.3616
+        },
+        {
+            "run_range": [2282, 2364],
+            "nonlinear_fast_threshold": 2918.343,
+            "linear_fit_params": [-20.759602, 1.1478952],
+            "quadratic_fit_params": [-4898.4417, 4.4856725, -0.00057119179],
+            "stationary_point_x": 3933.2115,
+            "stationary_point_y": 3913.3606
+        },
+        {
+            "run_range": [2365, 2565],
+            "nonlinear_fast_threshold": 2950.8456,
+            "linear_fit_params": [-15.448551, 1.1428265],
+            "quadratic_fit_params": [-5437.3282, 4.8140855, -0.00062156827],
+            "stationary_point_x": 3877.4819,
+            "stationary_point_y": 3888.2035
+        },
+        {
+            "run_range": [2566, 2634],
+            "nonlinear_fast_threshold": 3044.0716,
+            "linear_fit_params": [-41.444126, 1.1373497],
+            "quadratic_fit_params": [-6887.1651, 5.635196, -0.00073870091],
+            "stationary_point_x": 3815.0039,
+            "stationary_point_y": 3860.1551
+        },
+        {
+            "run_range": [2635, 2656],
+            "nonlinear_fast_threshold": 3067.9771,
+            "linear_fit_params": [-43.370172, 1.140871],
+            "quadratic_fit_params": [-8027.3782, 6.345477, -0.00084816059],
+            "stationary_point_x": 3741.4349,
+            "stationary_point_y": 3841.3713
+        },
+        {
+            "run_range": [2657, 3500],
+            "nonlinear_fast_threshold": 3036.746,
+            "linear_fit_params": [-39.349721, 1.1402381],
+            "quadratic_fit_params": [-6981.4493, 5.7116207, -0.00075307395],
+            "stationary_point_x": 3793.2697,
+            "stationary_point_y": 3849.0161
+        },
+        {
+            "run_range": [3501, 4073],
+            "nonlinear_fast_threshold": 2991.7287,
+            "linear_fit_params": [-38.445118, 1.1547368],
+            "quadratic_fit_params": [-7026.8687, 5.8080383, -0.00077508977],
+            "stationary_point_x": 3753.8133,
+            "stationary_point_y": 3849.8485
+        },
+        {
+            "run_range": [4074, 4196],
+            "nonlinear_fast_threshold": 2966.4564,
+            "linear_fit_params": [-43.232413, 1.1710196],
+            "quadratic_fit_params": [-7427.5862, 6.1541767, -0.00084057468],
+            "stationary_point_x": 3656.5699,
+            "stationary_point_y": 3836.6155
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 3006.2669,
+            "linear_fit_params": [-39.847492, 1.1456075],
+            "quadratic_fit_params": [-6830.1831, 5.6609456, -0.00075059536],
+            "stationary_point_x": 3772.2578,
+            "stationary_point_y": 3844.9666
+        },
+        {
+            "run_range": [4225, 4332],
+            "nonlinear_fast_threshold": 3042.7523,
+            "linear_fit_params": [-40.410729, 1.1447653],
+            "quadratic_fit_params": [-7949.8972, 6.3440113, -0.00085440475],
+            "stationary_point_x": 3713.2457,
+            "stationary_point_y": 3826.9904
+        },
+        {
+            "run_range": [4333, 4358],
+            "nonlinear_fast_threshold": 2883.7536,
+            "linear_fit_params": [-20.90701, 1.1621806],
+            "quadratic_fit_params": [-5202.1359, 4.7509464, -0.00062215534],
+            "stationary_point_x": 3826.1475,
+            "stationary_point_y": 3882.125
+        },
+        {
+            "run_range": [4359, 5000],
+            "nonlinear_fast_threshold": 2917.0664,
+            "linear_fit_params": [-21.875797, 1.1600969],
+            "quadratic_fit_params": [-5922.049, 5.2028587, -0.00069259887],
+            "stationary_point_x": 3759.5586,
+            "stationary_point_y": 3855.1728
+        }
+    ],
+    "15": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 2819.2836,
+            "linear_fit_params": [-39.405892, 1.2127691],
+            "quadratic_fit_params": [-6339.7901, 5.6826198, -0.00079267415],
+            "stationary_point_x": 3585.0736,
+            "stationary_point_y": 3844.9382
+        },
+        {
+            "run_range": [2233, 2289],
+            "nonlinear_fast_threshold": 2806.1827,
+            "linear_fit_params": [-33.287299, 1.2149741],
+            "quadratic_fit_params": [-6208.5654, 5.6087455, -0.00078267589],
+            "stationary_point_x": 3581.6549,
+            "stationary_point_y": 3858.0099
+        },
+        {
+            "run_range": [2290, 2360],
+            "nonlinear_fast_threshold": 2998.2941,
+            "linear_fit_params": [-15.086708, 1.2251757],
+            "quadratic_fit_params": [-47526.611, 30.347206, -0.006120396],
+            "stationary_point_x": 3451.6532,
+            "stationary_point_y": 3960.2451
+        },
+        {
+            "run_range": [2361, 2499],
+            "nonlinear_fast_threshold": 2819.464,
+            "linear_fit_params": [-9.5843517, 1.2094854],
+            "quadratic_fit_params": [-6768.9588, 6.0011006, -0.00084958528],
+            "stationary_point_x": 3535.6433,
+            "stationary_point_y": 3852.6591
+        },
+        {
+            "run_range": [2500, 2565],
+            "nonlinear_fast_threshold": 2904.4959,
+            "linear_fit_params": [-8.669496, 1.2078335],
+            "quadratic_fit_params": [-22627.477, 15.349634, -0.0040182323],
+            "stationary_point_x": 3523.7143,
+            "stationary_point_y": 3924.261
+        },
+        {
+            "run_range": [2566, 2609],
+            "nonlinear_fast_threshold": 2846.5863,
+            "linear_fit_params": [-38.89635, 1.1985208],
+            "quadratic_fit_params": [-6190.0866, 5.5196615, -0.00075889602],
+            "stationary_point_x": 3637.5181,
+            "stationary_point_y": 3846.7643
+        },
+        {
+            "run_range": [2610, 2632],
+            "nonlinear_fast_threshold": 2820.7003,
+            "linear_fit_params": [-40.696524, 1.2025458],
+            "quadratic_fit_params": [-5843.5351, 5.3174865, -0.00072890373],
+            "stationary_point_x": 3649.5245,
+            "stationary_point_y": 3853.6424
+        },
+        {
+            "run_range": [2633, 2656],
+            "nonlinear_fast_threshold": 2878.6581,
+            "linear_fit_params": [-41.331895, 1.2041789],
+            "quadratic_fit_params": [-7452.3102, 6.3528874, -0.00089418488],
+            "stationary_point_x": 3552.3908,
+            "stationary_point_y": 3831.7462
+        },
+        {
+            "run_range": [2657, 2830],
+            "nonlinear_fast_threshold": 2836.1909,
+            "linear_fit_params": [-33.665911, 1.2048391],
+            "quadratic_fit_params": [-6472.36, 5.744478, -0.00080019442],
+            "stationary_point_x": 3590.7719,
+            "stationary_point_y": 3838.3741
+        },
+        {
+            "run_range": [2831, 3500],
+            "nonlinear_fast_threshold": 2803.2195,
+            "linear_fit_params": [-36.929616, 1.2074268],
+            "quadratic_fit_params": [-5794.9992, 5.3162159, -0.00073287258],
+            "stationary_point_x": 3627.296,
+            "stationary_point_y": 3845.8853
+        },
+        {
+            "run_range": [3501, 4074],
+            "nonlinear_fast_threshold": 2803.3216,
+            "linear_fit_params": [-26.95577, 1.2119155],
+            "quadratic_fit_params": [-6237.6895, 5.6147464, -0.00078399089],
+            "stationary_point_x": 3586.8867,
+            "stationary_point_y": 3842.7585
+        },
+        {
+            "run_range": [4075, 4196],
+            "nonlinear_fast_threshold": 2794.568,
+            "linear_fit_params": [-34.829916, 1.2186624],
+            "quadratic_fit_params": [-6215.7133, 5.64105, -0.00079227354],
+            "stationary_point_x": 3558.6655,
+            "stationary_point_y": 3835.1684
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 2921.9216,
+            "linear_fit_params": [-31.321635, 1.1576973],
+            "quadratic_fit_params": [-5904.0128, 5.17857, -0.00068818662],
+            "stationary_point_x": 3761.5801,
+            "stationary_point_y": 3836.951
+        },
+        {
+            "run_range": [4225, 4333],
+            "nonlinear_fast_threshold": 2963.4583,
+            "linear_fit_params": [-31.554157, 1.1574497],
+            "quadratic_fit_params": [-6927.9306, 5.8098746, -0.00078473644],
+            "stationary_point_x": 3701.2651,
+            "stationary_point_y": 3826.045
+        },
+        {
+            "run_range": [4334, 4476],
+            "nonlinear_fast_threshold": 2866.0574,
+            "linear_fit_params": [-6.4778265, 1.1861081],
+            "quadratic_fit_params": [-6897.2609, 5.9925241, -0.00083832822],
+            "stationary_point_x": 3575.7795,
+            "stationary_point_y": 3818.2276
+        },
+        {
+            "run_range": [4477, 4514],
+            "nonlinear_fast_threshold": 2840.6728,
+            "linear_fit_params": [-12.810196, 1.1897089],
+            "quadratic_fit_params": [-6319.8879, 5.6305197, -0.00078184126],
+            "stationary_point_x": 3601.9344,
+            "stationary_point_y": 3822.2295
+        },
+        {
+            "run_range": [4515, 5000],
+            "nonlinear_fast_threshold": 2855.8008,
+            "linear_fit_params": [-8.1374437, 1.1867602],
+            "quadratic_fit_params": [-6591.6613, 5.7968508, -0.0008070142],
+            "stationary_point_x": 3595.9265,
+            "stationary_point_y": 3820.8453
+        }
+    ],
+    "16": [
+        {
+            "run_range": [2001, 2258],
+            "nonlinear_fast_threshold": 3118.5567,
+            "linear_fit_params": [-21.010835, 1.1224721],
+            "quadratic_fit_params": [-8108.0916, 6.313221, -0.00083170589],
+            "stationary_point_x": 3798.7945,
+            "stationary_point_y": 3865.452
+        },
+        {
+            "run_range": [2259, 2281],
+            "nonlinear_fast_threshold": 3049.7374,
+            "linear_fit_params": [-32.080958, 1.1196167],
+            "quadratic_fit_params": [-5540.0984, 4.7217933, -0.00059171605],
+            "stationary_point_x": 3996.2403,
+            "stationary_point_y": 3921.6173
+        },
+        {
+            "run_range": [2282, 2565],
+            "nonlinear_fast_threshold": 2901.5249,
+            "linear_fit_params": [-16.051602, 1.1691822],
+            "quadratic_fit_params": [-5283.2426, 4.7974883, -0.00062473546],
+            "stationary_point_x": 3843.2945,
+            "stationary_point_y": 3927.4496
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2975.3264,
+            "linear_fit_params": [-41.120549, 1.1594025],
+            "quadratic_fit_params": [-6054.2125, 5.2013806, -0.00067914819],
+            "stationary_point_x": 3830.5607,
+            "stationary_point_y": 3904.9658
+        },
+        {
+            "run_range": [2634, 2725],
+            "nonlinear_fast_threshold": 3054.4975,
+            "linear_fit_params": [-39.655426, 1.1519045],
+            "quadratic_fit_params": [-8077.1801, 6.4136291, -0.00086115765],
+            "stationary_point_x": 3723.6603,
+            "stationary_point_y": 3863.4252
+        },
+        {
+            "run_range": [2726, 3500],
+            "nonlinear_fast_threshold": 2980.4946,
+            "linear_fit_params": [-37.133615, 1.1542689],
+            "quadratic_fit_params": [-6299.3438, 5.3576638, -0.00070453718],
+            "stationary_point_x": 3805.9837,
+            "stationary_point_y": 3884.7647
+        },
+        {
+            "run_range": [3501, 4072],
+            "nonlinear_fast_threshold": 2966.6262,
+            "linear_fit_params": [-41.164815, 1.1490953],
+            "quadratic_fit_params": [-5662.3111, 4.9415444, -0.00063970996],
+            "stationary_point_x": 3861.0724,
+            "stationary_point_y": 3902.916
+        },
+        {
+            "run_range": [4073, 4196],
+            "nonlinear_fast_threshold": 3023.148,
+            "linear_fit_params": [-35.353518, 1.1369502],
+            "quadratic_fit_params": [-6281.637, 5.2667762, -0.00068147998],
+            "stationary_point_x": 3864.4996,
+            "stationary_point_y": 3877.5295
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 3325.238,
+            "linear_fit_params": [-30.553722, 1.0455467],
+            "quadratic_fit_params": [-7901.1986, 5.7902896, -0.0007132275],
+            "stationary_point_x": 4068.6689,
+            "stationary_point_y": 3845.3035
+        },
+        {
+            "run_range": [4225, 4332],
+            "nonlinear_fast_threshold": 3456.0636,
+            "linear_fit_params": [-32.405224, 1.0249768],
+            "quadratic_fit_params": [-9986.4092, 6.7933498, -0.00083556058],
+            "stationary_point_x": 4072.4158,
+            "stationary_point_y": 3827.0072
+        },
+        {
+            "run_range": [4333, 5000],
+            "nonlinear_fast_threshold": 3256.0833,
+            "linear_fit_params": [-12.759163, 1.051873],
+            "quadratic_fit_params": [-6507.0806, 5.0409298, -0.00061250097],
+            "stationary_point_x": 4115.9578,
+            "stationary_point_y": 3865.8857
+        }
+    ],
+    "17": [
+        {
+            "run_range": [2001, 2200],
+            "nonlinear_fast_threshold": 2929.0765,
+            "linear_fit_params": [-26.382027, 1.1721747],
+            "quadratic_fit_params": [-6596.5336, 5.6584859, -0.0007657354],
+            "stationary_point_x": 3694.7538,
+            "stationary_point_y": 3856.0979
+        },
+        {
+            "run_range": [2201, 2281],
+            "nonlinear_fast_threshold": 2863.417,
+            "linear_fit_params": [-30.419797, 1.189201],
+            "quadratic_fit_params": [-5824.7773, 5.2339538, -0.0007064239],
+            "stationary_point_x": 3707.0274,
+            "stationary_point_y": 3873.1689
+        },
+        {
+            "run_range": [2282, 2320],
+            "nonlinear_fast_threshold": 2694.5823,
+            "linear_fit_params": [-29.44684, 1.2507027],
+            "quadratic_fit_params": [-5517.0428, 5.3199047, -0.00075404197],
+            "stationary_point_x": 3529.4124,
+            "stationary_point_y": 3872.2001
+        },
+        {
+            "run_range": [2321, 2363],
+            "nonlinear_fast_threshold": 2696.5868,
+            "linear_fit_params": [-23.334071, 1.2436654],
+            "quadratic_fit_params": [-5245.6756, 5.113541, -0.0007166915],
+            "stationary_point_x": 3568.8054,
+            "stationary_point_y": 3897.1355
+        },
+        {
+            "run_range": [2364, 2394],
+            "nonlinear_fast_threshold": 2729.5643,
+            "linear_fit_params": [-21.792568, 1.2240452],
+            "quadratic_fit_params": [-5027.8077, 4.8871712, -0.00067019072],
+            "stationary_point_x": 3651.0277,
+            "stationary_point_y": 3893.5477
+        },
+        {
+            "run_range": [2395, 2510],
+            "nonlinear_fast_threshold": 2731.1063,
+            "linear_fit_params": [-30.299679, 1.2281636],
+            "quadratic_fit_params": [-5181.642, 5.0004998, -0.00069043347],
+            "stationary_point_x": 3621.9765,
+            "stationary_point_y": 3873.0614
+        },
+        {
+            "run_range": [2511, 2565],
+            "nonlinear_fast_threshold": 2721.187,
+            "linear_fit_params": [-22.790299, 1.2283612],
+            "quadratic_fit_params": [-5075.2002, 4.9289911, -0.00067819189],
+            "stationary_point_x": 3646.1445,
+            "stationary_point_y": 3904.6618
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 2815.9437,
+            "linear_fit_params": [-45.666602, 1.2133811],
+            "quadratic_fit_params": [-5941.5703, 5.4006011, -0.00074346129],
+            "stationary_point_x": 3631.5932,
+            "stationary_point_y": 3866.0244
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 2882.7539,
+            "linear_fit_params": [-47.161485, 1.203281],
+            "quadratic_fit_params": [-7077.6636, 6.0806364, -0.00084595051],
+            "stationary_point_x": 3592.8834,
+            "stationary_point_y": 3849.0704
+        },
+        {
+            "run_range": [2712, 3500],
+            "nonlinear_fast_threshold": 2790.4246,
+            "linear_fit_params": [-41.930371, 1.2155874],
+            "quadratic_fit_params": [-5909.067, 5.4456748, -0.00075793361],
+            "stationary_point_x": 3607.8153,
+            "stationary_point_y": 3857.3087
+        },
+        {
+            "run_range": [3501, 4049],
+            "nonlinear_fast_threshold": 2804.9775,
+            "linear_fit_params": [-42.779644, 1.1955234],
+            "quadratic_fit_params": [-5043.9787, 4.7725126, -0.00063916916],
+            "stationary_point_x": 3735.3684,
+            "stationary_point_y": 3868.7872
+        },
+        {
+            "run_range": [4050, 4196],
+            "nonlinear_fast_threshold": 2810.271,
+            "linear_fit_params": [-44.334187, 1.2034817],
+            "quadratic_fit_params": [-5607.6084, 5.1573417, -0.00070403039],
+            "stationary_point_x": 3664.2741,
+            "stationary_point_y": 3852.23
+        },
+        {
+            "run_range": [4197, 4225],
+            "nonlinear_fast_threshold": 2968.0507,
+            "linear_fit_params": [-45.184523, 1.1352363],
+            "quadratic_fit_params": [-5364.3164, 4.7201062, -0.00060369074],
+            "stationary_point_x": 3912.3471,
+            "stationary_point_y": 3860.5317
+        },
+        {
+            "run_range": [4226, 4332],
+            "nonlinear_fast_threshold": 3026.2265,
+            "linear_fit_params": [-47.003145, 1.1342111],
+            "quadratic_fit_params": [-6529.7149, 5.4183995, -0.00070781412],
+            "stationary_point_x": 3826.6365,
+            "stationary_point_y": 3839.0522
+        },
+        {
+            "run_range": [4333, 4493],
+            "nonlinear_fast_threshold": 2905.3717,
+            "linear_fit_params": [-22.426821, 1.1509683],
+            "quadratic_fit_params": [-5289.5148, 4.7745635, -0.00062329696],
+            "stationary_point_x": 3831.5588,
+            "stationary_point_y": 3854.3434
+        },
+        {
+            "run_range": [4494, 5000],
+            "nonlinear_fast_threshold": 2896.706,
+            "linear_fit_params": [-28.032882, 1.1522103],
+            "quadratic_fit_params": [-5112.1563, 4.6618632, -0.00060569351],
+            "stationary_point_x": 3848.6601,
+            "stationary_point_y": 3859.1879
+        }
+    ],
+    "18": [
+        {
+            "run_range": [2001, 2200],
+            "nonlinear_fast_threshold": 3043.9842,
+            "linear_fit_params": [-36.792257, 1.1408754],
+            "quadratic_fit_params": [-6895.929, 5.6483067, -0.00074045265],
+            "stationary_point_x": 3815.0948,
+            "stationary_point_y": 3875.9974
+        },
+        {
+            "run_range": [2201, 2280],
+            "nonlinear_fast_threshold": 3006.6867,
+            "linear_fit_params": [-29.833506, 1.1470017],
+            "quadratic_fit_params": [-6479.5122, 5.4449039, -0.00071546736],
+            "stationary_point_x": 3806.8741,
+            "stationary_point_y": 3883.2073
+        },
+        {
+            "run_range": [2281, 2357],
+            "nonlinear_fast_threshold": 2984.7413,
+            "linear_fit_params": [-1.5351426, 1.1533678],
+            "quadratic_fit_params": [-6896.4872, 5.7729302, -0.00077371915],
+            "stationary_point_x": 3731.5004,
+            "stationary_point_y": 3872.3168
+        },
+        {
+            "run_range": [2358, 2378],
+            "nonlinear_fast_threshold": 2892.8612,
+            "linear_fit_params": [0.59813176, 1.1854693],
+            "quadratic_fit_params": [-6580.6525, 5.7347293, -0.00078618461],
+            "stationary_point_x": 3657.445,
+            "stationary_point_y": 3882.1851
+        },
+        {
+            "run_range": [2379, 2565],
+            "nonlinear_fast_threshold": 2925.3566,
+            "linear_fit_params": [-3.2061682, 1.1788041],
+            "quadratic_fit_params": [-7003.6904, 5.9599872, -0.00081656856],
+            "stationary_point_x": 3648.2874,
+            "stationary_point_y": 3871.1939
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 3011.632,
+            "linear_fit_params": [-28.706095, 1.166128],
+            "quadratic_fit_params": [-8139.3315, 6.5512845, -0.00089402871],
+            "stationary_point_x": 3664.0893,
+            "stationary_point_y": 3863.2581
+        },
+        {
+            "run_range": [2634, 2711],
+            "nonlinear_fast_threshold": 3055.0556,
+            "linear_fit_params": [-30.156991, 1.1571238],
+            "quadratic_fit_params": [-8938.2555, 6.9886099, -0.00095433838],
+            "stationary_point_x": 3661.9123,
+            "stationary_point_y": 3855.801
+        },
+        {
+            "run_range": [2712, 3500],
+            "nonlinear_fast_threshold": 3025.1717,
+            "linear_fit_params": [-26.156403, 1.1524187],
+            "quadratic_fit_params": [-7755.5751, 6.2647808, -0.00084466501],
+            "stationary_point_x": 3708.9384,
+            "stationary_point_y": 3858.8866
+        },
+        {
+            "run_range": [3501, 4051],
+            "nonlinear_fast_threshold": 3070.7814,
+            "linear_fit_params": [-22.199239, 1.1301216],
+            "quadratic_fit_params": [-7304.6218, 5.8644305, -0.00077036356],
+            "stationary_point_x": 3811.6329,
+            "stationary_point_y": 3869.8943
+        },
+        {
+            "run_range": [4052, 4074],
+            "nonlinear_fast_threshold": 3035.139,
+            "linear_fit_params": [-27.253414, 1.1468459],
+            "quadratic_fit_params": [-7487.5481, 6.0608926, -0.00080924921],
+            "stationary_point_x": 3743.2815,
+            "stationary_point_y": 3855.3414
+        },
+        {
+            "run_range": [4075, 4196],
+            "nonlinear_fast_threshold": 3092.9474,
+            "linear_fit_params": [-23.568092, 1.1251926],
+            "quadratic_fit_params": [-7673.7559, 6.0614012, -0.00079765828],
+            "stationary_point_x": 3798.0097,
+            "stationary_point_y": 3851.8813
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 3191.5994,
+            "linear_fit_params": [-29.822522, 1.0902051],
+            "quadratic_fit_params": [-7515.8452, 5.781954, -0.00073503935],
+            "stationary_point_x": 3933.2575,
+            "stationary_point_y": 3854.3901
+        },
+        {
+            "run_range": [4225, 4332],
+            "nonlinear_fast_threshold": 3220.0151,
+            "linear_fit_params": [-30.94802, 1.0895752],
+            "quadratic_fit_params": [-8373.0106, 6.2724094, -0.00080502611],
+            "stationary_point_x": 3896.2146,
+            "stationary_point_y": 3846.963
+        },
+        {
+            "run_range": [4333, 4449],
+            "nonlinear_fast_threshold": 3100.1067,
+            "linear_fit_params": [-3.0521308, 1.1010681],
+            "quadratic_fit_params": [-6529.9394, 5.3103548, -0.00067852491],
+            "stationary_point_x": 3915.8287,
+            "stationary_point_y": 3862.4531
+        },
+        {
+            "run_range": [4450, 4509],
+            "nonlinear_fast_threshold": 3084.8787,
+            "linear_fit_params": [-5.7835968, 1.1016748],
+            "quadratic_fit_params": [-6010.105, 4.9932922, -0.00063059744],
+            "stationary_point_x": 3961.2961,
+            "stationary_point_y": 3874.8052
+        },
+        {
+            "run_range": [4510, 4570],
+            "nonlinear_fast_threshold": 3120.7315,
+            "linear_fit_params": [-5.921302, 1.1009002],
+            "quadratic_fit_params": [-6906.9181, 5.5236625, -0.00070865807],
+            "stationary_point_x": 3897.9252,
+            "stationary_point_y": 3857.4805
+        },
+        {
+            "run_range": [4571, 4598],
+            "nonlinear_fast_threshold": 3140.916,
+            "linear_fit_params": [-1.868564, 1.0988414],
+            "quadratic_fit_params": [-7583.2916, 5.9251671, -0.00076829305],
+            "stationary_point_x": 3856.9827,
+            "stationary_point_y": 3842.7608
+        },
+        {
+            "run_range": [4599, 5000],
+            "nonlinear_fast_threshold": 3120.9648,
+            "linear_fit_params": [-5.5857245, 1.1006091],
+            "quadratic_fit_params": [-6902.2962, 5.5198716, -0.00070808572],
+            "stationary_point_x": 3899.2202,
+            "stationary_point_y": 3855.7429
+        }
+    ],
+    "19": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 3149.7329,
+            "linear_fit_params": [-35.058971, 1.1016225],
+            "quadratic_fit_params": [-7045.3784, 5.5523823, -0.00070647953],
+            "stationary_point_x": 3929.8371,
+            "stationary_point_y": 3864.0892
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 3134.4592,
+            "linear_fit_params": [-33.21229, 1.1011045],
+            "quadratic_fit_params": [-6663.6742, 5.3333537, -0.0006756069],
+            "stationary_point_x": 3946.6998,
+            "stationary_point_y": 3867.1585
+        },
+        {
+            "run_range": [2282, 2516],
+            "nonlinear_fast_threshold": 3094.709,
+            "linear_fit_params": [-6.6117257, 1.1060216],
+            "quadratic_fit_params": [-6519.3467, 5.3145667, -0.00067975566],
+            "stationary_point_x": 3909.9464,
+            "stationary_point_y": 3868.0458
+        },
+        {
+            "run_range": [2517, 2565],
+            "nonlinear_fast_threshold": 3089.495,
+            "linear_fit_params": [-1.9235058, 1.1050201],
+            "quadratic_fit_params": [-6420.2817, 5.2550344, -0.00067067335],
+            "stationary_point_x": 3920.7382,
+            "stationary_point_y": 3869.4369
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 3174.6045,
+            "linear_fit_params": [-35.706574, 1.1001597],
+            "quadratic_fit_params": [-7631.7156, 5.8846121, -0.00075340983],
+            "stationary_point_x": 3905.5216,
+            "stationary_point_y": 3859.2951
+        },
+        {
+            "run_range": [2634, 2656],
+            "nonlinear_fast_threshold": 3190.0994,
+            "linear_fit_params": [-36.231244, 1.0999562],
+            "quadratic_fit_params": [-8128.1572, 6.1730841, -0.00079507302],
+            "stationary_point_x": 3882.179,
+            "stationary_point_y": 3854.2471
+        },
+        {
+            "run_range": [2657, 2826],
+            "nonlinear_fast_threshold": 3166.3574,
+            "linear_fit_params": [-31.009035, 1.0993165],
+            "quadratic_fit_params": [-7520.7868, 5.8299388, -0.00074693293],
+            "stationary_point_x": 3902.5586,
+            "stationary_point_y": 3854.1941
+        },
+        {
+            "run_range": [2827, 3500],
+            "nonlinear_fast_threshold": 3143.6327,
+            "linear_fit_params": [-32.122579, 1.1002048],
+            "quadratic_fit_params": [-6971.742, 5.5173819, -0.00070281482],
+            "stationary_point_x": 3925.4332,
+            "stationary_point_y": 3856.7689
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 3085.0344,
+            "linear_fit_params": [-32.138152, 1.1234166],
+            "quadratic_fit_params": [-7313.2249, 5.8506451, -0.00076671295],
+            "stationary_point_x": 3821.2489,
+            "stationary_point_y": 3848.6257
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 3111.2225,
+            "linear_fit_params": [-37.901283, 1.1171292],
+            "quadratic_fit_params": [-7464.3435, 5.8910653, -0.00076715652],
+            "stationary_point_x": 3839.6935,
+            "stationary_point_y": 3845.3325
+        },
+        {
+            "run_range": [4225, 4332],
+            "nonlinear_fast_threshold": 3130.3652,
+            "linear_fit_params": [-39.71609, 1.1167981],
+            "quadratic_fit_params": [-7926.1543, 6.1560593, -0.00080503812],
+            "stationary_point_x": 3822.7017,
+            "stationary_point_y": 3842.7108
+        },
+        {
+            "run_range": [4333, 4472],
+            "nonlinear_fast_threshold": 3027.6991,
+            "linear_fit_params": [-11.781233, 1.1279212],
+            "quadratic_fit_params": [-6493.9679, 5.4101308, -0.00070717641],
+            "stationary_point_x": 3825.3068,
+            "stationary_point_y": 3853.2881
+        },
+        {
+            "run_range": [4473, 5000],
+            "nonlinear_fast_threshold": 3038.5211,
+            "linear_fit_params": [-12.901781, 1.1271221],
+            "quadratic_fit_params": [-6701.9095, 5.5303369, -0.00072460616],
+            "stationary_point_x": 3816.6733,
+            "stationary_point_y": 3851.726
+        }
+    ],
+    "20": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 2961.5315,
+            "linear_fit_params": [-29.316229, 1.1634765],
+            "quadratic_fit_params": [-6391.2037, 5.4577754, -0.00072478406],
+            "stationary_point_x": 3767.0323,
+            "stationary_point_y": 3884.2014
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 2950.3177,
+            "linear_fit_params": [-27.425325, 1.1632755],
+            "quadratic_fit_params": [-6078.5708, 5.2646809, -0.00069588457],
+            "stationary_point_x": 3784.3836,
+            "stationary_point_y": 3893.6981
+        },
+        {
+            "run_range": [2282, 2311],
+            "nonlinear_fast_threshold": 2901.2719,
+            "linear_fit_params": [-6.8544903, 1.1758403],
+            "quadratic_fit_params": [-6279.1521, 5.4912147, -0.00074237306],
+            "stationary_point_x": 3711.3463,
+            "stationary_point_y": 3892.0768
+        },
+        {
+            "run_range": [2312, 2352],
+            "nonlinear_fast_threshold": 2980.2974,
+            "linear_fit_params": [-2.7386335, 1.1749126],
+            "quadratic_fit_params": [-9005.8626, 7.1485748, -0.00099308609],
+            "stationary_point_x": 3614.4265,
+            "stationary_point_y": 3905.7888
+        },
+        {
+            "run_range": [2353, 2565],
+            "nonlinear_fast_threshold": 2903.9192,
+            "linear_fit_params": [-4.6170892, 1.1756681],
+            "quadratic_fit_params": [-6312.0766, 5.5129491, -0.00074610158],
+            "stationary_point_x": 3705.5142,
+            "stationary_point_y": 3913.5447
+        },
+        {
+            "run_range": [2566, 2632],
+            "nonlinear_fast_threshold": 2965.4831,
+            "linear_fit_params": [-32.670335, 1.1648253],
+            "quadratic_fit_params": [-6517.7885, 5.5381068, -0.00073728222],
+            "stationary_point_x": 3756.8476,
+            "stationary_point_y": 3882.324
+        },
+        {
+            "run_range": [2633, 2711],
+            "nonlinear_fast_threshold": 3013.3324,
+            "linear_fit_params": [-34.692125, 1.1637023],
+            "quadratic_fit_params": [-8098.6164, 6.515136, -0.00088787976],
+            "stationary_point_x": 3669.611,
+            "stationary_point_y": 3853.5496
+        },
+        {
+            "run_range": [2712, 2826],
+            "nonlinear_fast_threshold": 2978.2902,
+            "linear_fit_params": [-29.082271, 1.1632974],
+            "quadratic_fit_params": [-7120.6266, 5.9247734, -0.00079919368],
+            "stationary_point_x": 3708.2962,
+            "stationary_point_y": 3860.8852
+        },
+        {
+            "run_range": [2827, 3500],
+            "nonlinear_fast_threshold": 2955.6351,
+            "linear_fit_params": [-28.711052, 1.1635595],
+            "quadratic_fit_params": [-6492.1073, 5.5360397, -0.00073941998],
+            "stationary_point_x": 3744.2984,
+            "stationary_point_y": 3870.3295
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 2953.6563,
+            "linear_fit_params": [-31.123694, 1.1638585],
+            "quadratic_fit_params": [-6563.3547, 5.5858854, -0.00074887048],
+            "stationary_point_x": 3728.9321,
+            "stationary_point_y": 3860.7794
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 2995.1941,
+            "linear_fit_params": [-36.34283, 1.1569797],
+            "quadratic_fit_params": [-7205.8326, 5.9418394, -0.00079836712],
+            "stationary_point_x": 3721.863,
+            "stationary_point_y": 3849.1306
+        },
+        {
+            "run_range": [4225, 4333],
+            "nonlinear_fast_threshold": 3009.2139,
+            "linear_fit_params": [-40.674844, 1.1574856],
+            "quadratic_fit_params": [-7697.4678, 6.2442142, -0.00084495621],
+            "stationary_point_x": 3693.9707,
+            "stationary_point_y": 3839.5034
+        },
+        {
+            "run_range": [4334, 4496],
+            "nonlinear_fast_threshold": 2922.8975,
+            "linear_fit_params": [-11.477748, 1.1719818],
+            "quadratic_fit_params": [-6911.7246, 5.8902851, -0.00080671453],
+            "stationary_point_x": 3654.0288,
+            "stationary_point_y": 3860.7856
+        },
+        {
+            "run_range": [4497, 4573],
+            "nonlinear_fast_threshold": 2911.3095,
+            "linear_fit_params": [-12.882135, 1.171083],
+            "quadratic_fit_params": [-6415.245, 5.5672797, -0.00075461457],
+            "stationary_point_x": 3691.0722,
+            "stationary_point_y": 3856.8069
+        },
+        {
+            "run_range": [4574, 4637],
+            "nonlinear_fast_threshold": 2915.522,
+            "linear_fit_params": [-15.614854, 1.1724969],
+            "quadratic_fit_params": [-6621.4989, 5.693888, -0.00077408157],
+            "stationary_point_x": 3687.0672,
+            "stationary_point_y": 3878.7878
+        },
+        {
+            "run_range": [4638, 5000],
+            "nonlinear_fast_threshold": 2929.2443,
+            "linear_fit_params": [-12.197617, 1.1711301],
+            "quadratic_fit_params": [-6919.1055, 5.8827527, -0.00080381302],
+            "stationary_point_x": 3660.9535,
+            "stationary_point_y": 3845.6981
+        }
+    ],
+    "21": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 3097.9169,
+            "linear_fit_params": [-24.644137, 1.1196963],
+            "quadratic_fit_params": [-7206.8462, 5.7554053, -0.00074814845],
+            "stationary_point_x": 3846.4154,
+            "stationary_point_y": 3862.5543
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 3072.4712,
+            "linear_fit_params": [-28.170359, 1.1223036],
+            "quadratic_fit_params": [-6761.5674, 5.4991584, -0.00071119032],
+            "stationary_point_x": 3864.2303,
+            "stationary_point_y": 3867.4802
+        },
+        {
+            "run_range": [2282, 2311],
+            "nonlinear_fast_threshold": 3002.8007,
+            "linear_fit_params": [-11.012813, 1.1332943],
+            "quadratic_fit_params": [-5997.1566, 5.1203506, -0.00066402328],
+            "stationary_point_x": 3859.3786,
+            "stationary_point_y": 3877.25
+        },
+        {
+            "run_range": [2312, 2376],
+            "nonlinear_fast_threshold": 2998.8775,
+            "linear_fit_params": [-9.8895057, 1.1330434],
+            "quadratic_fit_params": [-5999.1717, 5.1216586, -0.00066412853],
+            "stationary_point_x": 3860.8987,
+            "stationary_point_y": 3877.0613
+        },
+        {
+            "run_range": [2377, 2487],
+            "nonlinear_fast_threshold": 2979.8744,
+            "linear_fit_params": [-16.063498, 1.1352986],
+            "quadratic_fit_params": [-5545.0972, 4.8439288, -0.00062211658],
+            "stationary_point_x": 3895.5486,
+            "stationary_point_y": 3885.0067
+        },
+        {
+            "run_range": [2488, 2514],
+            "nonlinear_fast_threshold": 3018.6082,
+            "linear_fit_params": [-12.303389, 1.1319222],
+            "quadratic_fit_params": [-6378.9175, 5.3443368, -0.00069678604],
+            "stationary_point_x": 3835.6632,
+            "stationary_point_y": 3869.0969
+        },
+        {
+            "run_range": [2515, 2565],
+            "nonlinear_fast_threshold": 2960.8542,
+            "linear_fit_params": [-12.355012, 1.1350734],
+            "quadratic_fit_params": [-5346.2133, 4.7393663, -0.00060804668],
+            "stationary_point_x": 3926.025,
+            "stationary_point_y": 3895.9978
+        },
+        {
+            "run_range": [2566, 2635],
+            "nonlinear_fast_threshold": 3083.7658,
+            "linear_fit_params": [-32.357951, 1.123894],
+            "quadratic_fit_params": [-6977.1957, 5.6277667, -0.00073021584],
+            "stationary_point_x": 3854.1304,
+            "stationary_point_y": 3866.591
+        },
+        {
+            "run_range": [2636, 2711],
+            "nonlinear_fast_threshold": 3092.5026,
+            "linear_fit_params": [-35.584095, 1.1247268],
+            "quadratic_fit_params": [-7236.4157, 5.7807796, -0.00075277076],
+            "stationary_point_x": 3837.9152,
+            "stationary_point_y": 3860.565
+        },
+        {
+            "run_range": [2712, 2827],
+            "nonlinear_fast_threshold": 3078.1192,
+            "linear_fit_params": [-27.786436, 1.1228312],
+            "quadratic_fit_params": [-6994.8275, 5.6500833, -0.00073535202],
+            "stationary_point_x": 3841.9477,
+            "stationary_point_y": 3858.2604
+        },
+        {
+            "run_range": [2828, 3500],
+            "nonlinear_fast_threshold": 3061.5043,
+            "linear_fit_params": [-29.609102, 1.1236517],
+            "quadratic_fit_params": [-6592.9734, 5.4113594, -0.00070021474],
+            "stationary_point_x": 3864.1327,
+            "stationary_point_y": 3861.6788
+        },
+        {
+            "run_range": [3501, 4131],
+            "nonlinear_fast_threshold": 3070.6097,
+            "linear_fit_params": [-32.294645, 1.1215053],
+            "quadratic_fit_params": [-6724.1003, 5.4823465, -0.00071037941],
+            "stationary_point_x": 3857.606,
+            "stationary_point_y": 3852.5096
+        },
+        {
+            "run_range": [4132, 4219],
+            "nonlinear_fast_threshold": 3112.1591,
+            "linear_fit_params": [-32.757095, 1.1140943],
+            "quadratic_fit_params": [-7340.7092, 5.8071171, -0.00075360176],
+            "stationary_point_x": 3853.0837,
+            "stationary_point_y": 3845.7763
+        },
+        {
+            "run_range": [4220, 4333],
+            "nonlinear_fast_threshold": 3130.042,
+            "linear_fit_params": [-36.994026, 1.114264],
+            "quadratic_fit_params": [-7867.8558, 6.1180282, -0.00079934466],
+            "stationary_point_x": 3827.4028,
+            "stationary_point_y": 3839.4513
+        },
+        {
+            "run_range": [4334, 4361],
+            "nonlinear_fast_threshold": 2961.4873,
+            "linear_fit_params": [-18.982057, 1.1319412],
+            "quadratic_fit_params": [-5227.5104, 4.6489073, -0.0005938076],
+            "stationary_point_x": 3916.6326,
+            "stationary_point_y": 3872.5114
+        },
+        {
+            "run_range": [4362, 4505],
+            "nonlinear_fast_threshold": 2996.6057,
+            "linear_fit_params": [-16.895967, 1.1292933],
+            "quadratic_fit_params": [-5838.5742, 5.0141022, -0.00064804908],
+            "stationary_point_x": 3870.3117,
+            "stationary_point_y": 3860.8203
+        },
+        {
+            "run_range": [4506, 4579],
+            "nonlinear_fast_threshold": 3011.2286,
+            "linear_fit_params": [-17.711003, 1.1289874],
+            "quadratic_fit_params": [-6151.8009, 5.202628, -0.0006763125],
+            "stationary_point_x": 3844.8938,
+            "stationary_point_y": 3856.1129
+        },
+        {
+            "run_range": [4580, 5000],
+            "nonlinear_fast_threshold": 3019.6545,
+            "linear_fit_params": [-13.928223, 1.1269501],
+            "quadratic_fit_params": [-6235.3265, 5.2454522, -0.00068166473],
+            "stationary_point_x": 3847.065,
+            "stationary_point_y": 3856.9413
+        }
+    ],
+    "22": [
+        {
+            "run_range": [2001, 2281],
+            "nonlinear_fast_threshold": 3247.5543,
+            "linear_fit_params": [-22.249687, 1.0782376],
+            "quadratic_fit_params": [-7928.6419, 5.9481283, -0.00074981047],
+            "stationary_point_x": 3966.5863,
+            "stationary_point_y": 3868.1399
+        },
+        {
+            "run_range": [2282, 2324],
+            "nonlinear_fast_threshold": 3182.9134,
+            "linear_fit_params": [-5.7221684, 1.0886249],
+            "quadratic_fit_params": [-7167.4964, 5.5847869, -0.00070577274],
+            "stationary_point_x": 3960.8448,
+            "stationary_point_y": 3882.1291
+        },
+        {
+            "run_range": [2325, 2358],
+            "nonlinear_fast_threshold": 3184.9259,
+            "linear_fit_params": [-8.5816875, 1.0893792],
+            "quadratic_fit_params": [-7499.4138, 5.7900108, -0.00073735854],
+            "stationary_point_x": 3931.8337,
+            "stationary_point_y": 3870.7533
+        },
+        {
+            "run_range": [2359, 2382],
+            "nonlinear_fast_threshold": 3194.4344,
+            "linear_fit_params": [-3.6819987, 1.0870383],
+            "quadratic_fit_params": [-7491.8291, 5.7704871, -0.00073249541],
+            "stationary_point_x": 3949.0489,
+            "stationary_point_y": 3877.1601
+        },
+        {
+            "run_range": [2383, 2565],
+            "nonlinear_fast_threshold": 3183.4145,
+            "linear_fit_params": [-8.9102067, 1.0901428],
+            "quadratic_fit_params": [-7453.3981, 5.7619758, -0.00073305712],
+            "stationary_point_x": 3933.3334,
+            "stationary_point_y": 3870.3659
+        },
+        {
+            "run_range": [2566, 2638],
+            "nonlinear_fast_threshold": 3264.4922,
+            "linear_fit_params": [-27.378436, 1.0789769],
+            "quadratic_fit_params": [-8472.5128, 6.252199, -0.00079218748],
+            "stationary_point_x": 3946.5914,
+            "stationary_point_y": 3863.7781
+        },
+        {
+            "run_range": [2639, 2712],
+            "nonlinear_fast_threshold": 3267.2925,
+            "linear_fit_params": [-30.503961, 1.0821788],
+            "quadratic_fit_params": [-8821.9368, 6.4618458, -0.00082311255],
+            "stationary_point_x": 3924.4463,
+            "stationary_point_y": 3858.7483
+        },
+        {
+            "run_range": [2713, 2830],
+            "nonlinear_fast_threshold": 3243.8526,
+            "linear_fit_params": [-23.997356, 1.0823561],
+            "quadratic_fit_params": [-8285.7489, 6.1737423, -0.0007845766],
+            "stationary_point_x": 3933.9222,
+            "stationary_point_y": 3859.1575
+        },
+        {
+            "run_range": [2831, 3500],
+            "nonlinear_fast_threshold": 3252.0621,
+            "linear_fit_params": [-24.906231, 1.0773526],
+            "quadratic_fit_params": [-8087.4758, 6.0321075, -0.00076139947],
+            "stationary_point_x": 3962.0019,
+            "stationary_point_y": 3859.9942
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 3234.3631,
+            "linear_fit_params": [-25.672141, 1.0799703],
+            "quadratic_fit_params": [-7937.2477, 5.9724992, -0.00075633654],
+            "stationary_point_x": 3950.1112,
+            "stationary_point_y": 3854.6033
+        },
+        {
+            "run_range": [4197, 4248],
+            "nonlinear_fast_threshold": 3265.5651,
+            "linear_fit_params": [-30.13708, 1.0763504],
+            "quadratic_fit_params": [-8554.2528, 6.2964965, -0.00079921999],
+            "stationary_point_x": 3940.4896,
+            "stationary_point_y": 3848.0825
+        },
+        {
+            "run_range": [4249, 4332],
+            "nonlinear_fast_threshold": 3262.842,
+            "linear_fit_params": [-32.382551, 1.0784904],
+            "quadratic_fit_params": [-8642.8478, 6.3576939, -0.00080938214],
+            "stationary_point_x": 3927.907,
+            "stationary_point_y": 3844.8002
+        },
+        {
+            "run_range": [4333, 4491],
+            "nonlinear_fast_threshold": 3162.5836,
+            "linear_fit_params": [-17.4396, 1.0906913],
+            "quadratic_fit_params": [-7050.146, 5.5357794, -0.00070255613],
+            "stationary_point_x": 3941.8379,
+            "stationary_point_y": 3855.9984
+        },
+        {
+            "run_range": [4492, 4514],
+            "nonlinear_fast_threshold": 3182.3625,
+            "linear_fit_params": [-15.288127, 1.0886313],
+            "quadratic_fit_params": [-7519.475, 5.8012284, -0.00073987449],
+            "stationary_point_x": 3924.9264,
+            "stationary_point_y": 3854.5678
+        },
+        {
+            "run_range": [4515, 4536],
+            "nonlinear_fast_threshold": 3146.4104,
+            "linear_fit_params": [-18.493478, 1.0923905],
+            "quadratic_fit_params": [-6553.3555, 5.2449902, -0.00065979544],
+            "stationary_point_x": 3975.3419,
+            "stationary_point_y": 3871.7187
+        },
+        {
+            "run_range": [4537, 4586],
+            "nonlinear_fast_threshold": 3169.8388,
+            "linear_fit_params": [-18.204168, 1.0907461],
+            "quadratic_fit_params": [-7306.6984, 5.6852189, -0.00072411225],
+            "stationary_point_x": 3912.461,
+            "stationary_point_y": 3854.34
+        },
+        {
+            "run_range": [4587, 4635],
+            "nonlinear_fast_threshold": 3176.3487,
+            "linear_fit_params": [-15.21487, 1.0891791],
+            "quadratic_fit_params": [-7316.858, 5.6862875, -0.00072358391],
+            "stationary_point_x": 3926.3524,
+            "stationary_point_y": 3853.3373
+        },
+        {
+            "run_range": [4636, 5000],
+            "nonlinear_fast_threshold": 3155.5967,
+            "linear_fit_params": [-17.597914, 1.091133],
+            "quadratic_fit_params": [-6674.7674, 5.3078941, -0.00066794891],
+            "stationary_point_x": 3974.8814,
+            "stationary_point_y": 3868.5409
+        }
+    ],
+    "23": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 3106.6019,
+            "linear_fit_params": [-27.658031, 1.1245336],
+            "quadratic_fit_params": [-7541.3066, 5.9608691, -0.00077827635],
+            "stationary_point_x": 3829.839,
+            "stationary_point_y": 3872.6505
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 3095.4636,
+            "linear_fit_params": [-25.617305, 1.1257986],
+            "quadratic_fit_params": [-7386.8481, 5.875538, -0.00076657807],
+            "stationary_point_x": 3830.4363,
+            "stationary_point_y": 3873.4226
+        },
+        {
+            "run_range": [2282, 2370],
+            "nonlinear_fast_threshold": 3052.674,
+            "linear_fit_params": [-1.6910857, 1.1307884],
+            "quadratic_fit_params": [-6974.3322, 5.698325, -0.00074803066],
+            "stationary_point_x": 3809.555,
+            "stationary_point_y": 3878.3327
+        },
+        {
+            "run_range": [2371, 2515],
+            "nonlinear_fast_threshold": 3035.0521,
+            "linear_fit_params": [-6.1516892, 1.1329488],
+            "quadratic_fit_params": [-6648.4733, 5.5093409, -0.00072078968],
+            "stationary_point_x": 3822.6218,
+            "stationary_point_y": 3880.3272
+        },
+        {
+            "run_range": [2516, 2565],
+            "nonlinear_fast_threshold": 3031.6319,
+            "linear_fit_params": [-1.3644123, 1.1319752],
+            "quadratic_fit_params": [-6599.4406, 5.4842061, -0.00071746954],
+            "stationary_point_x": 3826.5104,
+            "stationary_point_y": 3880.1948
+        },
+        {
+            "run_range": [2566, 2633],
+            "nonlinear_fast_threshold": 3122.0981,
+            "linear_fit_params": [-27.419895, 1.1255476],
+            "quadratic_fit_params": [-8127.4751, 6.3140276, -0.00083085687],
+            "stationary_point_x": 3799.7221,
+            "stationary_point_y": 3867.9998
+        },
+        {
+            "run_range": [2634, 2655],
+            "nonlinear_fast_threshold": 3133.6521,
+            "linear_fit_params": [-29.269214, 1.1258911],
+            "quadratic_fit_params": [-8536.2781, 6.5550471, -0.00086614839],
+            "stationary_point_x": 3783.9471,
+            "stationary_point_y": 3865.4145
+        },
+        {
+            "run_range": [2656, 2825],
+            "nonlinear_fast_threshold": 3111.9539,
+            "linear_fit_params": [-23.51634, 1.1248766],
+            "quadratic_fit_params": [-7908.1447, 6.1919405, -0.00081413255],
+            "stationary_point_x": 3803.0334,
+            "stationary_point_y": 3865.5868
+        },
+        {
+            "run_range": [2826, 3500],
+            "nonlinear_fast_threshold": 3094.0104,
+            "linear_fit_params": [-24.261535, 1.1251464],
+            "quadratic_fit_params": [-7445.6571, 5.9223003, -0.00077513655],
+            "stationary_point_x": 3820.2685,
+            "stationary_point_y": 3866.6243
+        },
+        {
+            "run_range": [3501, 4196],
+            "nonlinear_fast_threshold": 3139.4313,
+            "linear_fit_params": [-22.653855, 1.1120492],
+            "quadratic_fit_params": [-7846.24, 6.0968544, -0.00079389178],
+            "stationary_point_x": 3839.9371,
+            "stationary_point_y": 3857.4602
+        },
+        {
+            "run_range": [4197, 4224],
+            "nonlinear_fast_threshold": 3165.901,
+            "linear_fit_params": [-28.192171, 1.1069126],
+            "quadratic_fit_params": [-8084.747, 6.1970501, -0.00080407801],
+            "stationary_point_x": 3853.348,
+            "stationary_point_y": 3855.4672
+        },
+        {
+            "run_range": [4225, 4332],
+            "nonlinear_fast_threshold": 3180.1991,
+            "linear_fit_params": [-27.979228, 1.1058093],
+            "quadratic_fit_params": [-8533.5423, 6.4542706, -0.00084082752],
+            "stationary_point_x": 3837.2705,
+            "stationary_point_y": 3851.4792
+        },
+        {
+            "run_range": [4333, 4398],
+            "nonlinear_fast_threshold": 3078.424,
+            "linear_fit_params": [-4.855232, 1.1145173],
+            "quadratic_fit_params": [-6730.6063, 5.4830508, -0.00070930099],
+            "stationary_point_x": 3865.6678,
+            "stationary_point_y": 3865.1059
+        },
+        {
+            "run_range": [4399, 4534],
+            "nonlinear_fast_threshold": 3072.1648,
+            "linear_fit_params": [-9.2209678, 1.1163039],
+            "quadratic_fit_params": [-6655.0916, 5.4422038, -0.00070381114],
+            "stationary_point_x": 3867.1648,
+            "stationary_point_y": 3864.9846
+        },
+        {
+            "run_range": [4535, 4636],
+            "nonlinear_fast_threshold": 3084.9824,
+            "linear_fit_params": [-8.473367, 1.1154894],
+            "quadratic_fit_params": [-6890.4034, 5.5798513, -0.00072365797],
+            "stationary_point_x": 3854.295,
+            "stationary_point_y": 3862.9883
+        },
+        {
+            "run_range": [4637, 5000],
+            "nonlinear_fast_threshold": 3068.3718,
+            "linear_fit_params": [-7.5120829, 1.1153674],
+            "quadratic_fit_params": [-6476.7714, 5.3324736, -0.00068718984],
+            "stationary_point_x": 3879.5081,
+            "stationary_point_y": 3866.5682
+        }
+    ],
+    "24": [
+        {
+            "run_range": [2001, 2232],
+            "nonlinear_fast_threshold": 2981.4931,
+            "linear_fit_params": [-14.27386, 1.1661922],
+            "quadratic_fit_params": [-7088.5733, 5.9084401, -0.00079489861],
+            "stationary_point_x": 3718.6184,
+            "stationary_point_y": 3896.8923
+        },
+        {
+            "run_range": [2233, 2281],
+            "nonlinear_fast_threshold": 2954.1411,
+            "linear_fit_params": [-14.970106, 1.1723566],
+            "quadratic_fit_params": [-6652.6906, 5.6651234, -0.00076041228],
+            "stationary_point_x": 3726.4288,
+            "stationary_point_y": 3906.6446
+        },
+        {
+            "run_range": [2282, 2565],
+            "nonlinear_fast_threshold": 3373.125,
+            "linear_fit_params": [4.5794508, 1.1829368],
+            "quadratic_fit_params": [-104676.03, 62.469835, -0.0092161418],
+            "stationary_point_x": 3496.3542,
+            "stationary_point_y": 4080.6382
+        },
+        {
+            "run_range": [2566, 2634],
+            "nonlinear_fast_threshold": 2997.4696,
+            "linear_fit_params": [-24.283357, 1.1688074],
+            "quadratic_fit_params": [-7706.3759, 6.2938258, -0.00085461255],
+            "stationary_point_x": 3683.6016,
+            "stationary_point_y": 3882.023
+        },
+        {
+            "run_range": [2635, 2711],
+            "nonlinear_fast_threshold": 3006.9881,
+            "linear_fit_params": [-27.677866, 1.170801],
+            "quadratic_fit_params": [-8214.7925, 6.6152201, -0.00090508003],
+            "stationary_point_x": 3654.3521,
+            "stationary_point_y": 3873.6865
+        },
+        {
+            "run_range": [2712, 2841],
+            "nonlinear_fast_threshold": 3020.6929,
+            "linear_fit_params": [-19.459836, 1.1588778],
+            "quadratic_fit_params": [-7794.8724, 6.305995, -0.00085199983],
+            "stationary_point_x": 3701.1506,
+            "stationary_point_y": 3873.4177
+        },
+        {
+            "run_range": [2842, 3500],
+            "nonlinear_fast_threshold": 2993.9939,
+            "linear_fit_params": [-22.627451, 1.1608095],
+            "quadratic_fit_params": [-6895.7896, 5.7534416, -0.00076738651],
+            "stationary_point_x": 3749.1852,
+            "stationary_point_y": 3888.6832
+        },
+        {
+            "run_range": [3501, 4066],
+            "nonlinear_fast_threshold": 3023.1158,
+            "linear_fit_params": [-23.264782, 1.1520436],
+            "quadratic_fit_params": [-7325.8298, 6.0026271, -0.00080803025],
+            "stationary_point_x": 3731.847,
+            "stationary_point_y": 3883.8655
+        },
+        {
+            "run_range": [4067, 4196],
+            "nonlinear_fast_threshold": 3033.441,
+            "linear_fit_params": [-28.877225, 1.1529806],
+            "quadratic_fit_params": [-7765.7718, 6.2507477, -0.0008399092],
+            "stationary_point_x": 3718.6544,
+            "stationary_point_y": 3864.7882
+        },
+        {
+            "run_range": [4197, 4225],
+            "nonlinear_fast_threshold": 2941.5963,
+            "linear_fit_params": [-33.722076, 1.1926732],
+            "quadratic_fit_params": [-7955.8451, 6.5798527, -0.00091582886],
+            "stationary_point_x": 3594.0733,
+            "stationary_point_y": 3861.9753
+        },
+        {
+            "run_range": [4226, 4251],
+            "nonlinear_fast_threshold": 2972.0267,
+            "linear_fit_params": [-36.715202, 1.1923382],
+            "quadratic_fit_params": [-9255.9578, 7.3954124, -0.0010435296],
+            "stationary_point_x": 3543.6376,
+            "stationary_point_y": 3848.5174
+        },
+        {
+            "run_range": [4252, 4284],
+            "nonlinear_fast_threshold": 2960.657,
+            "linear_fit_params": [-35.112563, 1.1896746],
+            "quadratic_fit_params": [-8254.1434, 6.7409042, -0.00093738627],
+            "stationary_point_x": 3596.7615,
+            "stationary_point_y": 3864.8998
+        },
+        {
+            "run_range": [4285, 4336],
+            "nonlinear_fast_threshold": 2977.7318,
+            "linear_fit_params": [-36.537149, 1.1913457],
+            "quadratic_fit_params": [-9455.531, 7.5148488, -0.0010616769],
+            "stationary_point_x": 3540.3525,
+            "stationary_point_y": 3848.4691
+        },
+        {
+            "run_range": [4337, 4537],
+            "nonlinear_fast_threshold": 3378.1258,
+            "linear_fit_params": [-11.841435, 1.2051682],
+            "quadratic_fit_params": [-114130.49, 68.768726, -0.01],
+            "stationary_point_x": 3443.0926,
+            "stationary_point_y": 4098.1967
+        },
+        {
+            "run_range": [4538, 5000],
+            "nonlinear_fast_threshold": 3310.4473,
+            "linear_fit_params": [-12.919916, 1.2034089],
+            "quadratic_fit_params": [-97363.912, 58.921321, -0.0089378436],
+            "stationary_point_x": 3454.8417,
+            "stationary_point_y": 4076.2888
+        }
+    ]
+}
