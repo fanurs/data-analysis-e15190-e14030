@@ -34,6 +34,7 @@ dev*.py
 scratch/
 database/neutron_wall/efficiency/light_responses/
 database/neutron_wall/efficiency/response/
+database/neutron_wall/efficiency/2023/
 database/runlog/cleansed/
 database/runlog/downloads/
 database/runlog/elog_runs_filtered.h5
