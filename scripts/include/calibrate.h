@@ -54,10 +54,6 @@ struct Container {
     std::array<short, max_multi> VW_total_B; // bottom
     std::array<double, max_multi> VW_time_T;
     std::array<double, max_multi> VW_time_B;
-    std::array<double, max_multi> VW_pos_y;
-    std::array<double, max_multi> VW_theta;
-    std::array<double, max_multi> VW_phi;
-    std::array<double, max_multi> VW_distance;
 
     // Neutron Wall A
     int NWA_multi;
@@ -70,7 +66,6 @@ struct Container {
     std::array<short, max_multi> NWB_total_R;
     std::array<short, max_multi> NWB_fast_L;
     std::array<short, max_multi> NWB_fast_R;
-    std::array<double, max_multi> NWB_time;
     std::array<double, max_multi> NWB_time_L;
     std::array<double, max_multi> NWB_time_R;
     /* new / modified branches */
@@ -284,10 +279,6 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchAddress("VetoWall.fBottom",                 &container.VW_total_B[0]);
     chain->SetBranchAddress("VetoWall.fTimeTop",                &container.VW_time_T[0]);
     chain->SetBranchAddress("VetoWall.fTimeBottom",             &container.VW_time_B[0]);
-    chain->SetBranchAddress("VetoWall.fYcm",                    &container.VW_pos_y[0]);
-    chain->SetBranchAddress("VetoWall.fThetaRan",               &container.VW_theta[0]);
-    chain->SetBranchAddress("VetoWall.fPhiRan",                 &container.VW_phi[0]);
-    chain->SetBranchAddress("VetoWall.fDistRancm",              &container.VW_distance[0]);
     // Neutron Wall A
     chain->SetBranchAddress("NWA.fmulti",                       &container.NWA_multi);
     chain->SetBranchAddress("NWA.fnumbar",                      &container.NWA_bar[0]);
@@ -298,7 +289,6 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchAddress("NWB.fRight",                       &container.NWB_total_R[0]);
     chain->SetBranchAddress("NWB.ffastLeft",                    &container.NWB_fast_L[0]);
     chain->SetBranchAddress("NWB.ffastRight",                   &container.NWB_fast_R[0]);
-    chain->SetBranchAddress("NWB.fTimeMean",                    &container.NWB_time[0]);
     chain->SetBranchAddress("NWB.fTimeLeft",                    &container.NWB_time_L[0]);
     chain->SetBranchAddress("NWB.fTimeRight",                   &container.NWB_time_R[0]);
 
@@ -342,10 +332,6 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchStatus("VetoWall.fBottom", true);
     chain->SetBranchStatus("VetoWall.fTimeTop", true);
     chain->SetBranchStatus("VetoWall.fTimeBottom", true);
-    chain->SetBranchStatus("VetoWall.fYcm", true);
-    chain->SetBranchStatus("VetoWall.fThetaRan", true);
-    chain->SetBranchStatus("VetoWall.fPhiRan", true);
-    chain->SetBranchStatus("VetoWall.fDistRancm", true);
     // Neutron Wall A
     chain->SetBranchStatus("NWA.fmulti", true);
     chain->SetBranchStatus("NWA.fnumbar", true);
@@ -356,7 +342,6 @@ TChain* get_input_tree(const std::string& path, const std::string& tree_name) {
     chain->SetBranchStatus("NWB.fRight", true);
     chain->SetBranchStatus("NWB.ffastLeft", true);
     chain->SetBranchStatus("NWB.ffastRight", true);
-    chain->SetBranchStatus("NWB.fTimeMean", true);
     chain->SetBranchStatus("NWB.fTimeLeft", true);
     chain->SetBranchStatus("NWB.fTimeRight", true);
 
@@ -405,10 +390,6 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("VW_total_B",      &container.VW_total_B[0],     "VW_total_B[VW_multi]/S");
     tree->Branch("VW_time_T",       &container.VW_time_T[0],      "VW_time_T[VW_multi]/D");
     tree->Branch("VW_time_B",       &container.VW_time_B[0],      "VW_time_B[VW_multi]/D");
-    tree->Branch("VW_pos_y",        &container.VW_pos_y[0],       "VW_pos_y[VW_multi]/D");
-    tree->Branch("VW_theta",        &container.VW_theta[0],       "VW_theta[VW_multi]/D");
-    tree->Branch("VW_phi",          &container.VW_phi[0],         "VW_phi[VW_multi]/D");
-    tree->Branch("VW_distance",     &container.VW_distance[0],    "VW_distance[VW_multi]/D");
 
     // Neutron Wall A
     tree->Branch("NWA_multi",       &container.NWA_multi,         "NWA_multi/I");
@@ -421,7 +402,6 @@ TTree* get_output_tree(TFile*& outroot, const std::string& tree_name) {
     tree->Branch("NWB_total_R",     &container.NWB_total_R[0],    "NWB_total_R[NWB_multi]/S");
     tree->Branch("NWB_fast_L",      &container.NWB_fast_L[0],     "NWB_fast_L[NWB_multi]/S");
     tree->Branch("NWB_fast_R",      &container.NWB_fast_R[0],     "NWB_fast_R[NWB_multi]/S");
-    tree->Branch("NWB_time",        &container.NWB_time[0],       "NWB_time[NWB_multi]/D");
     tree->Branch("NWB_time_L",      &container.NWB_time_L[0],     "NWB_time_L[NWB_multi]/D");
     tree->Branch("NWB_time_R",      &container.NWB_time_R[0],     "NWB_time_R[NWB_multi]/D");
     /* new / modified branches */

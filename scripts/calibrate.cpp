@@ -58,7 +58,6 @@ int main(int argc, char* argv[]) {
     nwb_psd_reader.load(argparser.run_num);
 
     // read in Daniele's ROOT files (Kuan's version)
-    // std::filesystem::path inroot_path = get_input_root_path(project_dir, argparser, "daniele_root_files_dir");
     std::filesystem::path inroot_path = get_input_root_path(project_dir, argparser);
     TChain* intree = get_input_tree(inroot_path.string(), "E15190");
 

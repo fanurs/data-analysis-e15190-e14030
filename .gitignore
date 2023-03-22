@@ -34,6 +34,7 @@ dev*.py
 scratch/
 database/neutron_wall/efficiency/light_responses/
 database/neutron_wall/efficiency/response/
+database/neutron_wall/efficiency/2023*/**/*.root
 database/runlog/cleansed/
 database/runlog/downloads/
 database/runlog/elog_runs_filtered.h5
@@ -52,4 +53,4 @@ database/neutron_wall/**/gallery
 database/neutron_wall/efficiency/geant4_root_files/
 database/hira/rensheng_espec/
 database/.root_files_prev/
-database/root_files_candidates/
+database/root_files*/*.root
