@@ -224,11 +224,9 @@ double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, doubl
 
     // light output calibration
     double light_GM = sqrt(total_L * total_R);
-    light_GM *= 4.196; // w.r.t. AmBe 4.196 MeVee
-    light_GM /= par.at("a") + par.at("b") * pos_x + par.at("c") * pos_x * pos_x;
-    light_GM = par.at("d") + light_GM * par.at("e");
-    
-    return light_GM;
+    light_GM = (light_GM - (par.at("b") * pos_x + par.at("c") * pos_x * pos_x)) / par.at("a");
+    light_GM = 4.196 * par.at("e") * light_GM + par.at("d"); // 4.196 MeVee is the Compton edge energy AmBe 4.4 MeV transition
+    return std::max(0.0, light_GM); // light output cannot be negative
 }
 
 std::array<double, 2> get_psd(
