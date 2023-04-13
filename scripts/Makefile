@@ -9,3 +9,6 @@ calibrate:
 
 remove_tclass:
 	$(GXX) remove_tclass.cpp -o remove_tclass.exe -std=c++17 $(CXX_FLAGS) -w
+
+geo_efficiency:
+	$(GXX) geo_efficiency.cpp -o geo_efficiency.exe -std=c++20  $(CXX_FLAGS)

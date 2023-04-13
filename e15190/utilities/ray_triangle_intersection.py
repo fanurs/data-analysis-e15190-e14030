@@ -5,7 +5,16 @@ import numpy as np
 import plotly.graph_objects as go
 import sympy as sp
 
-from e15190.utilities import geometry as geom
+def spherical_to_cartesian(*args):
+    def inner(radius, polar, azimuth):
+        x = radius * np.sin(polar) * np.cos(azimuth)
+        y = radius * np.sin(polar) * np.sin(azimuth)
+        z = radius * np.cos(polar)
+        return x, y, z
+    if len(args) > 1:
+        return inner(*args)
+    else:
+        return np.vstack(inner(*args[0].T)).T
 
 def moller_trumbore(ray_origin, ray_vectors, triangles, mode='einsum', tol=1e-9):
     """Implementation of Moller-Trumbore ray-triangle intersection algorithm
@@ -151,7 +160,7 @@ def emit_isotropic_rays(
     polars = np.arccos(rng.uniform(*np.cos(polar_range)[::-1], size=n_rays).clip(-1, 1))
     azimuths = rng.uniform(*azimuth_range, size=n_rays)
     if frame == 'cartesian':
-        rays = np.column_stack(geom.spherical_to_cartesian(1.0, polars, azimuths))
+        rays = np.column_stack(spherical_to_cartesian(1.0, polars, azimuths))
     else:
         rays = np.column_stack([polars, azimuths])
         rays = np.insert(rays, 0, 1.0, axis=1)

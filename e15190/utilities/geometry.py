@@ -9,6 +9,7 @@ Hence, this submodule is written.
 import copy
 import functools
 import itertools as itr
+from typing import Callable
 
 from alphashape import alphashape
 import matplotlib.pyplot as plt
@@ -719,7 +720,7 @@ class RectangularBar:
     
     def get_total_solid_angle_monte_carlo(
         self,
-        n_rays=1_000_000,
+        n_rays=5_000_000,
         random_seed=None,
         return_error=False,
         verbose=False,
@@ -728,7 +729,7 @@ class RectangularBar:
 
         Parameters
         ----------
-        n_rays : int, default 1_000_000
+        n_rays : int, default 5_000_000
             The number of rays to simulate.
         random_seed : int, default None
             The random seed of the Monte Carlo simulation. If None, a time-based
@@ -746,12 +747,9 @@ class RectangularBar:
             The uncertainty of the calculation. Only returned if
             ``return_error`` is True.
         """
-        # get the solid angle of minimal region
         sim_result = self.simple_simulation(save_result=False, random_seed=random_seed)
-        region_solid_angle = np.ptp(sim_result['azimuth_range'])
-        region_solid_angle *= np.ptp(np.cos(sim_result['polar_range']))
 
-        n_rays_per_sim = int(2e5)
+        n_rays_per_sim = int(5e5)
         n_rays_list = [n_rays_per_sim] * (n_rays // n_rays_per_sim) + [n_rays % n_rays_per_sim]
         n_hits = 0
         n_simulated = 0
@@ -761,14 +759,15 @@ class RectangularBar:
                 n_simulated += n
             sim_res = self.simple_simulation(
                 n_rays=n,
-                polar_range=sim_result['polar_range'],
-                azimuth_range=sim_result['azimuth_range'],
+                polar_range=[0, np.pi],
+                azimuth_range=[-np.pi, np.pi],
                 save_result=False,
             )
             n_hits += len(self.get_hit_positions(hit_t=0, simulation_result=sim_res))
         if verbose:
             print(f'\rSimulated {n_rays:,d} rays')
         
+        region_solid_angle = 4 * np.pi
         solid_angle = (n_hits / n_rays) * region_solid_angle
         if return_error:
             error = (np.sqrt(n_hits) / n_rays) * region_solid_angle
@@ -776,14 +775,14 @@ class RectangularBar:
         else:
             return solid_angle
     
-    def get_theta_phi_alphashape(self, delta=1.0, alpha=10.0, cut=None):
+    def get_theta_phi_alphashape(self, delta, alpha, cut=None):
         """Calculate the alphashape of the bar in (theta, phi) coordinates.
 
         Parameters
         ----------
-        delta : int or array of size 3, default 1.0
+        delta : int or array of size 3
             Grid spacing in cm.
-        alpha : float, default 10.0
+        alpha : float
             The alphashape parameter. The larger the value, the greater the
             curvature of the alphashape can be. When alpha is zero, the
             alphashape reduces into a convex hull; when alpha is too large, the
@@ -869,7 +868,7 @@ class RectangularBar:
             'lower': np.array(sorted(lower_ashape, key=lambda x: x[0])),
         }
     
-    def get_total_solid_angle_alphashape(self, return_error=False):
+    def get_total_solid_angle_alphashape(self, delta, alpha, return_error=False):
         """Calculate the total solid angle of the bar using the alphashape.
 
         Parameters
@@ -885,13 +884,13 @@ class RectangularBar:
             The uncertainty of the calculation. Only returned if
             ``return_error`` is True.
         """
-        ashape = self.get_theta_phi_alphashape()
-        delta_phi = self.get_geometry_efficiency_alphashape()
+        ashape = self.get_theta_phi_alphashape(delta=delta, alpha=alpha)
+        delta_phi = self.get_geometry_efficiency_alphashape(delta=delta, alpha=alpha)
 
         # integrate to get the total solid angle
         theta_range = [np.min(ashape[:, 0]), np.max(ashape[:, 0])]
         integrate = scipy.integrate.quadrature
-        integrand = lambda theta: delta_phi(theta) * np.sin(theta)
+        integrand = lambda theta: (delta_phi[1](theta) - delta_phi[0](theta)) * np.sin(theta)
         total_solid_angle, err = integrate(integrand, *theta_range)
         if return_error:
             return total_solid_angle, err
@@ -930,7 +929,7 @@ class RectangularBar:
         else:
             raise ValueError(f'Unknown method: {method}')
 
-    def get_geometry_efficiency_alphashape(self, cut=None):
+    def get_geometry_efficiency_alphashape(self, delta, alpha, cut=None) -> tuple[Callable, Callable]:
         """Calculate the geometry efficiency of the bar using the alphashape.
 
         The geometry efficiency is defined as the effective azimuthal coverage
@@ -960,15 +959,18 @@ class RectangularBar:
         """
         if isinstance(cut, list):
             geom_eff = [
-                self.get_geometry_efficiency_alphashape(cut=single_cut)
+                self.get_geometry_efficiency_alphashape(delta=delta, alpha=alpha, cut=single_cut)
                 for single_cut in cut
             ]
-            def result(theta):
+            def lower(theta):
                 nonlocal geom_eff
-                return np.sum([single_geom_eff(theta) for single_geom_eff in geom_eff], axis=0)
-            return result
+                return np.sum([single_geom_eff[0](theta) for single_geom_eff in geom_eff], axis=0)
+            def upper(theta):
+                nonlocal geom_eff
+                return np.sum([single_geom_eff[1](theta) for single_geom_eff in geom_eff], axis=0)
+            return lower, upper
 
-        ashape = self.get_theta_phi_alphashape(cut=cut)
+        ashape = self.get_theta_phi_alphashape(delta=delta, alpha=alpha, cut=cut)
         ashape = self._split_theta_phi_alphashape_to_upper_and_lower(ashape)
 
         # find the delta-phi as a function of theta using interpolation
@@ -978,8 +980,7 @@ class RectangularBar:
         )
         upper_line = interp(ashape['upper'][:, 0], ashape['upper'][:, 1])
         lower_line = interp(ashape['lower'][:, 0], ashape['lower'][:, 1])
-        delta_phi = lambda theta: upper_line(theta) - lower_line(theta)
-        return delta_phi
+        return lower_line, upper_line
 
     def draw_hit_pattern2d(
         self,
