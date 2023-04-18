@@ -15,7 +15,7 @@ def main():
     check_conda_activated()
 
     # create a conda environment locally
-    subprocess.run(f'conda env create --prefix ./{ENVIRONMENT_NAME} -f environment.yml', shell=True)
+    subprocess.run(['conda', 'env', 'create', '--prefix', f'./{ENVIRONMENT_NAME}', '-f', 'environment.yml'])
 
     # add packages in this project/repository to (editable) site-packages of this conda environment
     site_pkgs_path = glob.glob(f'./{ENVIRONMENT_NAME}/lib/python*/site-packages')[0]
@@ -76,7 +76,7 @@ def main():
     print('Done!')
 
 def check_conda_activated():
-    which_conda = subprocess.run('which conda', shell=True, capture_output=True, text=True)
+    which_conda = subprocess.run(['which', 'conda'], capture_output=True, text=True)
     path1 = pathlib.Path(which_conda.stdout.strip())
     path1 = pathlib.Path(path1.parent.parent, 'conda-meta')
     path2 = pathlib.Path(sys.prefix, 'conda-meta')
