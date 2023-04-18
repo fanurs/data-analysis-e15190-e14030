@@ -102,14 +102,9 @@ public:
     Vector3 center;
     std::array<Vector3, 3> axes;
     std::array<float, 3> lengths;
-    std::array<float, 3> halfExtents;
 
     Cuboid(const Vector3& center, const std::array<Vector3, 3>& axes, const std::array<float, 3>& lengths)
-        : center(center), axes(axes), lengths(lengths), halfExtents() {
-            for (int i = 0; i < 3; ++i) {
-                halfExtents[i] = lengths[i] / 2.0f;
-            }
-    }
+        : center(center), axes(axes), lengths(lengths) {}
 
     Cuboid cut(float x_min, float x_max) {
         float x_shift = (x_max + x_min) / 2.0f;
@@ -123,7 +118,7 @@ bool testAxis(const Vector3& axis, const Ray& ray, const Cuboid& cuboid) {
     float cuboidProjection = 0.0f;
 
     for (int i = 0; i < 3; ++i) {
-        cuboidProjection += std::abs(axis.dot(cuboid.axes[i]) * cuboid.halfExtents[i]);
+        cuboidProjection += std::abs(axis.dot(cuboid.axes[i]) * 0.5 * cuboid.lengths[i]);
     }
 
     float rayProjection = ray.direction.dot(axis);
@@ -152,12 +147,12 @@ bool rayIntersectsCuboid(const Ray& ray, const Cuboid& cuboid) {
         // Check if the ray is parallel to the slab
         const float epsilon = 1e-6f;
         if (std::abs(denominator) < epsilon) {
-            if (numerator < -cuboid.halfExtents[i] || numerator > cuboid.halfExtents[i]) {
+            if (numerator < -0.5 * cuboid.lengths[i] || numerator > 0.5 * cuboid.lengths[i]) {
                 return false;
             }
         } else {
-            float t1 = (numerator - cuboid.halfExtents[i]) / denominator;
-            float t2 = (numerator + cuboid.halfExtents[i]) / denominator;
+            float t1 = (numerator - 0.5 * cuboid.lengths[i]) / denominator;
+            float t2 = (numerator + 0.5 * cuboid.lengths[i]) / denominator;
 
             if (t1 > t2) {
                 std::swap(t1, t2);
@@ -178,15 +173,9 @@ bool rayIntersectsCuboid(const Ray& ray, const Cuboid& cuboid) {
 class NeutronWall {
 private:
     char AB;
+    bool include_pyrex;
+    float length_x_cm, length_y_cm, length_z_cm;
     std::map<int, Cuboid> barCuboids;
-
-public:
-    std::vector<Cuboid> cuboids;
-
-    NeutronWall(char AB, nlohmann::json& wall_filters) : AB(AB) {
-        createCuboidsFromFile();
-        populateCuboids(wall_filters);
-    }
 
     std::filesystem::path getFilePath() {
         std::filesystem::path path(std::getenv("PROJECT_DIR"));
@@ -194,7 +183,7 @@ public:
         return path;
     }
 
-    void createCuboidsFromFile(float length_x=76 * 2.54, float length_y=3 * 2.54, float length_z=2.5 * 2.54) {
+    void createBarCuboidsFromFile() {
         std::map<int, Vector3> bar_centers;
         std::map<int, std::array<Vector3, 3> > axes;
 
@@ -228,15 +217,27 @@ public:
         file.close();
 
         for (auto& [bar_num, center] : bar_centers) {
-            this->barCuboids.emplace(bar_num, Cuboid(center, axes[bar_num], { length_x, length_y, length_z }));
+            this->barCuboids.emplace(
+                bar_num,
+                Cuboid(center, axes[bar_num], { this->length_x_cm, this->length_y_cm, this->length_z_cm })
+            );
         }
     }
 
     void populateCuboids(nlohmann::json& filters) {
+        // populate bar_ranges from filters
         std::map<int, std::vector< std::array<float, 2> > > bar_ranges;
         for (auto& [bar_num, ranges] : filters.items()) {
+            const float min_range = -0.5 * this->barCuboids.at(std::stoi(bar_num)).lengths[0];
+            const float max_range = +0.5 * this->barCuboids.at(std::stoi(bar_num)).lengths[0];
+
             for (auto& range : ranges) {
-                bar_ranges[std::stoi(bar_num)].push_back({ range[0], range[1] });
+                // range outside of cuboid will be truncated
+                float range_start = std::max(range[0].get<float>(), min_range);
+                float range_stop = std::min(range[1].get<float>(), max_range);
+                if (range_start < range_stop) {
+                    bar_ranges[std::stoi(bar_num)].push_back({ range_start, range_stop });
+                }
             }
         }
 
@@ -245,6 +246,28 @@ public:
                 this->cuboids.push_back(barCuboid.cut(x_min, x_max));
             }
         }
+    }
+
+public:
+    std::vector<Cuboid> cuboids;
+
+    NeutronWall(
+        char AB, nlohmann::json& wall_filters, bool include_pyrex=false
+    ) : AB(AB), include_pyrex(include_pyrex) {
+        this->length_x_cm = 76; // inches
+        this->length_y_cm = 3; // inches
+        this->length_z_cm = 2.5; // inches
+        if (include_pyrex) {
+            this->length_x_cm += 0.25; // inches
+            this->length_y_cm += 0.25; // inches
+            this->length_z_cm += 0.25; // inches
+        }
+        this->length_x_cm *= 2.54; // cm
+        this->length_y_cm *= 2.54; // cm
+        this->length_z_cm *= 2.54; // cm
+
+        this->createBarCuboidsFromFile();
+        this->populateCuboids(wall_filters);
     }
 };
 
@@ -328,20 +351,36 @@ float getGeometricEfficiencyUsingDeltaPhi(const float theta, NeutronWall& wall) 
     return total_phi_range / (2 * M_PI);
 }
 
-int main(int argc, char* argv[]) {
-    std::string json_str = argv[1];
-    float theta = std::atof(argv[2]) * M_PI / 180.0;
-    int num_rays = (argc - 1 == 2) ? 1e6 : std::atoi(argv[3]);
-
-    nlohmann::json wall_filters = nlohmann::json::parse(json_str);
-    NeutronWall wall('B', wall_filters);
-
-    std::cout << std::fixed << std::setprecision(10);
-    if (argc - 1 == 2) {
-        std::cout << getGeometricEfficiencyUsingDeltaPhi(theta, wall) << std::endl;
-    } else {
-        std::cout << getGeometricEfficiencyUsingMonteCarlo(theta, wall, num_rays) << std::endl;
+/**
+ * Get the geometric efficiency of a wall at a fixed theta angle.
+ *
+ * @param wall_filters_str Wall filters in JSON format, e.g. {"1": [[-90, 90]], "2":
+ * [[-90, -20], [20, 90]]}, where the keys are the bar numbers and the values
+ * are the position x ranges in cm.
+ * @param theta Theta in degree.
+ * @param num_rays Number of rays to use for Monte Carlo. If 0, delta-phi method. Default 0.
+**/
+float getGeometryEfficiency(char AB, bool include_pyrex, const std::string& wall_filters_str, float theta, int num_rays=0) {
+    nlohmann::json wall_filters = nlohmann::json::parse(wall_filters_str);
+    NeutronWall wall(AB, wall_filters, include_pyrex);
+    if (num_rays > 0) { // Monte Carlo
+        return getGeometricEfficiencyUsingMonteCarlo(theta, wall, num_rays);
+    } else { // delta-phi method
+        return getGeometricEfficiencyUsingDeltaPhi(theta, wall);
     }
+}
+
+int main(int argc, const char* argv[]) {
+    // parse arguments
+    char AB = std::toupper(argv[1][0]);
+    bool include_pyrex = std::stoi(argv[2]);
+    std::string wall_filters_str = argv[3];
+    float theta = std::atof(argv[4]) * M_PI / 180.0;
+    int num_rays = (argc - 1 < 5) ? 0 : std::atoi(argv[5]);
+
+    // get geometry efficiency and print to stdout
+    float geo_eff = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, theta, num_rays);
+    std::cout << std::fixed << std::setprecision(10) << geo_eff << std::endl;
 
     return 0;
 }
