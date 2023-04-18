@@ -27,8 +27,6 @@ class RunCache:
         self.SRC_PATH_FMT = src_path_fmt
         self.CACHE_PATH_FMT = cache_path_fmt
         self.max_workers = max_workers
-        self.decompression_executor = None
-        self.interpretation_executor = None
     
     @staticmethod
     def infer_tree_name(uproot_file) -> str:
@@ -70,18 +68,18 @@ class RunCache:
             with uproot.open(str(path)) as file:
                 tree_name = self.infer_tree_name(file)
         
-        if self.decompression_executor is None:
-            self.decompression_executor = concurrent.futures.ThreadPoolExecutor(self.max_workers)
-        if self.interpretation_executor is None:
-            self.interpretation_executor = concurrent.futures.ThreadPoolExecutor(self.max_workers)
-        
-        with uproot.open(str(path) + ':' + tree_name) as tree:
+        with (
+            uproot.open(str(path) + ':' + tree_name) as tree,
+            concurrent.futures.ThreadPoolExecutor(self.max_workers) as decompression_executor,
+            concurrent.futures.ThreadPoolExecutor(self.max_workers) as interpretation_executor,
+        ):
             df = tree.arrays(
                 list(branches.keys()),
                 library='pd',
-                decompression_executor=self.decompression_executor,
-                interpretation_executor=self.interpretation_executor,
+                decompression_executor=decompression_executor,
+                interpretation_executor=interpretation_executor,
             )
+
         if isinstance(df, (tuple, list)):
             raise ValueError(f'The provided branches cannot be deduced into a single dataframe.\n{branches}')
         df.columns = list(branches.values())
