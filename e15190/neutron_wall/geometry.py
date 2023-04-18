@@ -1,18 +1,25 @@
+from __future__ import annotations
+
 import inspect
+import json
 from os.path import expandvars
 from pathlib import Path
-from typing import Dict, List
+import subprocess
+from typing import Callable, Dict, List, Literal, Union
 
 import numpy as np
 import pandas as pd
 
-from e15190.utilities import geometry as geom
-from e15190.utilities import tables
+from e15190.utilities import (
+    cache,
+    geometry as geom,
+    tables,
+)
 
 class Bar(geom.RectangularBar):
-    edges_x = (-90, 90)
-    left_shadow_x = (-50, -15)
-    right_shadow_x = (15, 50)
+    edges_x = (-90.0, 90.0)
+    left_shadow_x = (-50.0, -15.0)
+    right_shadow_x = (15.0, 50.0)
     shadowed_bars = [7, 8, 9, 15, 16, 17]
 
     def __init__(self, vertices, contain_pyrex=True):
@@ -221,7 +228,7 @@ class Bar(geom.RectangularBar):
         return fit_low[::-1], fit_upp[::-1]
 
 class Wall:
-    def __init__(self, AB, contain_pyrex=True, refresh_from_inventor_readings=False):
+    def __init__(self, AB, contain_pyrex=False, refresh_from_inventor_readings=False):
         """Construct a neutron wall, A or B.
 
         A neutron wall is a collection of bars, ``self.bars``.
@@ -231,7 +238,7 @@ class Wall:
         AB : 'A' or 'B'
             The wall to construct. Currently only 'B' is actively maintained and
             tested.
-        contain_pyrex : bool, default True
+        contain_pyrex : bool, default False
             Whether the bars contain pyrex.
         refresh_from_inventor_readings : bool, default False
             If `True`, the geometry will be loaded from the inventor readings;
@@ -283,8 +290,9 @@ class Wall:
         bar_nums = sorted(set(self.database.index.get_level_values(f'nw{self.ab}-bar')))
         if self.AB == 'B':
             bar_nums.remove(0)  # bar 0 is not used
+        self.contain_pyrex = contain_pyrex
         self.bars = {
-            b: Bar(self.database.loc[b][['x', 'y', 'z']], contain_pyrex=contain_pyrex)
+            b: Bar(self.database.loc[b][['x', 'y', 'z']], contain_pyrex=self.contain_pyrex)
             for b in bar_nums
         }
     
@@ -432,73 +440,104 @@ class Wall:
             ],
         )
     
+    @staticmethod
+    @cache.persistent_cache('$PROJECT_DIR/database/neutron_wall/geometry/efficiency_cache.pkl')
+    def _get_geometry_efficiency_from_cpp_executable(
+        theta_deg: float,
+        AB: Literal['A', 'B'],
+        include_pyrex: bool,
+        wall_filters_str: str,
+        n_rays: int | None,
+    ) -> float:
+        arguments = [
+            str(Path(expandvars('$PROJECT_DIR')) / 'scripts' / 'geo_efficiency.exe'),
+            AB,
+            str(int(include_pyrex)),
+            wall_filters_str,
+            f'{theta_deg}'
+        ]
+        if n_rays is not None:
+            arguments.append(f'{n_rays}')
+        return float(subprocess.run(arguments, check=True, capture_output=True).stdout)
+
     def get_geometry_efficiency(
         self,
-        shadowed_bars,
-        cut_edges_bars='all',
-        skip_bars=(0, ),
+        shadowed_bars: bool,
+        skip_bars: list[int],
+        cut_edges: bool = True,
         custom_cuts: Dict[int, List[str]] = None,
-        norm=True,
-    ):
+        method: Literal['monte-carlo', 'delta-phi'] = 'delta-phi',
+        n_rays: int = 1_000_000,
+    ) -> Callable[[Union[float, np.ndarray, List[float]]], Union[float, np.ndarray]]:
         """
+        A simple wrapper around
+        :py:func:`_get_geometry_efficiency_from_cpp_executable`. The function
+        has a persistent cache saved to
+        `$PROJECT_DIR/database/neutron_wall/geometry/efficiency_cache.pkl`.
+        Simply remove the file if you do not want to use the cached results.
 
         Parameters
         ----------
-        shadowed_bars : bool or list of int
+        shadowed_bars : bool
             If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 15, 16,
-            17. If False, no shadow bar cut is applied. If a list of int, shadow
-            bar cut will only be applied to the bars in the list.
-        cut_edges_bars : ``'all'`` or list of int, default 'all'
-            If ``'all'``, edge cut will be applied to all bars. If a list of int,
-            edge cut will only be applied to the bars in the list.
-        skip_bars : list of int, default (0, )
-            Bars to be skipped. In the experiment, NWB-bar00 is the bottommost bar
-            that was blocked by the ground.
+            17. If False, no shadow bar cut is applied.
+        skip_bars : list of int
+            Bars to be skipped. Remember, in the experiment, NWB-bar00 is the
+            bottommost bar that was blocked by the ground.
+        cut_edges : bool, default True
+            If ``'all'``, edge cut will be applied to all bars. If a list of
+            int, edge cut will only be applied to the bars in the list.
         custom_cuts : dict of int to list of str, default None
             When custom cuts are applied, all the other cuts are ignored, so
-            users should make sure the cuts are complete, e.g. edge cut is
+            users should make sure the cuts are complete, e.g. edge cut has to be
             included. The only cut variable being supported is ``'x'``.
-        norm : bool, default True
-            Whether to normalize the efficiency by :math:`2\pi`.
+        method : 'monte-carlo' or 'delta-phi', default 'delta-phi'
+            Method to calculate the geometry efficiency.
+        n_rays : int, default 1_000_000
+            Number of rays to be used in the Monte Carlo method. This argument
+            is ignored if `method` is not `'monte-carlo'`.
+
+        Returns
+        -------
+        geometry_efficiency : Callable[[float], float]
+            A function that takes a theta (radian) and returns the geometry efficiency.
         """
-        if shadowed_bars is True:
-            shadowed_bars = Bar.shadowed_bars
-        elif shadowed_bars is False:
-            shadowed_bars = []
-        
-        if cut_edges_bars == 'all':
-            cut_edges_bars = list(range(25))
-        
-        skip_bars = list(skip_bars)
-
-        custom_cuts = custom_cuts or dict()
-
-        bar_effs = []
-        for b, bar in self.bars.items():
-            if b in skip_bars: continue
-
-            cuts = None
-            if b in custom_cuts:
-                cuts = custom_cuts[b]
-            elif b in shadowed_bars and b in cut_edges_bars:
-                cuts = [
-                    f'{Bar.edges_x[0]} < x < {Bar.left_shadow_x[0]}',
-                    f'{Bar.left_shadow_x[1]} < x < {Bar.right_shadow_x[0]}',
-                    f'{Bar.right_shadow_x[1]} < x < {Bar.edges_x[1]}',
-                ]
-            elif b in cut_edges_bars:
-                cuts = [
-                    f'{Bar.edges_x[0]} < x < {Bar.edges_x[1]}',
-                ]
-            elif b in shadowed_bars:
-                cuts = [
-                    f'x < {Bar.left_shadow_x[0]}',
-                    f'{Bar.left_shadow_x[1]} < x < {Bar.right_shadow_x[0]}',
-                    f'{Bar.right_shadow_x[1]} < x',
-                ]
-            bar_effs.append(bar.get_geometry_efficiency_alphashape(cuts))
-        
-        if norm:
-            return lambda theta: np.sum([eff(theta) for eff in bar_effs], axis=0) / (2 * np.pi)
+        cuts = {b: [] for b in self.bars}
+        if custom_cuts is not None:
+            cuts = custom_cuts
         else:
-            return lambda theta: np.sum([eff(theta) for eff in bar_effs], axis=0)
+            if cut_edges:
+                cuts = {b: [[Bar.edges_x[0], Bar.edges_x[1]]] for b in cuts}
+            else:
+                cuts = {b: [[-9999.9, +9999.9]] for b in cuts} # dummy cut
+                # the range will not actually exceed the physical edges of the bars
+                # when fed into the C++ executable
+
+            shadowed_bar_num = [7, 8, 9, 15, 16, 17] if shadowed_bars else []
+            for b in shadowed_bar_num:
+                init_range = cuts[b][0]
+                cuts[b] = [
+                    [init_range[0], Bar.left_shadow_x[0]],
+                    [Bar.left_shadow_x[1], Bar.right_shadow_x[0]],
+                    [Bar.right_shadow_x[1], init_range[1]],
+                ]
+
+        if skip_bars is None:
+            skip_bars = []
+        for b in skip_bars:
+            if b in cuts:
+                del cuts[b]
+        
+        # sort cuts to make sure cache results do not repeat
+        cuts = {k: sorted(v) for k, v in sorted(cuts.items())}
+
+        def geometry_efficiency(theta_input: Union[float, np.ndarray, List[float]]) -> Union[float, np.ndarray]:
+            vectorized_func = np.vectorize(self._get_geometry_efficiency_from_cpp_executable)
+            return vectorized_func(
+                theta_deg=np.degrees(theta_input),
+                AB=self.AB,
+                include_pyrex=self.contain_pyrex,
+                wall_filters_str=json.dumps(cuts),
+                n_rays=n_rays if method == 'monte-carlo' else None,
+            )
+        return geometry_efficiency
