@@ -156,7 +156,7 @@ def emit_isotropic_rays(
     Returns:
         A numpy.ndarray of rays with shape (n_rays, 3).
     """
-    rng = np.random.default_rng(random_seed)
+    rng = np.random.RandomState(random_seed)
     polars = np.arccos(rng.uniform(*np.cos(polar_range)[::-1], size=n_rays).clip(-1, 1))
     azimuths = rng.uniform(*azimuth_range, size=n_rays)
     if frame == 'cartesian':
