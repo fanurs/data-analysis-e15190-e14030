@@ -21,186 +21,98 @@
 
 using Json = nlohmann::json;
 
-/*************************************/
-/*****NWBPositionCalibParamReader*****/
-/*************************************/
-NWBPositionCalibParamReader::NWBPositionCalibParamReader() {
-    // initialize paths
-    const char* PROJECT_DIR = getenv("PROJECT_DIR");
-    if (PROJECT_DIR == nullptr) {
-        std::cerr << "Environment variable $PROJECT_DIR is not defined in current session" << std::endl;
-        exit(1);
-    }
-    this->project_dir = PROJECT_DIR;
-    this->pcalib_dir = this->project_dir / this->pcalib_reldir;
-    this->json_path = this->pcalib_dir / this->json_filename;
-    this->pca_path = this->project_dir / this->pca_reldir / this->dat_filename;
-
-    // read in the final calibration file (JSON)
-    std::ifstream file(this->json_path.string());
-    if (!file.is_open()) {
-        std::cerr << "Fail to open JSON file: " << this->json_path.string() << std::endl;
-        exit(1);
-    }
-    file >> this->database;
-    file.close();
-
-    // read in the PCA.dat file
-    int barno;
-    std::string TP;
-    double q1,q2,q3;
-    std::ifstream datfile(this->pca_path.string());
-    if (!datfile.is_open()) {
-        std::cerr << "Fail to open NW_pca.dat file: " << this->pca_path.string() << std::endl;
-        exit(1);
-    }
-    std::string line;
-    while(getline(datfile,line)) {
-        line.erase(line.begin(), find_if(line.begin(), line.end(), not1(std::ptr_fun<int, int>(isspace)))); 
-        if(line[0]=='#') continue;
-        std::istringstream ss(line);
-        ss >> barno >> TP >> q1 >> q2 >> q3;
-
-        if(TP=="L") {
-            this->L[std::make_pair(barno, "L0")] = q1;
-            this->L[std::make_pair(barno, "L1")] = q2;
-            this->L[std::make_pair(barno, "L2")] = q3;
-        }
-        if(TP=="X") {
-            this->X[std::make_pair(barno, "X0")] = q1;
-            this->X[std::make_pair(barno, "X1")] = q2;
-            this->X[std::make_pair(barno, "X2")] = q3;
-        }
-        if(TP=="Y") {
-            this->Y[std::make_pair(barno, "Y0")] = q1;
-            this->Y[std::make_pair(barno, "Y1")] = q2;
-            this->Y[std::make_pair(barno, "Y2")] = q3;
-        }
-        if(TP=="Z") {
-            this->Z[std::make_pair(barno, "Z0")] = q1;
-            this->Z[std::make_pair(barno, "Z1")] = q2;
-            this->Z[std::make_pair(barno, "Z2")] = q3;
-        }
-    }
-    datfile.close();
+/************************************/
+/*****NWPositionCalibParamReader*****/
+/************************************/
+NWPositionCalibParamReader::NWPositionCalibParamReader(const char AB) : AB(AB), ab(tolower(AB)) {
+    this->pcalib_filepath = this->resolve_project_dir(this->pcalib_filepath).string();
+    this->pca_filepath = this->resolve_project_dir(this->pca_filepath).string();
 }
 
+NWPositionCalibParamReader::~NWPositionCalibParamReader() { }
 
-NWBPositionCalibParamReader::~NWBPositionCalibParamReader() { }
-
-long NWBPositionCalibParamReader::load_single(int run) {
-    std::filesystem::path path = this->pcalib_dir / "calib_params";
-    path /= Form("run-%04d-nw%c.dat", run, this->ab);
-    return this->load_single(path.string());
-}
-
-long NWBPositionCalibParamReader::load_single(
-    const std::string& filename,
-    const std::string& branch_descriptor,
-    bool set_index,
-    int n_skip_rows,
-    char delimiter
-) {
-    long result = this->load_from_txt(filename, branch_descriptor, n_skip_rows, delimiter);
-    if (set_index) {
-        this->set_index("bar");
-    }
-    return result;
-}
-
-bool NWBPositionCalibParamReader::load(int run, bool extrapolate) {
-    bool all_bars_found = true;
-
-    // get bar numbers and sort into ascending order
-    std::vector<int> bars;
-    for (auto& [bar_str, info]: this->database.items()) {
-        bars.push_back(std::stoi(bar_str));
+std::filesystem::path NWPositionCalibParamReader::resolve_project_dir(const std::string& path_str) {
+    std::filesystem::path path(path_str);
+    const char* project_dir = std::getenv("PROJECT_DIR");
+    if (!project_dir) {
+        return path;
     }
 
-    // loop over all bars
-    for (int bar: bars) {
-        std::string bar_str = Form("%d", bar);
-        bool found = false;
-        int closest_ibatch = -1;
-        int closest_diff = int(1e8);
-        
-        // identify run_range and load parameters
-        for (int ibatch = 0; ibatch < this->database[bar_str].size(); ++ibatch) {
-            auto& batch = this->database[bar_str][ibatch];
-            auto& run_range = batch["run_range"];
-            if ((run >= run_range[0].get<int>()) && run <= run_range[1].get<int>()) {
-                auto& param = batch["parameters"];
-                this->run_param[std::make_pair(bar, "p0")] = param[0].get<double>();
-                this->run_param[std::make_pair(bar, "p1")] = param[1].get<double>();
-                found = true;
+    std::size_t pos = path.string().find("$PROJECT_DIR");
+    if (pos != std::string::npos) {
+        std::string newPath = path.string();
+        newPath.replace(pos, strlen("$PROJECT_DIR"), project_dir);
+        newPath = Form(newPath.c_str(), this->AB);
+        path = std::filesystem::path(newPath);
+    }
+
+    return path;
+}
+
+bool NWPositionCalibParamReader::load(int run) {
+    std::ifstream pcalib_file(this->pcalib_filepath);
+    if (!pcalib_file.is_open()) {
+        std::cerr << "Error: Could not open the position calibration parameters file: " << this->pcalib_filepath << std::endl;
+        return false;
+    }
+
+    Json json_data;
+    pcalib_file >> json_data;
+    pcalib_file.close();
+
+    for (const auto& [bar, bar_entry] : json_data.items()) {
+        int b = std::stoi(bar);
+        for (const auto& run_range_entry : bar_entry) {
+            int run_start = run_range_entry["run_range"][0].get<int>();
+            int run_end = run_range_entry["run_range"][1].get<int>();
+
+            if (run >= run_start && run <= run_end) {
+                this->param[{b, "p0"}] = run_range_entry["parameters"][0].get<double>();
+                this->param[{b, "p1"}] = run_range_entry["parameters"][1].get<double>();
                 break;
             }
-            else {
-                // if not in run_range, record down the run difference for later
-                // use of finding the closest batch
-                int diff0 = abs(run - run_range[0].get<int>());
-                int diff1 = abs(run - run_range[1].get<int>());
-                int diff = std::min(diff0, diff1);
-                if (diff < closest_diff) {
-                    closest_diff = diff;
-                    closest_ibatch = ibatch;
-                }
-            }
-        }
-
-        if (found) {
-            continue;
-        }
-
-        // fail to find run in all run ranges, may extrapolate from the closest batch
-        if (extrapolate) {
-            auto& closest_params = this->database[bar_str][closest_ibatch]["parameters"];
-            this->run_param[std::make_pair(bar, "p0")] = closest_params[0].get<double>();
-            this->run_param[std::make_pair(bar, "p1")] = closest_params[1].get<double>();
-        }
-        else {
-            std::cerr << "ERROR: run " << run << " is out of range in " << this->json_path.string() << std::endl;
-            exit(1);
         }
     }
-    return all_bars_found;
-}
 
-void NWBPositionCalibParamReader::set_index(const std::string& index_name) {
-    TTreeReaderValue<int> index(this->reader, index_name.c_str());
-    int n_entries = this->tree->GetEntries();
-    for (int i_entry = 0; i_entry < n_entries; ++i_entry) {
-        this->reader.SetEntry(i_entry);
-        this->index_map[*index] = i_entry;
+
+    std::ifstream pca_file(this->pca_filepath);
+    if (!pca_file.is_open()) {
+        std::cerr << "Error: Could not open the PCA parameters file: " << this->pca_filepath << std::endl;
+        return false;
     }
+
+    std::string line;
+    while (std::getline(pca_file, line)) {
+        if (line.empty() || line[0] == '#') {
+            continue;  // skip empty or comment lines
+        }
+
+        std::istringstream iss(line);
+        int bar;
+        std::string vec;
+        double x, y, z;
+        iss >> bar >> vec >> x >> y >> z;
+        this->param[{bar, vec + "0"}] = x;
+        this->param[{bar, vec + "1"}] = y;
+        this->param[{bar, vec + "2"}] = z;
+    }
+
+    return true;
 }
 
-double NWBPositionCalibParamReader::get(int bar, const std::string& par) {
-    return this->run_param[std::make_pair(bar, par)];
+double NWPositionCalibParamReader::get(int bar, const std::string& par) {
+    return this->param[{bar, par}];
 }
 
-double NWBPositionCalibParamReader::getL(int bar, const std::string& par) {
-    return this->L[std::make_pair(bar, par)];
-}
-double NWBPositionCalibParamReader::getX(int bar, const std::string& par) {
-    return this->X[std::make_pair(bar, par)];
-}
-double NWBPositionCalibParamReader::getY(int bar, const std::string& par) {
-    return this->Y[std::make_pair(bar, par)];
-}
-double NWBPositionCalibParamReader::getZ(int bar, const std::string& par) {
-    return this->Z[std::make_pair(bar, par)];
-}
-
-void NWBPositionCalibParamReader::write_metadata(TFolder* folder, bool relative_path) {
-    std::filesystem::path base_dir = (relative_path) ? this->project_dir : "/";
+void NWPositionCalibParamReader::write_metadata(TFolder* folder, bool relative_path) {
+    std::filesystem::path base_dir = (relative_path) ? this->resolve_project_dir("$PROJECT_DIR") : "/";
     std::filesystem::path path;
 
-    path = std::filesystem::proximate(this->json_path, base_dir);
+    path = std::filesystem::proximate(std::filesystem::path(this->pcalib_filepath), base_dir);
     TNamed* json_path_data = new TNamed(path.string().c_str(), "");
     folder->Add(json_path_data);
 
-    path = std::filesystem::proximate(this->pca_path, base_dir);
+    path = std::filesystem::proximate(std::filesystem::path(this->pca_filepath), base_dir);
     TNamed* pca_path_data = new TNamed(path.string().c_str(), "");
     folder->Add(pca_path_data);
 

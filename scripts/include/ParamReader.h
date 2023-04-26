@@ -35,44 +35,22 @@ public:
 };
 #include "ParamReader.tpp"
 
-class NWBPositionCalibParamReader : public ParamReader<int> {
+class NWPositionCalibParamReader {
+private:
+    std::map<std::pair<int, std::string>, double> param; // (bar, par) -> value
+    std::filesystem::path resolve_project_dir(const std::string& path);
+
 public:
-    const char AB = 'B';
-    const char ab = tolower(AB);
-    std::filesystem::path project_dir = "";
-    std::filesystem::path pcalib_reldir = "database/neutron_wall/position_calibration";
-    std::string json_filename = "calib_params.json";
-    std::filesystem::path pcalib_dir;
-    std::filesystem::path json_path;
-    Json database;
-    std::map<std::pair<int, std::string>, double> run_param;
+    const char AB;
+    const char ab;
+    std::string pcalib_filepath = "$PROJECT_DIR/database/neutron_wall/position_calibration/NW%c_calib_params.json";
+    std::string pca_filepath = "$PROJECT_DIR/database/neutron_wall/geometry/NW%c_pca.dat";
 
-    std::filesystem::path pca_reldir = "database/neutron_wall/geometry";
-    std::string dat_filename = "NWB_pca.dat";
-    std::filesystem::path pca_path;
-    std::map<std::pair<int, std::string>, double> L; // center of the NW bar
-    std::map<std::pair<int, std::string>, double> X; // NW's principal components w.r.t L
-    std::map<std::pair<int, std::string>, double> Y;
-    std::map<std::pair<int, std::string>, double> Z;
+    NWPositionCalibParamReader(const char AB);
+    ~NWPositionCalibParamReader();
 
-    NWBPositionCalibParamReader();
-    ~NWBPositionCalibParamReader();
-
-    long load_single(int run);
-    long load_single(
-        const std::string& filename,
-        const std::string& branch_descriptor="bar/I:p0/D:p1/D",
-        bool set_index=true,
-        int n_skip_rows=1,
-        char delimiter=' '
-    );
-    bool load(int run, bool extrapolate=true);
-    void set_index(const std::string& index_name="bar");
+    bool load(int run);
     double get(int bar, const std::string& par);
-    double getL(int bar, const std::string& par);
-    double getX(int bar, const std::string& par);
-    double getY(int bar, const std::string& par);
-    double getZ(int bar, const std::string& par);
     void write_metadata(TFolder* folder, bool relative_path=true);
 };
 

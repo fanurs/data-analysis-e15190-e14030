@@ -22,22 +22,26 @@
 using Json = nlohmann::json;
 
 // forward declarations of calibration functions
-double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R);
-double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, double time_L, double time_R, double fa_time);
+double get_position(NWPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R);
+double get_time_of_flight(
+    NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, double time_L, double time_R, double fa_time
+);
 std::array<double, 4> get_corrected_adc(
     NWADCPreprocessorParamReader& nw_acalib,
-    int bar, short total_L, short total_R, short fast_L, short fast_R, double pos_x
+    int bar, short total_L, short total_R, short fast_L, short fast_R, const double pos_x
 );
 double get_light_output(
     NWLightOutputCalibParamReader& nw_pcalib,
-    int bar, double total_L, double total_R, double pos_x
+    int bar, double total_L, double total_R, const double pos_x
 );
 std::array<double, 2> get_psd(
     NWPulseShapeDiscriminationParamReader& psd_reader,
-    int bar, double total_L, double total_R, double fast_L, double fast_R, double pos_x
+    int bar, double total_L, double total_R, double fast_L, double fast_R, const double pos_x
 );
-std::array<double, 3> randomize_position(double pos_x);
-std::array<double, 3> get_spherical_coordinates(NWBPositionCalibParamReader& nw_pcalib, int bar, std::array<double, 3>& position);
+std::array<double, 3> randomize_position(const double pos_x);
+std::array<double, 3> get_spherical_coordinates(
+    NWPositionCalibParamReader& nw_pcalib, int bar, const std::array<double, 3>& position
+);
 
 int main(int argc, char* argv[]) {
     // initialization and argument parsing
@@ -46,7 +50,7 @@ int main(int argc, char* argv[]) {
     ArgumentParser argparser(argc, argv);
 
     // read in parameter readers
-    NWBPositionCalibParamReader nwb_pcalib;
+    NWPositionCalibParamReader nwb_pcalib('B');
     NWTimeOfFlightCalibParamReader nwb_tcalib('B');
     NWADCPreprocessorParamReader nwb_acalib('B');
     NWLightOutputCalibParamReader nwb_lcalib('B');
@@ -153,24 +157,27 @@ int main(int argc, char* argv[]) {
     // save output to file
     outroot->cd();
     metadata->Write();
+    hist.Write();
     outtree->Write();
     outroot->Close();
 
     return 0;
 }
 
-double get_position(NWBPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R) {
-    int p0 = nw_pcalib.get(bar, "p0");
-    int p1 = nw_pcalib.get(bar, "p1");
-    double pos = p0 + p1 * (time_L - time_R);
-    return pos;
+double get_position(NWPositionCalibParamReader& nw_pcalib, int bar, double time_L, double time_R) {
+    double p0 = nw_pcalib.get(bar, "p0");
+    double p1 = nw_pcalib.get(bar, "p1");
+    return p0 + p1 * (time_L - time_R);
 }
 
 double get_time_of_flight(NWTimeOfFlightCalibParamReader& nw_tcalib, int bar, double time_L, double time_R, double fa_time) {
     return 0.5 * (time_L + time_R) - fa_time - nw_tcalib.tof_offset[bar];
 }
 
-std::array<double, 4> get_corrected_adc(NWADCPreprocessorParamReader& nw_acalib, int bar, short total_L, short total_R, short fast_L, short fast_R, double pos_x) {
+std::array<double, 4> get_corrected_adc(
+    NWADCPreprocessorParamReader& nw_acalib,
+    int bar, short total_L, short total_R, short fast_L, short fast_R, const double pos_x
+) {
     double totalf_L, totalf_R, fastf_L, fastf_R;
     auto& ft_L = nw_acalib.fast_total_L[bar];
     auto& ft_R = nw_acalib.fast_total_R[bar];
@@ -219,7 +226,7 @@ std::array<double, 4> get_corrected_adc(NWADCPreprocessorParamReader& nw_acalib,
     return {totalf_L, totalf_R, fastf_L, fastf_R};
 }
 
-double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, double total_L, double total_R, double pos_x) {
+double get_light_output(NWLightOutputCalibParamReader& nw_lcalib, int bar, double total_L, double total_R, const double pos_x) {
     std::unordered_map<std::string, double> par = nw_lcalib.run_param.at(bar);
 
     // light output calibration
@@ -234,7 +241,7 @@ std::array<double, 2> get_psd(
     int bar,
     double total_L, double total_R,
     double fast_L, double fast_R,
-    double pos_x
+    const double pos_x
 ) {
     /*****eliminate bad data*****/
     if (fast_L < 0 || fast_R < 0 || total_L < 0 || total_R < 0) return {-9999.0, 0.0}; // these are invalid ADC values from original framework
@@ -280,7 +287,7 @@ std::array<double, 2> get_psd(
     return {ppsd, ppsd_perp};
 }
 
-std::array<double, 3> randomize_position(double pos_x) {
+std::array<double, 3> randomize_position(const double pos_x) {
     const double y_length = 3 * 2.54; // cm
     const double z_length = 2.5 * 2.54; // cm
     double pos_y = gRandom->Uniform(-0.5 * y_length, 0.5 * y_length);
@@ -288,18 +295,18 @@ std::array<double, 3> randomize_position(double pos_x) {
     return {pos_x, pos_y, pos_z};
 }
 
-std::array<double, 3> get_spherical_coordinates(NWBPositionCalibParamReader& nw_pcalib, int bar, std::array<double, 3>& position) {
+std::array<double, 3> get_spherical_coordinates(NWPositionCalibParamReader& nw_pcalib, int bar, const std::array<double, 3>& position) {
     std::array<double, 3> L = {
-        nw_pcalib.getL(bar, "L0"), nw_pcalib.getL(bar, "L1"), nw_pcalib.getL(bar, "L2")
+        nw_pcalib.get(bar, "L0"), nw_pcalib.get(bar, "L1"), nw_pcalib.get(bar, "L2")
     };
     std::array<double, 3> X = {
-        nw_pcalib.getX(bar, "X0"), nw_pcalib.getX(bar, "X1"), nw_pcalib.getX(bar, "X2")
+        nw_pcalib.get(bar, "X0"), nw_pcalib.get(bar, "X1"), nw_pcalib.get(bar, "X2")
     };
     std::array<double, 3> Y = {
-        nw_pcalib.getY(bar, "Y0"), nw_pcalib.getY(bar, "Y1"), nw_pcalib.getY(bar, "Y2")
+        nw_pcalib.get(bar, "Y0"), nw_pcalib.get(bar, "Y1"), nw_pcalib.get(bar, "Y2")
     };
     std::array<double, 3> Z = {
-        nw_pcalib.getZ(bar, "Z0"), nw_pcalib.getZ(bar, "Z1"), nw_pcalib.getZ(bar, "Z2")
+        nw_pcalib.get(bar, "Z0"), nw_pcalib.get(bar, "Z1"), nw_pcalib.get(bar, "Z2")
     };
     
     double lab_x = position[0] * X[0] + position[1] * Y[0] + position[2] * Z[0] + L[0];
