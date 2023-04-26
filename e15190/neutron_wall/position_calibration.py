@@ -4,6 +4,7 @@ import heapq
 import inspect
 import json
 import pathlib
+import re
 import warnings
 import sys
 
@@ -854,8 +855,14 @@ class NWCalibrationReader:
         
         if save_to_database:
             # as .json
+            concise_json = json.dumps(breakpoints, indent=4)
+            # remove unnecessary newlines
+            concise_json = re.sub(r'(.?):\s\[\n\s+(-?\d+\.?\d+),\n\s+(-?\d+\.?\d+)\n\s+\]', r'\1: [\2, \3]', concise_json)
+            concise_json = re.sub(r'\{\n\s+\"(\D+)\"', r'{ "\1"', concise_json)
+            concise_json = re.sub(r',\n\s+\"(\D+)\"', r', "\1"', concise_json)
+            concise_json = re.sub(r'(\d+\])\n\s+\}', r'\1 }', concise_json)
             with open(self.json_path, 'w') as file:
-                json.dump(breakpoints, file, indent=4)
+                file.write(concise_json)
 
             # as .dat
             df = []
