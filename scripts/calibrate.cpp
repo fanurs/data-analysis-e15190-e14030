@@ -157,7 +157,6 @@ int main(int argc, char* argv[]) {
     // save output to file
     outroot->cd();
     metadata->Write();
-    hist.Write();
     outtree->Write();
     outroot->Close();
 
