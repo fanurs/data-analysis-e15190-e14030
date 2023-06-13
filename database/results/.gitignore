@@ -1,0 +1,11 @@
+# ignore everything recursively in this directory
+/*
+
+# except this file
+!.gitignore
+
+# except any subdirectories
+!*/
+
+# except all files with the extension .enc
+!**/*.enc
