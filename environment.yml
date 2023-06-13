@@ -41,6 +41,7 @@ dependencies:
    # miscellaneous
    - cryptography=3.4.7
    - pycryptodome=3.18.0
+   - mnemonic=0.20
    - autopep8
    - pytest>=6.2.4
    - coverage=6.3.2
