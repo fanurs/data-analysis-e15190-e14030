@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import argparse
 import base64
-import hashlib
 import getpass
+import hashlib
+import inspect
 import os
 import pathlib
 
@@ -21,66 +22,52 @@ SALT_LENGTH = 16
 NONCE_LENGTH = 16
 TAG_LENGTH = 16
 
-def main():
-    parser = argparse.ArgumentParser(description='Encrypt or decrypt files using AES-256-GCM.')
-    parser.add_argument('input_file', help='the input file to encrypt or decrypt')
-    parser.add_argument('-o', '--output', help='output file or directory')
-    parser.add_argument('-f', '--force', action='store_true', help='overwrite existing output file without asking')
-    args = parser.parse_args()
+def main_routine(input_path: pathlib.Path, key: bytes, salt: bytes, output_path: pathlib.Path | None, force: bool):
+    """The main routine for encrypting or decrypting a single file.
 
-    key, salt = get_key()
+    See :py:func:`__main__` for the command-line interface and adoption of this
+    function for multiple files.
+    """
+    action = 'decrypt' if input_path.suffix == '.enc' else 'encrypt'
 
-    # Set initial output_file based on input_file
-    if args.input_file.endswith('.enc'):
-        output_file = args.input_file[:-4]  # remove .enc suffix
-        action = 'decrypt'
-    else:
-        output_file = args.input_file + '.enc'
-        action = 'encrypt'
-
-    # Override output_file if --output option is used
-    if args.output:
-        output_path = pathlib.Path(args.output)
+    if output_path is not None: # output is specified
         if output_path.is_dir():  # if output is a directory, keep original filename
-            output_file = output_path / pathlib.Path(args.input_file).name
-        else:  # if output is a file, use its name
-            output_file = output_path
+            output_path /= pathlib.Path(input_path).name
 
-        if action == 'encrypt' and not str(output_file).endswith('.enc'):
-            suggested_name = str(output_file) + '.enc'
-            print(f'Warning: Encrypted files should end with .enc. Suggested name: {suggested_name}')
-            if input('Use the suggested name? (y/n) ').lower() != 'y':
-                print('Aborted.')
-                exit(1)
+        elif action == 'encrypt' and output_path.suffix != '.enc':
+            suggested_path = output_path.with_suffix('.enc')
+            print(f'Error: Encrypted file must end with ".enc". Suggest: {suggested_path}')
+            if input('Use the suggested path? (y/n) ').lower() == 'y':
+                output_path = suggested_path
             else:
-                output_file = pathlib.Path(suggested_name)
-
-        if action == 'decrypt' and str(output_file).endswith('.enc'):
-            suggested_name = str(output_file)[:-4]
-            print(f'Warning: Decrypted files should not end with .enc. Suggested name: {suggested_name}')
-            if input('Use the suggested name? (y/n) ').lower() != 'y':
-                print('Aborted.')
                 exit(1)
+
+        if action == 'decrypt' and output_path.suffix == '.enc':
+            suggested_path = output_path.with_suffix('')
+            print(f'Warning: Decrypted files must not end with .enc. Suggest: {suggested_path}')
+            if input('Use the suggested name? (y/n) ').lower() == 'y':
+                output_path = pathlib.Path(suggested_path)
             else:
-                output_file = pathlib.Path(suggested_name)
+                exit(1)
+    else: # output is not specified, infer from input_path
+        output_path = input_path.with_suffix('.enc') if action == 'encrypt' else input_path.with_suffix('')
 
-    if os.path.isfile(output_file) and not args.force:
-        if input(f'Output file {output_file} exists. Overwrite? (y/n) ').lower() != 'y':
-            print('Aborted.')
-            exit(1)
+    if output_path.is_file() and not force:
+        if input(f'Output "{output_path}" exists. Overwrite? (y/n) ').lower() != 'y':
+            print('Nothing done.')
+            return
 
-    with open(args.input_file, 'rb') as f:
-        data = f.read()
+    with open(input_path, 'rb') as file:
+        data = file.read()
 
     if action == 'encrypt':
         result = encrypt_text(data, key, salt)
     else:  # action == 'decrypt'
         result = decrypt_text(data, key)
 
-    with open(output_file, 'wb') as f:
-        f.write(result)
-
-    print(f'{action.capitalize()}ed "{args.input_file}" to "{output_file}".')
+    with open(output_path, 'wb') as file:
+        file.write(result)
+    print(f'{action.capitalize()}ed "{input_path}" to "{output_path}".', flush=True)
 
 def generate_bip39_passphrase(n_words=MNEMOIC_NUM_WORDS) -> list[str]:
     """Generate a BIP39 passphrase.
@@ -298,4 +285,25 @@ def get_key() -> tuple[bytes, bytes]:
     return key, salt
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Encrypt or decrypt files using AES-256-GCM.')
+    parser.add_argument('input_file', nargs='+', help=inspect.cleandoc('''
+        The input file(s) to encrypt or decrypt.
+        If the input file ends with ".enc", it will be decrypted. Otherwise, it
+        will be encrypted, and ".enc" will be appended.
+    '''))
+    parser.add_argument('-o', '--output', help=inspect.cleandoc('''
+        Output file or directory.
+        Must end (not end) with ".enc" when encrypting (decrypting).
+        Only supported if there is only one input file to encrypt or decrypt.
+    '''))
+    parser.add_argument('-f', '--force', action='store_true', help='Overwrite existing output file without asking')
+    args = parser.parse_args()
+
+    key, salt = get_key()
+
+    if len(args.input_file) > 1 and args.output:
+        print('Error: --output is not supported with multiple input files.')
+        exit(1)
+
+    for input_file in args.input_file:
+        main_routine(pathlib.Path(input_file), key, salt, args.output, args.force)
