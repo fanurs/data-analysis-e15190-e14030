@@ -5,6 +5,7 @@ __pycache__/
 
 # confidential 
 *.pub
+*.gcm_*
 database/neutron_wall/efficiency/221102-park.txt
 database/neutron_wall/efficiency/efficiency.txt
 

@@ -1,0 +1,309 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import base64
+import getpass
+import hashlib
+import inspect
+import os
+import pathlib
+
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from mnemonic import Mnemonic
+
+KEY_PATH = '$PROJECT_DIR/.gcm_key'
+SALT_PATH = '$PROJECT_DIR/.gcm_salt'
+MNEMOIC_NUM_WORDS = 12
+PDKDF2_ITERATIONS = 500_000
+KEY_LENGTH = 32
+SALT_LENGTH = 16
+NONCE_LENGTH = 16
+TAG_LENGTH = 16
+
+def main_routine(input_path: pathlib.Path, key: bytes, salt: bytes, output_path: pathlib.Path | None, force: bool):
+    """The main routine for encrypting or decrypting a single file.
+
+    See :py:func:`__main__` for the command-line interface and adoption of this
+    function for multiple files.
+    """
+    action = 'decrypt' if input_path.suffix == '.enc' else 'encrypt'
+
+    if output_path is not None: # output is specified
+        if output_path.is_dir():  # if output is a directory, keep original filename
+            output_path /= pathlib.Path(input_path).name
+
+        elif action == 'encrypt' and output_path.suffix != '.enc':
+            suggested_path = output_path.with_suffix('.enc')
+            print(f'Error: Encrypted file must end with ".enc". Suggest: {suggested_path}')
+            if input('Use the suggested path? (y/n) ').lower() == 'y':
+                output_path = suggested_path
+            else:
+                exit(1)
+
+        if action == 'decrypt' and output_path.suffix == '.enc':
+            suggested_path = output_path.with_suffix('')
+            print(f'Warning: Decrypted files must not end with .enc. Suggest: {suggested_path}')
+            if input('Use the suggested name? (y/n) ').lower() == 'y':
+                output_path = pathlib.Path(suggested_path)
+            else:
+                exit(1)
+    else: # output is not specified, infer from input_path
+        output_path = input_path.with_suffix('.enc') if action == 'encrypt' else input_path.with_suffix('')
+
+    if output_path.is_file() and not force:
+        if input(f'Output "{output_path}" exists. Overwrite? (y/n) ').lower() != 'y':
+            print('Nothing done.')
+            return
+
+    with open(input_path, 'rb') as file:
+        data = file.read()
+
+    if action == 'encrypt':
+        result = encrypt_text(data, key, salt)
+    else:  # action == 'decrypt'
+        result = decrypt_text(data, key)
+
+    with open(output_path, 'wb') as file:
+        file.write(result)
+    print(f'{action.capitalize()}ed "{input_path}" to "{output_path}".', flush=True)
+
+def generate_bip39_passphrase(n_words=MNEMOIC_NUM_WORDS) -> list[str]:
+    """Generate a BIP39 passphrase.
+
+    This passphrase consists of a certain number of words picked randomly from a
+    specific list of words defined in the BIP39 standard.
+
+    Parameters
+    ----------
+    num_words : int, default 12
+        The number of words in the passphrase.
+
+    Returns
+    -------
+    passphrase : list[str]
+        The generated passphrase.
+    """
+    mapping = {
+        12: 128,
+        15: 160,
+        18: 192,
+        21: 224,
+        24: 256,
+    }
+    strength = mapping.get(n_words, None)
+    if strength is None:
+        raise ValueError(f'number of words must be one of {list(mapping.keys())}')
+    return Mnemonic('english').generate(strength).split()
+
+def derive_key(passphrase: str, salt: bytes, iterations=PDKDF2_ITERATIONS) -> bytes:
+    """Derive a cryptographic key from a passphrase using PBKDF2 with HMAC and SHA-256.
+
+    The derived key has a length of 256 bits (32 bytes), suitable for AES-256 encryption.
+
+    Parameters
+    ----------
+    passphrase : str
+        The passphrase to derive the key from. It should contain exactly 12
+        words separated by single spaces.
+    salt : bytes
+        A salt to use for the derivation, which should be unique per passphrase.
+        It is not a secret, hence one could, for example, prepend the salt to
+        the encrypted data. Without the salt, the same derived key cannot be
+        obtained even if the passphrase is known.
+    iterations : int, default 500_000
+        The number of iterations to perform. Higher values increase the time
+        required to derive the key, and hence the cost of a brute-force attack.
+    
+    Returns
+    -------
+    derived_key : bytes
+        The derived key of length 32 bytes.
+    """
+    if len(passphrase.split()) != MNEMOIC_NUM_WORDS:
+        raise ValueError(f'passphrase must contain exactly {MNEMOIC_NUM_WORDS} words')
+    return hashlib.pbkdf2_hmac('sha256', passphrase.encode(encoding='utf-8'), salt, iterations, dklen=KEY_LENGTH)
+
+def recover_key(passphrase: str, ciphertext: bytes) -> bytes:
+    """Recover the key used to encrypt a file.
+
+    The key is recovered by deriving it from the passphrase and salt used for
+    encryption. The salt is extracted from the ciphertext. The salt is the
+    second 16 bytes of the ciphertext, which is prepended by a 16-byte nonce.
+
+    Parameters
+    ----------
+    passphrase : str
+        The passphrase to derive the key from. It should contain exactly 12
+        words separated by single spaces.
+    ciphertext : bytes
+        The encrypted file content, in the following format:
+        nonce (16 bytes) + salt (16 bytes) + ciphertext + tag (16 bytes)
+
+    Returns
+    -------
+    derived_key : bytes
+        The derived key of length 32 bytes.
+    """
+    if len(passphrase.split()) != MNEMOIC_NUM_WORDS:
+        raise ValueError(f'passphrase must contain exactly {MNEMOIC_NUM_WORDS} words')
+    salt = ciphertext[NONCE_LENGTH : NONCE_LENGTH + SALT_LENGTH]
+    return derive_key(passphrase, salt)
+
+def encrypt_text(plaintext: bytes, key: bytes, salt: bytes) -> bytes:
+    """Encrypt a file using AES in GCM mode.
+
+    Limitation: The file is read into memory, so it should not be too large.
+    A 16-byte nonce is generated randomly and prepended to the ciphertext.
+    A 16-byte tag is also generated but appended to the ciphertext.
+
+    Parameters
+    ----------
+    plaintext : bytes
+        The plaintext to encrypt. Make sure to read the file in binary mode.
+    key : bytes
+        The derived key of length 32 bytes.
+    salt : bytes
+        The salt used to derive the key, which has a length of 16 bytes.
+
+    Returns
+    -------
+    ciphertext : bytes
+        The encrypted file content, in the following format:
+        nonce (16 bytes) + salt (16 bytes) + ciphertext + tag (16 bytes)
+    """
+    nonce = get_random_bytes(NONCE_LENGTH)
+    if len(salt) != SALT_LENGTH:
+        raise ValueError(f'salt must have length {SALT_LENGTH} bytes')
+
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+
+    return nonce + salt + ciphertext + tag
+
+def decrypt_text(ciphertext: bytes, key: bytes) -> bytes:
+    """Decrypt a file encrypted with :py:func:`encrypt_file`.
+
+    Parameters
+    ----------
+    ciphertext : bytes
+        The encrypted file content, in the following format:
+        nonce (16 bytes) + salt (16 bytes) + ciphertext
+    key : bytes
+        The derived key of length 32 bytes.
+
+    Returns
+    -------
+    plaintext : bytes
+        The decrypted file content.
+    """
+    nonce = ciphertext[:NONCE_LENGTH]
+    tag = ciphertext[-TAG_LENGTH:]
+    ciphertext = ciphertext[NONCE_LENGTH + SALT_LENGTH : -TAG_LENGTH]
+
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    return cipher.decrypt_and_verify(ciphertext, tag)
+
+def encode_base64(data: bytes) -> bytes:
+    return base64.b64encode(data)
+
+def decode_base64(data: bytes) -> bytes:
+    return base64.b64decode(data)
+
+def get_key() -> tuple[bytes, bytes]:
+    """Get the encryption key and salt.
+
+    If the key file and salt file both exist, they are read from the files. 
+    If only the key file exists, an error message is printed.
+    If only the salt file exists, a passphrase is requested from the user, 
+    and a key is derived using the existing salt.
+
+    Returns
+    -------
+    key : bytes
+        The encryption key.
+    salt : bytes
+        The salt used for key derivation.
+    """
+    key_file = pathlib.Path(os.path.expandvars(KEY_PATH))
+    salt_file = pathlib.Path(os.path.expandvars(SALT_PATH))
+
+    if key_file.is_file() and salt_file.is_file():
+        with open(key_file, 'rb') as key_file:
+            key = key_file.read()
+        with open(salt_file, 'rb') as salt_file:
+            salt = salt_file.read()
+        return key, salt
+
+    elif key_file.is_file():
+        print('Key file found, but no salt file exists.')
+        print('Without the salt file, the key cannot be used for encryption.')
+        print('Please ask for the salt file from your collaborator, or regenerate the key.')
+        exit(1)
+
+    elif salt_file.is_file():
+        print('Salt file found, but no key file exists.')
+        print('Enter the passphrase to generate the key.')
+        print('If the passphrase is incorrect, an incorrect key will be generated.')
+        passphrase = getpass.getpass('Passphrase: ')
+        with open(salt_file, 'rb') as file:
+            salt = file.read()
+        key = derive_key(passphrase, salt)
+        with open(key_file, 'wb') as file:
+            file.write(key)
+        return key, salt
+
+    # neither key nor salt exists
+    print('No key or salt found.')
+    while True:
+        print('Enter a 12-word mnemonic, or leave empty for a random one.')
+        passphrase = getpass.getpass('Passphrase: ')
+        passphrase_confirm = getpass.getpass('Confirm Passphrase: ')
+        if passphrase != passphrase_confirm:
+            print('Passphrases do not match. Try again.')
+            continue
+        if passphrase:
+            words = passphrase.split()
+            if len(words) != MNEMOIC_NUM_WORDS:
+                print(f'Error: must contain exactly {MNEMOIC_NUM_WORDS} words.')
+                continue
+        else:
+            passphrase = ' '.join(generate_bip39_passphrase())
+            with open("temp_mnemonic.txt", "w") as file:
+                file.write(passphrase)
+            print('Your new mnemonic is saved in "temp_mnemonic.txt".')
+            print('WARNING: Save this in a secure place then delete "temp_mnemonic.txt". It will not be shown again.')
+        if input('Use this mnemonic? (y/n) ').lower() == 'y':
+            break
+    salt = get_random_bytes(SALT_LENGTH)
+    key = derive_key(passphrase, salt)
+    with open(key_file, 'wb') as file:
+        file.write(key)
+    with open(salt_file, 'wb') as file:
+        file.write(salt)
+    return key, salt
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Encrypt or decrypt files using AES-256-GCM.')
+    parser.add_argument('input_file', nargs='+', help=inspect.cleandoc('''
+        The input file(s) to encrypt or decrypt.
+        If the input file ends with ".enc", it will be decrypted. Otherwise, it
+        will be encrypted, and ".enc" will be appended.
+    '''))
+    parser.add_argument('-o', '--output', help=inspect.cleandoc('''
+        Output file or directory.
+        Must end (not end) with ".enc" when encrypting (decrypting).
+        Only supported if there is only one input file to encrypt or decrypt.
+    '''))
+    parser.add_argument('-f', '--force', action='store_true', help='Overwrite existing output file without asking')
+    args = parser.parse_args()
+
+    key, salt = get_key()
+
+    if len(args.input_file) > 1 and args.output:
+        print('Error: --output is not supported with multiple input files.')
+        exit(1)
+
+    for input_file in args.input_file:
+        main_routine(pathlib.Path(input_file), key, salt, args.output, args.force)
