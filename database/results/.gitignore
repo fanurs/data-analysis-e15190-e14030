@@ -2,8 +2,9 @@
 /*
 /**/*
 
-# except this file
+# except this file and README
 !.gitignore
+!README.md
 
 # except any subdirectories
 !*/
