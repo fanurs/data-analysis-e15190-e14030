@@ -539,7 +539,7 @@ class Wall:
         method: Literal['monte-carlo', 'delta-phi'] = 'delta-phi',
         n_rays=1_000_000,
         n_steps=30,
-    ) -> Callable[[ArrayLike], ArrayLike]:
+    ) -> Callable[[float | np.ndarray], float | np.ndarray]:
         """
         A simple wrapper around
         :py:func:`_get_geometry_efficiency_from_cpp_executable`. The function
@@ -576,7 +576,7 @@ class Wall:
 
         Returns
         -------
-        geometry_efficiency : Callable[[float], float]
+        geometry_efficiency : Callable[[float | np.ndarray], float | np.ndarray]
             A function that takes a theta (radian) and returns the geometry efficiency.
         """
         cuts_str = json.dumps(self._parse_cuts(shadowed_bars, skip_bars, cut_edges, custom_cuts))
@@ -587,7 +587,7 @@ class Wall:
         )
 
         if method == 'monte-carlo':
-            def inner(theta_input: ArrayLike) -> ArrayLike:
+            def inner(theta_input: float | np.ndarray) -> float | np.ndarray:
                 vectorized_func = np.vectorize(self._get_geometry_efficiency_from_cpp_executable)
                 return vectorized_func(
                     method='monte_carlo',
@@ -599,7 +599,7 @@ class Wall:
             return inner
         
         # method == 'delta-phi'
-        def inner(theta_input: ArrayLike) -> ArrayLike:
+        def inner(theta_input: float | np.ndarray) -> float | np.ndarray:
             if isinstance(theta_input, (int, float)):
                 # round to 2 decimal place to avoid cache miss
                 theta = round(theta_input, 2)
@@ -608,8 +608,13 @@ class Wall:
                     theta_deg=np.degrees(theta),
                     **kw,
                 )
-            else:
+
+            else: # np.ndarray
+                # this is a rather fine grid, so it can take a few minutes to
+                # calculate the efficiency but once it is done, the result is
+                # cached unless arguments are changed
                 grid_x = np.linspace(25, 55, 3000 + 1)
+
                 grid_y = self._get_geometry_efficiency_from_cpp_executable(
                     method='delta_phi', mode='range',
                     theta_deg=(grid_x[0], grid_x[-1]),
