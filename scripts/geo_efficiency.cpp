@@ -278,7 +278,7 @@ public:
 };
 
 double findIntersectingPoint(
-    double phi_min, double phi_max, double theta, const NeutronWall& wall, bool find_lower_bound, double tolerance=1e-6
+    double phi_min, double phi_max, double theta, const NeutronWall& wall, bool find_lower_bound, double tolerance=1e-5
 ) {
     double low = phi_min;
     double high = phi_max;

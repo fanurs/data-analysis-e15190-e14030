@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import inspect
+import io
 import json
 from os.path import expandvars
 from pathlib import Path
 import subprocess
-from typing import Callable, Dict, List, Literal, Optional, Union
+from typing import Callable, Literal, Optional
 
 import numpy as np
 from numpy.typing import ArrayLike
 import pandas as pd
+from scipy.interpolate import UnivariateSpline
 
 from e15190.utilities import (
     cache,
@@ -455,31 +457,88 @@ class Wall:
     @staticmethod
     @cache.persistent_cache('$PROJECT_DIR/database/neutron_wall/geometry/efficiency_cache.pkl')
     def _get_geometry_efficiency_from_cpp_executable(
-        theta_deg: float,
+        method: Literal['monte_carlo', 'delta_phi'],
+        mode: Literal['single', 'range'],
+        theta_deg: float | tuple[float, float], # (low, upp)
         AB: Literal['A', 'B'],
         include_pyrex: bool,
         wall_filters_str: str,
-        n_rays: int | None,
-    ) -> float:
+        n_rays=-1,
+        n_steps=-1,
+    ) -> float | np.ndarray:
         arguments = [
             str(Path(expandvars('$PROJECT_DIR')) / 'scripts' / 'geo_efficiency.exe'),
-            AB,
-            str(int(include_pyrex)),
-            wall_filters_str,
-            f'{theta_deg}'
+            method, AB, str(int(include_pyrex)), wall_filters_str,
         ]
-        if n_rays is not None:
+        if method == 'delta_phi' and mode == 'range':
+            if not isinstance(theta_deg, tuple):
+                raise TypeError('theta_deg must be a tuple when mode is range.')
+            if n_steps <= 0:
+                raise ValueError('n_steps must be a positive integer when mode is range.')
+            arguments.append(f'{theta_deg[0]}')
+            arguments.append(f'{theta_deg[1]}')
+            arguments.append(f'{n_steps}')
+            output = subprocess.run(arguments, check=True, capture_output=True).stdout
+            return np.fromstring(output, sep='\n')
+
+        if method == 'monte_carlo' and mode == 'single':
+            if n_rays <= 0:
+                raise ValueError('n_rays must be a positive integer when using Monte Carlo method.')
+            arguments.append(f'{theta_deg}')
             arguments.append(f'{n_rays}')
-        return float(subprocess.run(arguments, check=True, capture_output=True).stdout)
+        elif method == 'monte_carlo' and mode == 'range':
+            raise NotImplementedError('range mode is only implemented for delta_phi method')
+        elif method == 'delta_phi' and mode == 'single':
+            arguments.append(f'{theta_deg}')
+        return float(subprocess.run(arguments, check=True, capture_output=True).stdout.strip())
+    
+    def _parse_cuts(
+        self,
+        shadowed_bars: bool,
+        skip_bars: list[int],
+        cut_edges=True,
+        custom_cuts: Optional[dict[int, list[str]]] = None,
+    ) -> dict[int, str]:
+        if self.bars is None:
+            raise ValueError('Bars have not been initialized.')
+        cuts = {b: [] for b in self.bars}
+        if custom_cuts is not None:
+            cuts = custom_cuts
+        else:
+            if cut_edges:
+                cuts = {b: [[Bar.edges_x[0], Bar.edges_x[1]]] for b in cuts}
+            else:
+                cuts = {b: [[-9999.9, +9999.9]] for b in cuts} # dummy cut
+                # the range will not actually exceed the physical edges of the bars
+                # when fed into the C++ executable
+
+            shadowed_bar_num = Bar.shadowed_bars if shadowed_bars else []
+            for b in shadowed_bar_num:
+                init_range = cuts[b][0]
+                cuts[b] = [
+                    [init_range[0], Bar.left_shadow_x[0]],
+                    [Bar.left_shadow_x[1], Bar.right_shadow_x[0]],
+                    [Bar.right_shadow_x[1], init_range[1]],
+                ]
+
+        if skip_bars is None:
+            skip_bars = []
+        for b in skip_bars:
+            if b in cuts:
+                del cuts[b]
+        
+        # sort cuts to make sure cache results do not repeat
+        return {k: sorted(v) for k, v in sorted(cuts.items())}
 
     def get_geometry_efficiency(
         self,
         shadowed_bars: bool,
         skip_bars: list[int],
-        cut_edges: bool = True,
-        custom_cuts: Optional[Dict[int, list[str]]] = None,
+        cut_edges=True,
+        custom_cuts: Optional[dict[int, list[str]]] = None,
         method: Literal['monte-carlo', 'delta-phi'] = 'delta-phi',
-        n_rays: int = 1_000_000,
+        n_rays=1_000_000,
+        n_steps=30,
     ) -> Callable[[ArrayLike], ArrayLike]:
         """
         A simple wrapper around
@@ -487,6 +546,9 @@ class Wall:
         has a persistent cache saved to
         `$PROJECT_DIR/database/neutron_wall/geometry/efficiency_cache.pkl`.
         Simply remove the file if you do not want to use the cached results.
+
+        First time calling this function will take a while. Subsequent calls
+        with the exact same arguments will be much faster due to caching.
 
         Parameters
         ----------
@@ -508,50 +570,51 @@ class Wall:
         n_rays : int, default 1_000_000
             Number of rays to be used in the Monte Carlo method. This argument
             is ignored if `method` is not `'monte-carlo'`.
+        n_steps : int, default 30
+            Number of steps to be used in the delta-phi method. This argument
+            is ignored if `method` is not `'delta-phi'`.
 
         Returns
         -------
         geometry_efficiency : Callable[[float], float]
             A function that takes a theta (radian) and returns the geometry efficiency.
         """
-        if self.bars is None:
-            raise ValueError('Bars have not been initialized.')
-        cuts = {b: [] for b in self.bars}
-        if custom_cuts is not None:
-            cuts = custom_cuts
-        else:
-            if cut_edges:
-                cuts = {b: [[Bar.edges_x[0], Bar.edges_x[1]]] for b in cuts}
-            else:
-                cuts = {b: [[-9999.9, +9999.9]] for b in cuts} # dummy cut
-                # the range will not actually exceed the physical edges of the bars
-                # when fed into the C++ executable
+        cuts_str = json.dumps(self._parse_cuts(shadowed_bars, skip_bars, cut_edges, custom_cuts))
+        kw = dict(
+            AB=self.AB,
+            include_pyrex=self.contain_pyrex,
+            wall_filters_str=cuts_str,
+        )
 
-            shadowed_bar_num = [7, 8, 9, 15, 16, 17] if shadowed_bars else []
-            for b in shadowed_bar_num:
-                init_range = cuts[b][0]
-                cuts[b] = [
-                    [init_range[0], Bar.left_shadow_x[0]],
-                    [Bar.left_shadow_x[1], Bar.right_shadow_x[0]],
-                    [Bar.right_shadow_x[1], init_range[1]],
-                ]
-
-        if skip_bars is None:
-            skip_bars = []
-        for b in skip_bars:
-            if b in cuts:
-                del cuts[b]
+        if method == 'monte-carlo':
+            def inner(theta_input: ArrayLike) -> ArrayLike:
+                vectorized_func = np.vectorize(self._get_geometry_efficiency_from_cpp_executable)
+                return vectorized_func(
+                    method='monte_carlo',
+                    mode='single',
+                    theta_deg=np.degrees(theta_input),
+                    n_rays=n_rays,
+                    **kw,
+                )
+            return inner
         
-        # sort cuts to make sure cache results do not repeat
-        cuts = {k: sorted(v) for k, v in sorted(cuts.items())}
-
-        def geometry_efficiency(theta_input: ArrayLike) -> ArrayLike:
-            vectorized_func = np.vectorize(self._get_geometry_efficiency_from_cpp_executable)
-            return vectorized_func(
-                theta_deg=np.degrees(theta_input),
-                AB=self.AB,
-                include_pyrex=self.contain_pyrex,
-                wall_filters_str=json.dumps(cuts),
-                n_rays=n_rays if method == 'monte-carlo' else None,
-            )
-        return geometry_efficiency
+        # method == 'delta-phi'
+        def inner(theta_input: ArrayLike) -> ArrayLike:
+            if isinstance(theta_input, (int, float)):
+                # round to 2 decimal place to avoid cache miss
+                theta = round(theta_input, 2)
+                return self._get_geometry_efficiency_from_cpp_executable(
+                    method='delta_phi', mode='single',
+                    theta_deg=np.degrees(theta),
+                    **kw,
+                )
+            else:
+                grid_x = np.linspace(25, 55, 3000 + 1)
+                grid_y = self._get_geometry_efficiency_from_cpp_executable(
+                    method='delta_phi', mode='range',
+                    theta_deg=(grid_x[0], grid_x[-1]),
+                    n_steps=len(grid_x),
+                    **kw,
+                )
+                return np.interp(np.degrees(theta_input), grid_x, grid_y)
+        return inner
