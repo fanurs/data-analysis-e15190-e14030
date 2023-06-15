@@ -140,6 +140,15 @@ def add(dfa: pd.DataFrame, dfb: pd.DataFrame | int | float) -> pd.DataFrame:
     result[a.yferr_name] = np.abs(_divide_arrays(result[a.yerr_name], result[a.y_name]))
     return result
 
+def sum(*dfs: pd.DataFrame) -> pd.DataFrame:
+    """Add up multiple dataframes."""
+    if len(dfs) < 1:
+        raise ValueError('At least one dataframe must be provided.')
+    result = dfs[0]
+    for df in dfs[1:]:
+        result = add(result, df)
+    return result
+
 def _sub_scalar(df, scalar):
     d = Identifier(df, fill_errors=True)
     result = pd.DataFrame({
