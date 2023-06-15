@@ -6,10 +6,11 @@ sense that they are pythonic, vectorized, and match the convention in physics.
 
 Hence, this submodule is written.
 """
+from __future__ import annotations
 import copy
 import functools
 import itertools as itr
-from typing import Callable
+from typing import Callable, Optional
 
 from alphashape import alphashape
 import matplotlib.pyplot as plt
@@ -360,7 +361,7 @@ class RectangularBar:
         self.loc_vertices, self.vertices = self._get_vertices_dict(
             self.loc_vertices, self.vertices)
     
-    def dimension(self, index=None):
+    def dimension(self, index: Optional[int] = None) -> float | tuple[float, float, float]:
         """Returns the dimension(s) of the bar.
         
         Parameters
@@ -375,12 +376,14 @@ class RectangularBar:
         dimension : float or 3-tuple of floats
             The dimension(s) of the bar.
         """
-        if index is None:
-            return tuple(self.dimension(index=i) for i in range(3))
+        if index is None: # return all three dimensions by calling this function recursively
+            return tuple(self.dimension(index=i) for i in range(3)) # type: ignore
 
         if isinstance(index, str):
             index = 'xyz'.find(index.lower())
 
+        if self.loc_vertices is None:
+            raise ValueError('The local vertices are not calculated yet.')
         result = []
         for sign in itr.product([+1, 1], repeat=2):
             pos, neg = list(sign), list(sign)
@@ -496,6 +499,8 @@ class RectangularBar:
 
         # check if the coordinates are inside the bar
         dimension = self.dimension()
+        if not isinstance(dimension, tuple):
+            raise ValueError('The dimension of the bar is not a tuple.')
         result = np.array([True] * len(coordinates))
         for i in range(3):
             i_components = coordinates[:, i]
@@ -525,6 +530,8 @@ class RectangularBar:
 
             tri_indices.extend([tri_index_1, tri_index_2])
         
+        if self.vertices is None:
+            raise ValueError('Bar vertices have not been initialized.')
         vertices = np.array(list(self.vertices.values()))
         self.triangle_mesh = rti.TriangleMesh(vertices, tri_indices)
 

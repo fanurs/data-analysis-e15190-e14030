@@ -1,13 +1,14 @@
+#!/usr/bin/env python3
 from __future__ import annotations
-
 import inspect
 import json
 from os.path import expandvars
 from pathlib import Path
 import subprocess
-from typing import Callable, Dict, List, Literal, Union
+from typing import Callable, Dict, List, Literal, Optional, Union
 
 import numpy as np
+from numpy.typing import ArrayLike
 import pandas as pd
 
 from e15190.utilities import (
@@ -72,28 +73,37 @@ class Bar(geom.RectangularBar):
             pass
     
     @property
-    def length(self):
+    def length(self) -> float:
         """Length of the bar.
 
         Should be around 76 inches without Pyrex.
         """
-        return self.dimension(index=0)
+        result = self.dimension(index=0)
+        if not isinstance(result, float):
+            raise Exception('Length is not a float')
+        return result
     
     @property
-    def height(self):
+    def height(self) -> float:
         """Height of the bar.
 
         Should be around 3.0 inches without Pyrex.
         """
-        return self.dimension(index=1)
+        result = self.dimension(index=1)
+        if not isinstance(result, float):
+            raise Exception('Height is not a float')
+        return result
 
     @property
-    def thickness(self):
+    def thickness(self) -> float:
         """Longitudinal thickness of the bar.
 
         Should be around 2.5 inches without Pyrex.
         """
-        return self.dimension(index=2)
+        result = self.dimension(index=2)
+        if not isinstance(result, float):
+            raise Exception('Thickness is not a float')
+        return result
     
     def _modify_pyrex(self, mode):
         """To add or remove Pyrex thickness.
@@ -110,6 +120,8 @@ class Bar(geom.RectangularBar):
             scalar = -1
         elif mode == 'add':
             scalar = +1
+        else:
+            raise ValueError(f'Unknown mode "{mode}"')
         
         # apply transformation
         self.loc_vertices = {
@@ -140,9 +152,9 @@ class Bar(geom.RectangularBar):
         self,
         local_x,
         return_frame='lab',
-        local_ynorm=[-0.5, 0.5],
-        local_znorm=[-0.5, 0.5],
-        random_seed=None,
+        local_ynorm: float | tuple[float, float] = (-0.5, 0.5),
+        local_znorm: float | tuple[float, float] = (-0.5, 0.5),
+        random_seed: Optional[int] = None,
     ):
         """Returns randomized point(s) from the given local x coordinate(s).
 
@@ -156,12 +168,12 @@ class Bar(geom.RectangularBar):
             The local x coordinate(s) of the point(s) in centimeters.
         return_frame : 'lab' or 'local', default 'lab'
             The frame of the returned point(s) in Cartesian coordinates.
-        local_ynorm : float or 2-tuple of floats, default [-0.5, 0.5]
+        local_ynorm : float or 2-tuple of floats, default (-0.5, 0.5)
             The range of randomization in the local y coordinate. If float, no
             randomization is performed. Center is at `0.0`; the top surface is
             `+0.5`; the bottom surface is `-0.5`. Values outside this range will
             still be calculated, but those points will be outside the bar.
-        local_znorm : float or 2-tuple of floats, default [-0.5, 0.5]
+        local_znorm : float or 2-tuple of floats, default (-0.5, 0.5)
             The range of randomization in the local z coordinate. If float, no
             randomization is performed. Center is at `0.0`; the front surface is
             `+0.5`; the back surface is `-0.5`. Values outside this range will
@@ -316,7 +328,7 @@ class Wall:
         
         # containers for process the lines
         bars_vertices = [] # to collect vertices of all bars
-        vertex = [None] * 3
+        vertex: list[Optional[float]] = [None] * 3
         vertices = [] # to collect all vertices of one particular bar
 
         for line in lines:
@@ -465,10 +477,10 @@ class Wall:
         shadowed_bars: bool,
         skip_bars: list[int],
         cut_edges: bool = True,
-        custom_cuts: Dict[int, List[str]] = None,
+        custom_cuts: Optional[Dict[int, list[str]]] = None,
         method: Literal['monte-carlo', 'delta-phi'] = 'delta-phi',
         n_rays: int = 1_000_000,
-    ) -> Callable[[Union[float, np.ndarray, List[float]]], Union[float, np.ndarray]]:
+    ) -> Callable[[ArrayLike], ArrayLike]:
         """
         A simple wrapper around
         :py:func:`_get_geometry_efficiency_from_cpp_executable`. The function
@@ -502,6 +514,8 @@ class Wall:
         geometry_efficiency : Callable[[float], float]
             A function that takes a theta (radian) and returns the geometry efficiency.
         """
+        if self.bars is None:
+            raise ValueError('Bars have not been initialized.')
         cuts = {b: [] for b in self.bars}
         if custom_cuts is not None:
             cuts = custom_cuts
@@ -531,7 +545,7 @@ class Wall:
         # sort cuts to make sure cache results do not repeat
         cuts = {k: sorted(v) for k, v in sorted(cuts.items())}
 
-        def geometry_efficiency(theta_input: Union[float, np.ndarray, List[float]]) -> Union[float, np.ndarray]:
+        def geometry_efficiency(theta_input: ArrayLike) -> ArrayLike:
             vectorized_func = np.vectorize(self._get_geometry_efficiency_from_cpp_executable)
             return vectorized_func(
                 theta_deg=np.degrees(theta_input),
