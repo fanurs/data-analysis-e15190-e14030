@@ -1,14 +1,17 @@
+#!/usr/bin/env python3
 from __future__ import annotations
-
 import inspect
+import io
 import json
 from os.path import expandvars
 from pathlib import Path
 import subprocess
-from typing import Callable, Dict, List, Literal, Union
+from typing import Callable, Literal, Optional
 
 import numpy as np
+from numpy.typing import ArrayLike
 import pandas as pd
+from scipy.interpolate import UnivariateSpline
 
 from e15190.utilities import (
     cache,
@@ -72,28 +75,37 @@ class Bar(geom.RectangularBar):
             pass
     
     @property
-    def length(self):
+    def length(self) -> float:
         """Length of the bar.
 
         Should be around 76 inches without Pyrex.
         """
-        return self.dimension(index=0)
+        result = self.dimension(index=0)
+        if not isinstance(result, float):
+            raise Exception('Length is not a float')
+        return result
     
     @property
-    def height(self):
+    def height(self) -> float:
         """Height of the bar.
 
         Should be around 3.0 inches without Pyrex.
         """
-        return self.dimension(index=1)
+        result = self.dimension(index=1)
+        if not isinstance(result, float):
+            raise Exception('Height is not a float')
+        return result
 
     @property
-    def thickness(self):
+    def thickness(self) -> float:
         """Longitudinal thickness of the bar.
 
         Should be around 2.5 inches without Pyrex.
         """
-        return self.dimension(index=2)
+        result = self.dimension(index=2)
+        if not isinstance(result, float):
+            raise Exception('Thickness is not a float')
+        return result
     
     def _modify_pyrex(self, mode):
         """To add or remove Pyrex thickness.
@@ -110,6 +122,8 @@ class Bar(geom.RectangularBar):
             scalar = -1
         elif mode == 'add':
             scalar = +1
+        else:
+            raise ValueError(f'Unknown mode "{mode}"')
         
         # apply transformation
         self.loc_vertices = {
@@ -140,9 +154,9 @@ class Bar(geom.RectangularBar):
         self,
         local_x,
         return_frame='lab',
-        local_ynorm=[-0.5, 0.5],
-        local_znorm=[-0.5, 0.5],
-        random_seed=None,
+        local_ynorm: float | tuple[float, float] = (-0.5, 0.5),
+        local_znorm: float | tuple[float, float] = (-0.5, 0.5),
+        random_seed: Optional[int] = None,
     ):
         """Returns randomized point(s) from the given local x coordinate(s).
 
@@ -156,12 +170,12 @@ class Bar(geom.RectangularBar):
             The local x coordinate(s) of the point(s) in centimeters.
         return_frame : 'lab' or 'local', default 'lab'
             The frame of the returned point(s) in Cartesian coordinates.
-        local_ynorm : float or 2-tuple of floats, default [-0.5, 0.5]
+        local_ynorm : float or 2-tuple of floats, default (-0.5, 0.5)
             The range of randomization in the local y coordinate. If float, no
             randomization is performed. Center is at `0.0`; the top surface is
             `+0.5`; the bottom surface is `-0.5`. Values outside this range will
             still be calculated, but those points will be outside the bar.
-        local_znorm : float or 2-tuple of floats, default [-0.5, 0.5]
+        local_znorm : float or 2-tuple of floats, default (-0.5, 0.5)
             The range of randomization in the local z coordinate. If float, no
             randomization is performed. Center is at `0.0`; the front surface is
             `+0.5`; the back surface is `-0.5`. Values outside this range will
@@ -316,7 +330,7 @@ class Wall:
         
         # containers for process the lines
         bars_vertices = [] # to collect vertices of all bars
-        vertex = [None] * 3
+        vertex: list[Optional[float]] = [None] * 3
         vertices = [] # to collect all vertices of one particular bar
 
         for line in lines:
@@ -443,38 +457,98 @@ class Wall:
     @staticmethod
     @cache.persistent_cache('$PROJECT_DIR/database/neutron_wall/geometry/efficiency_cache.pkl')
     def _get_geometry_efficiency_from_cpp_executable(
-        theta_deg: float,
+        method: Literal['monte_carlo', 'delta_phi'],
+        mode: Literal['single', 'range'],
+        theta_deg: float | tuple[float, float], # (low, upp)
         AB: Literal['A', 'B'],
         include_pyrex: bool,
         wall_filters_str: str,
-        n_rays: int | None,
-    ) -> float:
+        n_rays=-1,
+        n_steps=-1,
+    ) -> float | np.ndarray:
         arguments = [
             str(Path(expandvars('$PROJECT_DIR')) / 'scripts' / 'geo_efficiency.exe'),
-            AB,
-            str(int(include_pyrex)),
-            wall_filters_str,
-            f'{theta_deg}'
+            method, AB, str(int(include_pyrex)), wall_filters_str,
         ]
-        if n_rays is not None:
+        if method == 'delta_phi' and mode == 'range':
+            if not isinstance(theta_deg, tuple):
+                raise TypeError('theta_deg must be a tuple when mode is range.')
+            if n_steps <= 0:
+                raise ValueError('n_steps must be a positive integer when mode is range.')
+            arguments.append(f'{theta_deg[0]}')
+            arguments.append(f'{theta_deg[1]}')
+            arguments.append(f'{n_steps}')
+            output = subprocess.run(arguments, check=True, capture_output=True).stdout
+            return np.fromstring(output, sep='\n')
+
+        if method == 'monte_carlo' and mode == 'single':
+            if n_rays <= 0:
+                raise ValueError('n_rays must be a positive integer when using Monte Carlo method.')
+            arguments.append(f'{theta_deg}')
             arguments.append(f'{n_rays}')
-        return float(subprocess.run(arguments, check=True, capture_output=True).stdout)
+        elif method == 'monte_carlo' and mode == 'range':
+            raise NotImplementedError('range mode is only implemented for delta_phi method')
+        elif method == 'delta_phi' and mode == 'single':
+            arguments.append(f'{theta_deg}')
+        return float(subprocess.run(arguments, check=True, capture_output=True).stdout.strip())
+    
+    def _parse_cuts(
+        self,
+        shadowed_bars: bool,
+        skip_bars: list[int],
+        cut_edges=True,
+        custom_cuts: Optional[dict[int, list[str]]] = None,
+    ) -> dict[int, str]:
+        if self.bars is None:
+            raise ValueError('Bars have not been initialized.')
+        cuts = {b: [] for b in self.bars}
+        if custom_cuts is not None:
+            cuts = custom_cuts
+        else:
+            if cut_edges:
+                cuts = {b: [[Bar.edges_x[0], Bar.edges_x[1]]] for b in cuts}
+            else:
+                cuts = {b: [[-9999.9, +9999.9]] for b in cuts} # dummy cut
+                # the range will not actually exceed the physical edges of the bars
+                # when fed into the C++ executable
+
+            shadowed_bar_num = Bar.shadowed_bars if shadowed_bars else []
+            for b in shadowed_bar_num:
+                init_range = cuts[b][0]
+                cuts[b] = [
+                    [init_range[0], Bar.left_shadow_x[0]],
+                    [Bar.left_shadow_x[1], Bar.right_shadow_x[0]],
+                    [Bar.right_shadow_x[1], init_range[1]],
+                ]
+
+        if skip_bars is None:
+            skip_bars = []
+        for b in skip_bars:
+            if b in cuts:
+                del cuts[b]
+        
+        # sort cuts to make sure cache results do not repeat
+        return {k: sorted(v) for k, v in sorted(cuts.items())}
 
     def get_geometry_efficiency(
         self,
         shadowed_bars: bool,
         skip_bars: list[int],
-        cut_edges: bool = True,
-        custom_cuts: Dict[int, List[str]] = None,
+        cut_edges=True,
+        custom_cuts: Optional[dict[int, list[str]]] = None,
         method: Literal['monte-carlo', 'delta-phi'] = 'delta-phi',
-        n_rays: int = 1_000_000,
-    ) -> Callable[[Union[float, np.ndarray, List[float]]], Union[float, np.ndarray]]:
+        n_rays=1_000_000,
+        n_steps=30,
+    ) -> Callable[[float | np.ndarray], float | np.ndarray]:
         """
         A simple wrapper around
         :py:func:`_get_geometry_efficiency_from_cpp_executable`. The function
         has a persistent cache saved to
         `$PROJECT_DIR/database/neutron_wall/geometry/efficiency_cache.pkl`.
         Simply remove the file if you do not want to use the cached results.
+
+        First time calling this function will take a while. Subsequent calls
+        with the exact same arguments will be much faster due to caching.
 
         Parameters
         ----------
@@ -496,48 +570,56 @@ class Wall:
         n_rays : int, default 1_000_000
             Number of rays to be used in the Monte Carlo method. This argument
             is ignored if `method` is not `'monte-carlo'`.
+        n_steps : int, default 30
+            Number of steps to be used in the delta-phi method. This argument
+            is ignored if `method` is not `'delta-phi'`.
 
         Returns
         -------
-        geometry_efficiency : Callable[[float], float]
+        geometry_efficiency : Callable[[float | np.ndarray], float | np.ndarray]
             A function that takes a theta (radian) and returns the geometry efficiency.
         """
-        cuts = {b: [] for b in self.bars}
-        if custom_cuts is not None:
-            cuts = custom_cuts
-        else:
-            if cut_edges:
-                cuts = {b: [[Bar.edges_x[0], Bar.edges_x[1]]] for b in cuts}
-            else:
-                cuts = {b: [[-9999.9, +9999.9]] for b in cuts} # dummy cut
-                # the range will not actually exceed the physical edges of the bars
-                # when fed into the C++ executable
+        cuts_str = json.dumps(self._parse_cuts(shadowed_bars, skip_bars, cut_edges, custom_cuts))
+        kw = dict(
+            AB=self.AB,
+            include_pyrex=self.contain_pyrex,
+            wall_filters_str=cuts_str,
+        )
 
-            shadowed_bar_num = [7, 8, 9, 15, 16, 17] if shadowed_bars else []
-            for b in shadowed_bar_num:
-                init_range = cuts[b][0]
-                cuts[b] = [
-                    [init_range[0], Bar.left_shadow_x[0]],
-                    [Bar.left_shadow_x[1], Bar.right_shadow_x[0]],
-                    [Bar.right_shadow_x[1], init_range[1]],
-                ]
-
-        if skip_bars is None:
-            skip_bars = []
-        for b in skip_bars:
-            if b in cuts:
-                del cuts[b]
+        if method == 'monte-carlo':
+            def inner(theta_input: float | np.ndarray) -> float | np.ndarray:
+                vectorized_func = np.vectorize(self._get_geometry_efficiency_from_cpp_executable)
+                return vectorized_func(
+                    method='monte_carlo',
+                    mode='single',
+                    theta_deg=np.degrees(theta_input),
+                    n_rays=n_rays,
+                    **kw,
+                )
+            return inner
         
-        # sort cuts to make sure cache results do not repeat
-        cuts = {k: sorted(v) for k, v in sorted(cuts.items())}
+        # method == 'delta-phi'
+        def inner(theta_input: float | np.ndarray) -> float | np.ndarray:
+            if isinstance(theta_input, (int, float)):
+                # round to 2 decimal place to avoid cache miss
+                theta = round(theta_input, 2)
+                return self._get_geometry_efficiency_from_cpp_executable(
+                    method='delta_phi', mode='single',
+                    theta_deg=np.degrees(theta),
+                    **kw,
+                )
 
-        def geometry_efficiency(theta_input: Union[float, np.ndarray, List[float]]) -> Union[float, np.ndarray]:
-            vectorized_func = np.vectorize(self._get_geometry_efficiency_from_cpp_executable)
-            return vectorized_func(
-                theta_deg=np.degrees(theta_input),
-                AB=self.AB,
-                include_pyrex=self.contain_pyrex,
-                wall_filters_str=json.dumps(cuts),
-                n_rays=n_rays if method == 'monte-carlo' else None,
-            )
-        return geometry_efficiency
+            else: # np.ndarray
+                # this is a rather fine grid, so it can take a few minutes to
+                # calculate the efficiency but once it is done, the result is
+                # cached unless arguments are changed
+                grid_x = np.linspace(25, 55, 3000 + 1)
+
+                grid_y = self._get_geometry_efficiency_from_cpp_executable(
+                    method='delta_phi', mode='range',
+                    theta_deg=(grid_x[0], grid_x[-1]),
+                    n_steps=len(grid_x),
+                    **kw,
+                )
+                return np.interp(np.degrees(theta_input), grid_x, grid_y)
+        return inner

@@ -1,3 +1,9 @@
+/**
+  * This script computes the geometric efficiency of the detector.
+  * It is a standalone script that does not need to include any other custom scripts.
+  * It only requires the standard library, the nlohmann/json library, and OpenMP.
+  * If you are using C++ environment with ROOT, these are already included.
+*/
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -18,9 +24,9 @@
 
 class Vector3 {
 public:
-    float x, y, z;
+    double x, y, z;
 
-    Vector3(float x = 0.0f, float y = 0.0f, float z = 0.0f) : x(x), y(y), z(z) {}
+    Vector3(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z) {}
 
     Vector3 operator+(const Vector3& other) const {
         return Vector3(x + other.x, y + other.y, z + other.z);
@@ -30,11 +36,11 @@ public:
         return Vector3(x - other.x, y - other.y, z - other.z);
     }
 
-    Vector3 operator*(float scalar) const {
+    Vector3 operator*(double scalar) const {
         return Vector3(x * scalar, y * scalar, z * scalar);
     }
 
-    float dot(const Vector3& other) const {
+    double dot(const Vector3& other) const {
         return x * other.x + y * other.y + z * other.z;
     }
 
@@ -46,27 +52,27 @@ public:
         );
     }
 
-    float length() const {
+    double length() const {
         return std::sqrt(x * x + y * y + z * z);
     }
 
     Vector3 normalize() const {
-        float len = length();
+        double len = length();
         return Vector3(x / len, y / len, z / len);
     }
 
-    float theta() const {
+    double theta() const {
         return std::atan2(std::sqrt(x * x + y * y), z);
     }
 
-    float phi() const {
+    double phi() const {
         return std::atan2(y, x);
     }
 
-    static Vector3 spherical_to_cartesian(float r, float theta, float phi) {
-        float x = r * std::sin(theta) * std::cos(phi);
-        float y = r * std::sin(theta) * std::sin(phi);
-        float z = r * std::cos(theta);
+    static Vector3 spherical_to_cartesian(double r, double theta, double phi) {
+        double x = r * std::sin(theta) * std::cos(phi);
+        double y = r * std::sin(theta) * std::sin(phi);
+        double z = r * std::cos(theta);
         return Vector3(x, y, z);
     }
 };
@@ -75,7 +81,7 @@ class Ray {
 private:
     static std::random_device rd;
     static std::mt19937 gen;
-    static std::uniform_real_distribution<float> uniform;
+    static std::uniform_real_distribution<double> uniform;
 
 public:
     Vector3 origin, direction;
@@ -83,76 +89,76 @@ public:
     Ray(const Vector3& direction) : origin(0, 0, 0), direction(direction.normalize()) {}
 
     Ray() : origin(0, 0, 0), direction(0, 0, 0) { // isotropic distribution
-        float theta = std::acos(1 - 2 * this->uniform(this->gen));
-        float phi = 2 * M_PI * this->uniform(this->gen);
-        direction = Vector3::spherical_to_cartesian(1.0f, theta, phi);
+        double theta = std::acos(1 - 2 * this->uniform(this->gen));
+        double phi = 2 * M_PI * this->uniform(this->gen);
+        direction = Vector3::spherical_to_cartesian(1.0, theta, phi);
     }
 
-    Ray(float theta) : origin(0, 0, 0), direction(0, 0, 0) { // isotropic distribution in fixed theta
-        float phi = 2 * M_PI * this->uniform(this->gen);
-        direction = Vector3::spherical_to_cartesian(1.0f, theta, phi);
+    Ray(double theta) : origin(0, 0, 0), direction(0, 0, 0) { // isotropic distribution in fixed theta
+        double phi = 2 * M_PI * this->uniform(this->gen);
+        direction = Vector3::spherical_to_cartesian(1.0, theta, phi);
     }
 };
 std::random_device Ray::rd;
 std::mt19937 Ray::gen(Ray::rd());
-std::uniform_real_distribution<float> Ray::uniform(0.0f, 1.0f);
+std::uniform_real_distribution<double> Ray::uniform(0.0f, 1.0);
 
 class Cuboid {
 public:
     Vector3 center;
     std::array<Vector3, 3> axes;
-    std::array<float, 3> lengths;
+    std::array<double, 3> lengths;
 
-    Cuboid(const Vector3& center, const std::array<Vector3, 3>& axes, const std::array<float, 3>& lengths)
+    Cuboid(const Vector3& center, const std::array<Vector3, 3>& axes, const std::array<double, 3>& lengths)
         : center(center), axes(axes), lengths(lengths) {}
 
-    Cuboid cut(float x_min, float x_max) {
-        float x_shift = (x_max + x_min) / 2.0f;
-        std::array<float, 3> new_lengths = lengths;
+    Cuboid cut(double x_min, double x_max) {
+        double x_shift = (x_max + x_min) / 2.0;
+        std::array<double, 3> new_lengths = lengths;
         new_lengths[0] = x_max - x_min;
         return Cuboid(center + axes[0] * x_shift, axes, new_lengths);
     }
 };
 
 bool testAxis(const Vector3& axis, const Ray& ray, const Cuboid& cuboid) {
-    float cuboidProjection = 0.0f;
+    double cuboidProjection = 0.0f;
 
     for (int i = 0; i < 3; ++i) {
         cuboidProjection += std::abs(axis.dot(cuboid.axes[i]) * 0.5 * cuboid.lengths[i]);
     }
 
-    float rayProjection = ray.direction.dot(axis);
-    float distance = std::abs(axis.dot(cuboid.center - ray.origin));
+    double rayProjection = ray.direction.dot(axis);
+    double distance = std::abs(axis.dot(cuboid.center - ray.origin));
 
-    const float epsilon = 1e-6f;
+    const double epsilon = 1e-6;
     if (std::abs(rayProjection) < epsilon) {
         return distance > cuboidProjection;
     }
 
-    float t = (distance - cuboidProjection) / rayProjection;
+    double t = (distance - cuboidProjection) / rayProjection;
     return t < 0;
 }
 
 bool rayIntersectsCuboid(const Ray& ray, const Cuboid& cuboid) {
-    float t_min = 0.0f;
-    float t_max = std::numeric_limits<float>::max();
+    double t_min = 0.0;
+    double t_max = std::numeric_limits<double>::max();
 
     for (int i = 0; i < 3; ++i) {
         Vector3 slab_center = cuboid.center;
         Vector3 slab_normal = cuboid.axes[i].normalize();
 
-        float numerator = slab_center.dot(slab_normal) - ray.origin.dot(slab_normal);
-        float denominator = ray.direction.dot(slab_normal);
+        double numerator = slab_center.dot(slab_normal) - ray.origin.dot(slab_normal);
+        double denominator = ray.direction.dot(slab_normal);
 
         // Check if the ray is parallel to the slab
-        const float epsilon = 1e-6f;
+        const double epsilon = 1e-6f;
         if (std::abs(denominator) < epsilon) {
             if (numerator < -0.5 * cuboid.lengths[i] || numerator > 0.5 * cuboid.lengths[i]) {
                 return false;
             }
         } else {
-            float t1 = (numerator - 0.5 * cuboid.lengths[i]) / denominator;
-            float t2 = (numerator + 0.5 * cuboid.lengths[i]) / denominator;
+            double t1 = (numerator - 0.5 * cuboid.lengths[i]) / denominator;
+            double t2 = (numerator + 0.5 * cuboid.lengths[i]) / denominator;
 
             if (t1 > t2) {
                 std::swap(t1, t2);
@@ -174,7 +180,7 @@ class NeutronWall {
 private:
     char AB;
     bool include_pyrex;
-    float length_x_cm, length_y_cm, length_z_cm;
+    double length_x_cm, length_y_cm, length_z_cm;
     std::map<int, Cuboid> barCuboids;
 
     std::filesystem::path getFilePath() {
@@ -196,7 +202,7 @@ private:
             std::istringstream iss(line);
             int bar_num;
             std::string vector_type;
-            float x, y, z;
+            double x, y, z;
             if (!(iss >> bar_num >> vector_type >> x >> y >> z)) break;
             if (vector_type == "L") {
                 bar_centers[bar_num] = Vector3(x, y, z);
@@ -226,15 +232,15 @@ private:
 
     void populateCuboids(nlohmann::json& filters) {
         // populate bar_ranges from filters
-        std::map<int, std::vector< std::array<float, 2> > > bar_ranges;
+        std::map<int, std::vector< std::array<double, 2> > > bar_ranges;
         for (auto& [bar_num, ranges] : filters.items()) {
-            const float min_range = -0.5 * this->barCuboids.at(std::stoi(bar_num)).lengths[0];
-            const float max_range = +0.5 * this->barCuboids.at(std::stoi(bar_num)).lengths[0];
+            const double min_range = -0.5 * this->barCuboids.at(std::stoi(bar_num)).lengths[0];
+            const double max_range = +0.5 * this->barCuboids.at(std::stoi(bar_num)).lengths[0];
 
             for (auto& range : ranges) {
                 // range outside of cuboid will be truncated
-                float range_start = std::max(range[0].get<float>(), min_range);
-                float range_stop = std::min(range[1].get<float>(), max_range);
+                double range_start = std::max(range[0].get<double>(), min_range);
+                double range_stop = std::min(range[1].get<double>(), max_range);
                 if (range_start < range_stop) {
                     bar_ranges[std::stoi(bar_num)].push_back({ range_start, range_stop });
                 }
@@ -271,12 +277,12 @@ public:
     }
 };
 
-float findIntersectingPoint(
-    float phi_min, float phi_max, float theta, const NeutronWall& wall, bool find_lower_bound, float tolerance=1e-6
+double findIntersectingPoint(
+    double phi_min, double phi_max, double theta, const NeutronWall& wall, bool find_lower_bound, double tolerance=1e-5
 ) {
-    float low = phi_min;
-    float high = phi_max;
-    float mid;
+    double low = phi_min;
+    double high = phi_max;
+    double mid;
 
     while (high - low > tolerance) {
         mid = (low + high) / 2;
@@ -292,10 +298,10 @@ float findIntersectingPoint(
         if (intersection_found == find_lower_bound) high = mid;
         else low = mid;
     }
-    return (low + high) / 2;
+    return (low + high) / 2.0;
 }
 
-float getGeometricEfficiencyUsingMonteCarlo(const float theta, NeutronWall& wall, int num_rays) {
+double getGeometricEfficiencyUsingMonteCarlo(const double theta, NeutronWall& wall, int num_rays) {
     int num_intersections = 0;
     #pragma omp parallel for reduction(+:num_intersections)
     for (int i = 0; i < num_rays; ++i) {
@@ -312,11 +318,11 @@ float getGeometricEfficiencyUsingMonteCarlo(const float theta, NeutronWall& wall
     return 1.0 * num_intersections / num_rays;
 }
 
-float getGeometricEfficiencyUsingDeltaPhi(const float theta, NeutronWall& wall) {
-    std::vector< std::pair<float, float> > intersected_ranges;
-    const float phi_step = 1e-4 * M_PI;
+double getGeometricEfficiencyUsingDeltaPhi(const double theta, NeutronWall& wall) {
+    std::vector< std::pair<double, double> > intersected_ranges;
+    const double phi_step = 1e-4 * M_PI;
     bool range_open = false;
-    for (float phi = -M_PI; phi < M_PI; phi += phi_step) {
+    for (double phi = -M_PI; phi < M_PI; phi += phi_step) {
         Ray ray(Vector3::spherical_to_cartesian(1.0, theta, phi));
         bool intersection_found = false;
         for (auto& cuboid : wall.cuboids) {
@@ -341,10 +347,10 @@ float getGeometricEfficiencyUsingDeltaPhi(const float theta, NeutronWall& wall) 
         }
     }
 
-    float total_phi_range = 0;
+    double total_phi_range = 0;
     for (auto& [phi_min, phi_max] : intersected_ranges) {
-        float refined_phi_min = findIntersectingPoint(phi_min - 2 * phi_step, phi_min + 2 * phi_step, theta, wall, true);
-        float refined_phi_max = findIntersectingPoint(phi_max - 2 * phi_step, phi_max + 2 * phi_step, theta, wall, false);
+        double refined_phi_min = findIntersectingPoint(phi_min - 2 * phi_step, phi_min + 2 * phi_step, theta, wall, true);
+        double refined_phi_max = findIntersectingPoint(phi_max - 2 * phi_step, phi_max + 2 * phi_step, theta, wall, false);
         total_phi_range += refined_phi_max - refined_phi_min;
     }
 
@@ -360,7 +366,7 @@ float getGeometricEfficiencyUsingDeltaPhi(const float theta, NeutronWall& wall) 
  * @param theta Theta in degree.
  * @param num_rays Number of rays to use for Monte Carlo. If 0, delta-phi method. Default 0.
 **/
-float getGeometryEfficiency(char AB, bool include_pyrex, const std::string& wall_filters_str, float theta, int num_rays=0) {
+double getGeometryEfficiency(char AB, bool include_pyrex, const std::string& wall_filters_str, double theta, int num_rays=0) {
     nlohmann::json wall_filters = nlohmann::json::parse(wall_filters_str);
     NeutronWall wall(AB, wall_filters, include_pyrex);
     if (num_rays > 0) { // Monte Carlo
@@ -372,15 +378,50 @@ float getGeometryEfficiency(char AB, bool include_pyrex, const std::string& wall
 
 int main(int argc, const char* argv[]) {
     // parse arguments
-    char AB = std::toupper(argv[1][0]);
-    bool include_pyrex = std::stoi(argv[2]);
-    std::string wall_filters_str = argv[3];
-    float theta = std::atof(argv[4]) * M_PI / 180.0;
-    int num_rays = (argc - 1 < 5) ? 0 : std::atoi(argv[5]);
+    std::string method = (argv[1][0] == 'm') ? "monte_carlo" : "delta_phi";
+    char AB = std::toupper(argv[2][0]);
+    bool include_pyrex = std::stoi(argv[3]);
+    std::string wall_filters_str = argv[4];
+
+    // arguments that depend on the method
+    std::string mode; // "single" or "range"
+    double theta;
+    int num_rays = 0;
+    double theta_low, theta_upp;
+    int n_steps;
+    if (method == "monte_carlo") {
+        theta = std::atof(argv[5]) * M_PI / 180.0;
+        num_rays = std::atoi(argv[6]);
+        mode = "single";
+    } else if (method == "delta_phi" && argc - 1 == 5) {
+        theta = std::atof(argv[5]) * M_PI / 180.0;
+        mode = "single";
+    } else if (method == "delta_phi" && argc - 1 > 5) {
+        theta_low = std::atof(argv[5]) * M_PI / 180.0;
+        theta_upp = std::atof(argv[6]) * M_PI / 180.0;
+        n_steps = std::stoi(argv[7]);
+        mode = "range";
+    }
 
     // get geometry efficiency and print to stdout
-    float geo_eff = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, theta, num_rays);
-    std::cout << std::fixed << std::setprecision(10) << geo_eff << std::endl;
+    if (method == "monte_carlo") {
+        double geo_eff = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, theta, num_rays);
+        std::cout << std::fixed << std::setprecision(10) << geo_eff << std::endl;
+    } else if (method == "delta_phi" && mode == "single") {
+        double geo_eff = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, theta);
+        std::cout << std::fixed << std::setprecision(10) << geo_eff << std::endl;
+    } else if (method == "delta_phi" && mode == "range") {
+        std::vector<double> results(n_steps);
+        #pragma omp parallel for
+        for (int i = 0; i < n_steps; i++) {
+            double theta = theta_low + (theta_upp - theta_low) * i / (n_steps - 1); // like numpy.linspace
+            results[i] = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, theta);
+        }
+
+        for (int i = 0; i < n_steps; i++) {
+            std::cout << std::fixed << std::setprecision(10) << results[i] << std::endl;
+        }
+    }
 
     return 0;
 }

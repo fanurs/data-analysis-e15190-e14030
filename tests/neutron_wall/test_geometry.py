@@ -83,23 +83,20 @@ class TestBar:
         assert np.allclose(bar.pca.components_, expected_pca_components)
     
     def test_length(self, nw_bars):
-        pyrex_thickness = nw_bars['nwb_pyrex'][0].pyrex_thickness
         for bar in nw_bars['nwb_pyrex'].values():
-            assert bar.length == pytest.approx(76 * 2.54 + 2 * pyrex_thickness, abs=0.01)
+            assert bar.length == pytest.approx(76 * 2.54 + 2 * bar.pyrex_thickness, abs=0.01)
         for bar in nw_bars['nwb_nopyrex'].values():
             assert bar.length == pytest.approx(76 * 2.54, abs=0.01)
     
     def test_height(self, nw_bars):
-        pyrex_thickness = nw_bars['nwb_pyrex'][0].pyrex_thickness
         for bar in nw_bars['nwb_pyrex'].values():
-            assert bar.height == pytest.approx(3 * 2.54 + 2 * pyrex_thickness, abs=0.01)
+            assert bar.height == pytest.approx(3 * 2.54 + 2 * bar.pyrex_thickness, abs=0.01)
         for bar in nw_bars['nwb_nopyrex'].values():
             assert bar.height == pytest.approx(3 * 2.54, abs=0.01)
     
     def test_thickness(self, nw_bars):
-        pyrex_thickness = nw_bars['nwb_pyrex'][0].pyrex_thickness
         for bar in nw_bars['nwb_pyrex'].values():
-            assert bar.thickness == pytest.approx(2.5 * 2.54 + 2 * pyrex_thickness, abs=0.01)
+            assert bar.thickness == pytest.approx(2.5 * 2.54 + 2 * bar.pyrex_thickness, abs=0.01)
         for bar in nw_bars['nwb_nopyrex'].values():
             assert bar.thickness == pytest.approx(2.5 * 2.54, abs=0.01)
 
