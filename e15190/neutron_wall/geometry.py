@@ -20,7 +20,7 @@ class Bar(geom.RectangularBar):
     edges_x = (-90.0, 90.0)
     left_shadow_x = (-50.0, -15.0)
     right_shadow_x = (15.0, 50.0)
-    shadowed_bars = [7, 8, 9, 15, 16, 17]
+    shadowed_bars = [7, 8, 9, 10, 15, 16, 17]
 
     def __init__(self, vertices, contain_pyrex=True):
         """Construct a Neutron Wall bar, either from Wall A or Wall B.
@@ -479,8 +479,8 @@ class Wall:
         Parameters
         ----------
         shadowed_bars : bool
-            If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 15, 16,
-            17. If False, no shadow bar cut is applied.
+            If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 10, 15,
+            16, 17. If False, no shadow bar cut is applied.
         skip_bars : list of int
             Bars to be skipped. Remember, in the experiment, NWB-bar00 is the
             bottommost bar that was blocked by the ground.

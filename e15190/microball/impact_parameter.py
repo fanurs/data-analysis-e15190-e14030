@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import scipy.interpolate
@@ -72,7 +74,7 @@ def get_normalized_impact_parameter(proj, targ, beam_energy, multiplicity):
 def get_bhat(proj, targ, beam_energy, multiplicity):
     return get_normalized_impact_parameter(proj, targ, beam_energy, multiplicity)
 
-def get_multiplicity_range(proj, targ, beam_energy, b_range=None, bhat_range=None):
+def get_multiplicity_range(proj: str, targ: str, beam_energy: int, b_range: tuple[float, float] | None = None, bhat_range: tuple[float, float] | None = None):
     global _reader
     df = _reader.load(proj, targ, beam_energy)
     if b_range is not None:
@@ -81,6 +83,6 @@ def get_multiplicity_range(proj, targ, beam_energy, b_range=None, bhat_range=Non
         result = interpolation(in_range)
     else:
         interpolation = _reader.interpolate_bhat2multi(proj, targ, beam_energy)
-        in_range = np.clip(bhat_range, df.bhat.min(), df.bhat.max())
+        in_range = np.clip(bhat_range, df.bhat.min(), df.bhat.max()) # type: ignore
         result = interpolation(in_range)
     return result

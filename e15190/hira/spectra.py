@@ -223,6 +223,9 @@ class LabKinergyTheta(Spectrum):
             keyword 'Ekin'.
         """
         self.reaction = reaction
+        self.beam = query.ReactionParser.read_beam(self.reaction)
+        self.target = query.ReactionParser.read_target(self.reaction)
+        self.beam_energy = query.ReactionParser.read_energy(self.reaction)
         self.hira_file = HiraFile(reaction)
         self.particle = self.hira_file.convert_particle(particle)
         if df_hist is None:
