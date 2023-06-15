@@ -387,7 +387,8 @@ int main(int argc, const char* argv[]) {
     std::string mode; // "single" or "range"
     double theta;
     int num_rays = 0;
-    double theta_low, theta_upp, theta_step;
+    double theta_low, theta_upp;
+    int n_steps;
     if (method == "monte_carlo") {
         theta = std::atof(argv[5]) * M_PI / 180.0;
         num_rays = std::atoi(argv[6]);
@@ -398,7 +399,7 @@ int main(int argc, const char* argv[]) {
     } else if (method == "delta_phi" && argc - 1 > 5) {
         theta_low = std::atof(argv[5]) * M_PI / 180.0;
         theta_upp = std::atof(argv[6]) * M_PI / 180.0;
-        theta_step = std::atof(argv[7]) * M_PI / 180.0;
+        n_steps = std::stoi(argv[7]);
         mode = "range";
     }
 
@@ -410,19 +411,14 @@ int main(int argc, const char* argv[]) {
         double geo_eff = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, theta);
         std::cout << std::fixed << std::setprecision(10) << geo_eff << std::endl;
     } else if (method == "delta_phi" && mode == "range") {
-        std::vector<double> thetas;
-        for (double theta = theta_low; theta <= theta_upp; theta += theta_step) {
-            thetas.push_back(theta);
-        }
-        const int n = thetas.size();
-        std::vector<double> results(n);
-
+        std::vector<double> results(n_steps);
         #pragma omp parallel for
-        for (int i = 0; i < n; i++) {
-            results[i] = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, thetas[i]);
+        for (int i = 0; i < n_steps; i++) {
+            double theta = theta_low + (theta_upp - theta_low) * i / (n_steps - 1); // like numpy.linspace
+            results[i] = getGeometryEfficiency(AB, include_pyrex, wall_filters_str, theta);
         }
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n_steps; i++) {
             std::cout << std::fixed << std::setprecision(10) << results[i] << std::endl;
         }
     }
