@@ -783,7 +783,6 @@ class ReactionParser:
         56,
         140,
     ]
-    dst_style = None
 
     def __init__(self, beams=None, targets=None, energies=None):
         if beams is not None:
@@ -841,19 +840,13 @@ class ReactionParser:
                 return int(energy)
     
     @classmethod
-    def set_convert_style(cls, dst_style):
-        if dst_style not in cls.beam_target_styles and dst_style not in cls.beam_target_energy_styles:
-            raise ValueError(f'Unknown style: {dst_style}')
-        cls.dst_style = dst_style
-    
-    @classmethod
-    def convert(cls, string, dst_style=None):
-        if dst_style is None:
-            dst_style = cls.dst_style
-
+    def convert(cls, string: str, dst_style: str) -> str:
         beam = cls.read_beam(string)
         target = cls.read_target(string)
         energy = cls.read_energy(string)
+
+        if beam is None or target is None:
+            raise ValueError(f'Cannot parse beam and target from {string}')
 
         if dst_style == 'aa10bb20':
             return f'{beam[0].lower()}{beam[1]}{target[0].lower()}{target[1]}'
@@ -868,7 +861,8 @@ class ReactionParser:
             return f'{beam[0].lower()}{beam[1]}{target[0].lower()}{target[1]}e{energy}'
         if dst_style == 'Aa10Bb20E100':
             return f'{beam[0].capitalize()}{beam[1]}{target[0].capitalize()}{target[1]}E{energy}'
-    
+        
+        raise ValueError(f'Unknown style: {dst_style}')
 
 if __name__ == '__main__':
     # save all good runs to a file in database

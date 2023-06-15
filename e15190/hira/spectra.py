@@ -1,6 +1,7 @@
 from copy import copy
 import functools
 import json
+import os
 from pathlib import Path
 from typing import Callable, Tuple, Union
 
@@ -21,7 +22,7 @@ from e15190.utilities import (
 )
 
 class HiraFile:
-    PATH_KEY = 'rensheng_hira_root_files_dir'
+    DIRECTORY = '$PROJECT_DIR/database/results/hira_spectra'
 
     def __init__(self, reaction: str):
         """Create a file object to interact with ROOT files produced by Rensheng
@@ -35,13 +36,10 @@ class HiraFile:
             automatically convert the reaction notation into the correct format.
         """
         reac_parser = query.ReactionParser()
-        self.reaction = reac_parser.convert(reaction, 'Aa10Bb20E100')
-
-        with open(e15190.DATABASE_DIR / 'local_paths.json', 'r') as file:
-            content = json.load(file)
-        self.directory = Path(content[self.PATH_KEY])
-        self.filename = 'f1_MergedData_bHat_0.00_0.40.root'
-        self.path = self.directory / self.reaction / self.filename
+        self.reaction = reac_parser.convert(reaction, 'aa10bb20e100')
+        self.directory = Path(os.path.expandvars(self.DIRECTORY))
+        self.filename = self.reaction + '.root'
+        self.path = self.directory / self.filename
     
     @functools.cache
     def get_all_particles(self) -> list[str]:
@@ -170,7 +168,7 @@ class HiraFile:
             hist.SetDirectory(0)
             return hist
 
-_hira_file = HiraFile('ca40ni58e140')
+_hira_file = HiraFile('ca40ni58e140') # read any file to learn the particle notation convention
 convert_particle = _hira_file.convert_particle
 
 class HiraDict(dict):
@@ -548,7 +546,7 @@ class LabPtransverseRapidity(Spectrum):
         correct_coverage: bool,
         range: Tuple[float, float],
         bins: int,
-        drop_outliers: float,
+        drop_outliers: float = -1.0,
     ):
         """
         Parameters
@@ -562,7 +560,7 @@ class LabPtransverseRapidity(Spectrum):
             Histogram range of :math:`p_T/A` in MeV/c.
         bins : int
             Number of bins for the histogram.
-        drop_outliers : float
+        drop_outliers : float, default -1.0
             Outliers are defined as points whose ratio to the neighboring point
             is larger than `drop_outliers`. If negative, no outliers will be
             dropped.
@@ -649,26 +647,120 @@ class LabPtransverseRapidity(Spectrum):
         kw.update(kwargs)
         return ax.errorbar(hist.x, hist.y, yerr=hist.yerr, **kw)
 
-class PseudoNeutron(Spectrum):
-    def __init__(self, spectra: dict[str, pd.DataFrame] = None):
-        self.spectra = HiraDict()
-        if spectra is not None:
-            spectra = HiraDict({
-                particle: spectrum
-                for particle, spectrum in spectra.items()
-            })
-            self.spectra.update(spectra)
 
-    def add(self, particle, spectrum: pd.DataFrame):
-        self.spectra[particle] = spectrum
+def _trim_x_range(*dfs: pd.DataFrame) -> list[pd.DataFrame]:
+    x_min = max(df.x.min() for df in dfs)
+    x_max = min(df.x.max() for df in dfs)
+    return [df.query(f'{x_min} <= x <= {x_max}').reset_index(drop=True) for df in dfs]
+
+class PseudoNeutron:
+    """A class to create pseudo-neutron spectrum from light charged particles.
     
-    def check_all_particles_added(self) -> bool:
-        return set(map(convert_particle, ['p', 't', 'He3'])) == set(self.spectra.keys())
+    Examples
+    --------
+    >>> from e15190.hira.spectra import LabPtransverseRapidity, PseudoNeutron
+    >>> pt_spec = LabPtransverseRapidity('ca40ni58e140', 'p')
+    >>> spectra = {
+    ...     particle: pt_spec.get_ptA_spectrum(
+    ...         rapidity_range=(0.4, 0.6),
+    ...         correct_coverage=True,
+    ...         range=(200, 400),
+    ...         bins=10,
+    ...         drop_outliers=10.0,
+    ...     )
+    ...     for particle in ['p', 'd', 't', 'He3']
+    ... }
+    >>> print(PseudoNeutron(spectra).get_spectrum(
+    ...     fit_range=(200, 350),
+    ...     switch_point=350,
+    ... ))
+        x         y      yerr     yferr
+    0  210.0  0.031069  0.000265  0.008542
+    1  230.0  0.027968  0.000289  0.010341
+    2  250.0  0.025876  0.000311  0.012022
+    3  270.0  0.021639  0.000297  0.013733
+    4  290.0  0.018715  0.000295  0.015768
+    5  310.0  0.015789  0.000286  0.018140
+    6  330.0  0.013411  0.000283  0.021093
+    7  350.0  0.010500  0.000311  0.029595
+    8  370.0  0.007961  0.000063  0.007875
+    9  390.0  0.005974  0.000062  0.010353
+    """
 
-    def get_spectrum(self) -> pd.DataFrame:
-        if not self.check_all_particles_added():
-            raise ValueError('Not all particles added for PseudoNeutron')
-        df = self.spectra['p'].copy()
-        df = dfh.mul(df, self.spectra['t'])
-        df = dfh.div(df, self.spectra['He3'])
-        return df
+    def __init__(self, spectra: dict[str, pd.DataFrame]):
+        self.spectra = HiraDict({
+            particle: spectrum
+            for particle, spectrum in spectra.items()
+        })
+    
+    def get_spectrum_triton_helium3(self) -> pd.DataFrame:
+        particles_needed = ['p', 't', 'He3']
+        if set(map(convert_particle, particles_needed)) - set(map(convert_particle, self.spectra.keys())) != set():
+            raise ValueError(f'Not all of {particles_needed} are given in `self.spectra`.')
+        p, t, He3 = _trim_x_range(self.spectra['p'], self.spectra['t'], self.spectra['He3'])
+        return dfh.mul(p, dfh.div(t, He3))
+    
+    def get_spectrum_deuteron_proton(self, scalar=1.0) -> pd.DataFrame:
+        particles_needed = ['p', 'd']
+        if set(map(convert_particle, particles_needed)) - set(map(convert_particle, self.spectra.keys())) != set():
+            raise ValueError(f'Not all of {particles_needed} are given in `self.spectra`.')
+        p, d = _trim_x_range(self.spectra['p'], self.spectra['d'])
+        return dfh.mul(dfh.div(d, p), scalar)
+    
+    def get_spectrum(
+        self,
+        fit_range: tuple[float, float],
+        switch_point: float,
+    ) -> pd.DataFrame:
+        """Get the pseudo-neutron spectrum.
+
+        This method "stitiches" the deuteron-proton spectrum to the
+        triton-helium3 spectrum by a scaling factor. The scaling factor is
+        determined by a simple scaling fit.
+
+        Parameters
+        ----------
+        fit_range : tuple[float, float]
+            The range to fit the deuteron-proton spectrum to the triton-helium3
+            spectrum. The limits are inclusive.
+        switch_point : float
+            The point where the two spectra are combined. If both triton-helium3
+            and deuteron-proton spectra contain this point, the point from the
+            in the triton-helium3 is used.
+        """
+        t_he3 = self.get_spectrum_triton_helium3()
+        d_p = self.get_spectrum_deuteron_proton(scalar=1.0)
+        
+        # fit deutron-proton to triton-helium3 by a scaling factor
+        t_he3_fit = t_he3.query(f'{fit_range[0]} <= x <= {fit_range[1]}')
+        d_p_fit = d_p.query(f'{fit_range[0]} <= x <= {fit_range[1]}')
+        scalar = (d_p_fit.y / t_he3_fit.y).mean()
+
+        # combine the two spectra
+        t_he3 = t_he3.query(f'x <= {switch_point}')
+        d_p = dfh.mul(d_p.query(f'x > {switch_point}'), 1 / scalar)
+        return pd.concat([t_he3, d_p], ignore_index=True)
+
+class CoalescenseInvariant:
+    def __init__(self, spectra: dict[str, pd.DataFrame]):
+        self.spectra = HiraDict({})
+        for key, val in spectra.items():
+            try:
+                self.spectra[key] = val
+            except:
+                pass
+    
+    def get_proton_spectrum(self) -> pd.DataFrame:
+        particles_needed = ['p', 'd', 't', 'He3', 'He4']
+        if set(map(convert_particle, particles_needed)) - set(map(convert_particle, self.spectra.keys())) != set():
+            raise ValueError(f'Not all of {particles_needed} are given in `self.spectra`.')
+        p, d, t, He3, He4 = _trim_x_range(self.spectra['p'], self.spectra['d'], self.spectra['t'], self.spectra['He3'], self.spectra['He4'])
+        return dfh.sum(p, d, t, dfh.mul(He3, 2), dfh.mul(He4, 2))
+
+    def get_neutron_spectrum(self, **kwargs) -> pd.DataFrame:
+        particles_needed = ['p', 'd', 't', 'He3', 'He4']
+        if set(map(convert_particle, particles_needed)) - set(map(convert_particle, self.spectra.keys())) != set():
+            raise ValueError(f'Not all of {particles_needed} are given in `self.spectra`.')
+        pseudo_n = PseudoNeutron({k: self.spectra[k] for k in ['p', 'd', 't', 'He3']}).get_spectrum(**kwargs)
+        pseudo_n, d, t, He3, He4 = _trim_x_range(pseudo_n, self.spectra['d'], self.spectra['t'], self.spectra['He3'], self.spectra['He4'])
+        return dfh.sum(pseudo_n, d, dfh.mul(t, 2), He3, dfh.mul(He4, 2))

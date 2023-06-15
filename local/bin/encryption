@@ -28,29 +28,36 @@ def main_routine(input_path: pathlib.Path, key: bytes, salt: bytes, output_path:
     See :py:func:`__main__` for the command-line interface and adoption of this
     function for multiple files.
     """
+    # refrain from using ".with_suffix()" because its behavior on double
+    # suffixes (e.g. "file.dat.enc") is sometimes not very intuitive
+
     action = 'decrypt' if input_path.suffix == '.enc' else 'encrypt'
 
     if output_path is not None: # output is specified
         if output_path.is_dir():  # if output is a directory, keep original filename
             output_path /= pathlib.Path(input_path).name
 
+        # next we deal with the two cases when output_path is specified but does
+        # not comply with the suffix rule of the action, i.e. ".enc" for
+        # encrypted files and no ".enc" for decrypted files
         elif action == 'encrypt' and output_path.suffix != '.enc':
-            suggested_path = output_path.with_suffix('.enc')
+            suggested_path = pathlib.Path(f'{output_path}.enc')
             print(f'Error: Encrypted file must end with ".enc". Suggest: {suggested_path}')
             if input('Use the suggested path? (y/n) ').lower() == 'y':
                 output_path = suggested_path
             else:
                 exit(1)
 
-        if action == 'decrypt' and output_path.suffix == '.enc':
-            suggested_path = output_path.with_suffix('')
+        elif action == 'decrypt' and output_path.suffix == '.enc':
+            suggested_path = pathlib.Path(str(output_path)[:-4])
             print(f'Warning: Decrypted files must not end with .enc. Suggest: {suggested_path}')
             if input('Use the suggested name? (y/n) ').lower() == 'y':
                 output_path = pathlib.Path(suggested_path)
             else:
                 exit(1)
+
     else: # output is not specified, infer from input_path
-        output_path = input_path.with_suffix('.enc') if action == 'encrypt' else input_path.with_suffix('')
+        output_path = pathlib.Path(str(input_path)[:-4]) if action == 'decrypt' else pathlib.Path(f'{input_path}.enc')
 
     if output_path.is_file() and not force:
         if input(f'Output "{output_path}" exists. Overwrite? (y/n) ').lower() != 'y':
