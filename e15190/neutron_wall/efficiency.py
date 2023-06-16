@@ -1,13 +1,71 @@
+from __future__ import annotations
 from inspect import cleandoc
 from pathlib import Path
 from os.path import expandvars
-from typing import Literal, Tuple
+from typing import Callable, Literal, Optional, Tuple
 
 import numpy as np
+from numpy.typing import ArrayLike
 import pandas as pd
-from scipy.interpolate import UnivariateSpline
+from scipy.interpolate import UnivariateSpline # type: ignore
 
 from e15190.utilities import tables
+
+class geNt4:
+    PATH = '$PROJECT_DIR/database/neutron_wall/efficiency/intrinsic-efficiency-geNt4.dat'
+
+    @classmethod
+    def get_intrinsic_efficiency_data(
+        cls, path: Optional[str | Path] = None,
+    ) -> pd.DataFrame:
+        """Returns the intrinsic efficiency data points calculated with geNt4.
+
+        Parameters
+        ----------
+        path : str or Path, optional
+            The path to the file containing the intrinsic efficiency data points.
+            If None, the path specified by :py:attr:`PATH` is used.
+        
+        Returns
+        -------
+        data : pandas.DataFrame
+            The intrinsic efficiency data points, with columns 'energy' and
+            'efficiency'.
+        """
+        if path is None:
+            path = expandvars(cls.PATH)
+        path = Path(path)
+        return pd.read_csv(path, delim_whitespace=True, comment='#')
+
+    @classmethod
+    def get_intrinsic_efficiency(
+        cls, path: Optional[str | Path] = None,
+    ) -> Callable[[ArrayLike], ArrayLike]:
+        """Returns the intrinsic efficiency curve calculated with geNt4.
+
+        A spline is used to interpolate the efficiency data points. Moreover, a
+        boundary condition of zero is imposed at zero energy, extending the
+        efficiency curve below the lowest energy data point all the way down to
+        zero. For energy values below zero or above the highest energy data
+        point, the efficiency is set to zero.
+
+        Parameters
+        ----------
+        path : str or Path, optional
+            The path to the file containing the intrinsic efficiency curve. If
+            None, the path specified by :py:attr:`PATH` is used.
+        
+        Returns
+        -------
+        intrinsic_efficiency : callable
+            The intrinsic efficiency curve.
+        """
+        df = cls.get_intrinsic_efficiency_data(path)
+
+        # insert (0, 0) to the beginning of the dataframe
+        df = pd.concat([pd.DataFrame([[0, 0]], columns=df.columns), df], ignore_index=True)
+
+        return UnivariateSpline(df.energy, df.efficiency, s=0, ext='zeros')
 
 class ScinfulQmd:
     PATH_FMT = '/mnt/simulations/LANA_simulations/old/berdosa/outputs/E15190-att25-{mode}/{energy:03d}/res00.out'
@@ -81,8 +139,10 @@ class ScinfulQmd:
         light_response : pd.DataFrame
             The light response table, with columns 'light', 'resp', and 'err'.
         """
-        mode = 'scin' if mode == 'scinful' else mode
-        path = ScinfulQmd.PATH_FMT.format(mode=mode, energy=energy)
+        path = ScinfulQmd.PATH_FMT.format(
+            mode='scin' if mode == 'scinful' else 'qmd',
+            energy=energy,
+        )
         df = pd.read_csv(path, delim_whitespace=True, skiprows=8, header=None)
         df.columns = ['low', 'upp', 'resp', 'err']
         light = 0.5 * (df.low + df.upp)
