@@ -2,11 +2,13 @@
 
 A version of ROOT 6.20 or above is assumed.
 """
+from __future__ import annotations
 import distutils.version
 import pathlib
 import string
 import subprocess
 import sys
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
@@ -210,12 +212,26 @@ def get_n_entries(path, tree):
         tr = file.Get(tree)
         return tr.GetEntries()
 
-def infer_tree_name(path):
+def infer_tree_name(path: str | pathlib.Path | Sequence[str | pathlib.Path]) -> str:
     """
     Parameters
     ----------
-    path : str or pathlib.Path or iterables
+    path : str or pathlib.Path, or sequence of str or pathlib.Path
         Path(s) to the ROOT file(s) of interest.
+    
+    Returns
+    -------
+    tree_name : str
+        Name of the tree.
+
+    Raises
+    ------
+    ValueError
+        One of the following causes:
+        - No tree name found in the given path(s).
+        - Paths contain different tree names.
+        - Cannot infer tree name from the given path(s), e.g. no ROOT file
+        found, multiple trees, etc.
     """
     if not isinstance(path, (str, pathlib.Path)):
         names = list(set([infer_tree_name(p) for p in path]))

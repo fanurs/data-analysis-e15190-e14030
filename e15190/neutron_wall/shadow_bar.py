@@ -1,18 +1,21 @@
 import concurrent.futures
 import pathlib
-from lmfit.model import propagate_err
+import os
+from typing import Callable
 
 import numpy as np
 import pandas as pd
 import sqlite3
 import uproot 
 
+from lmfit.model import propagate_err
 from lmfit import Model, Parameters
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from scipy.special import erf
 from scipy.ndimage import gaussian_filter1d
+
 from e15190 import PROJECT_DIR
 from e15190.utilities import fast_histogram as fh
 from e15190.runlog.query import Query
@@ -782,4 +785,16 @@ class ShadowBar:
                 self.save_to_gallery_scaled(sf, background_position, ene,x,y,y_err,result1, x1, y1, y1_err, result_s, path=None, show_plot=False, save=True)
                 file.write('{} {} {} {} \n'.format(self.bar, ene, result_s.params['B'].value*100, result_s.params['B'].stderr*100))
                 file2.write('{} {} {} {} {} {} {} \n'.format(self.bar, ene, result.params['A'].value, result.params['x_L'].value, result.params['x_R'].value,result.params['x_L'].stderr,result.params['x_R'].stderr))
-'Done'
+
+class Shadow:
+    PATH = '$PROJECT_DIR/database/neutron_wall/background_parameters/background.dat'
+
+    @classmethod
+    def get_background_function(cls, beam: str, target: str, beam_energy: float) -> Callable:
+        path = os.path.expandvars(cls.PATH)
+        df = pd.read_csv(path, delim_whitespace=True).query(
+            f'system == "{beam.capitalize()}{target.capitalize()}E{beam_energy:.0f}"'
+        ).iloc[0]
+
+        func = lambda ene: 1e-2 * df.amplitude * np.exp(-ene / df.decay)
+        return func
