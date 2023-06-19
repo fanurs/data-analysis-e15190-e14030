@@ -16,6 +16,8 @@ def persistent_cache(cache_filepath: str):
             if key in cache:
                 return cache[key]
 
+            print('Cache not found for the current input(s).', flush=True)
+            print(f'Running {func.__name__}... (This may take a while)', flush=True)
             result = func(*args, **kwargs)
             cache[key] = result
             with open(cache_filepath, 'wb') as file:
