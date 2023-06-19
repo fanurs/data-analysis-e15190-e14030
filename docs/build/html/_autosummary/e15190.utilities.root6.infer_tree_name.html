@@ -39,10 +39,23 @@
 <h1>e15190.utilities.root6.infer_tree_name<a class="headerlink" href="#e15190-utilities-root6-infer-tree-name" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="e15190.utilities.root6.infer_tree_name">
-<span class="sig-prename descclassname"><span class="pre">e15190.utilities.root6.</span></span><span class="sig-name descname"><span class="pre">infer_tree_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.root6.infer_tree_name" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.root6.</span></span><span class="sig-name descname"><span class="pre">infer_tree_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span> <span class="p"><span class="pre">|</span></span> <span class="pre">pathlib.Path</span> <span class="p"><span class="pre">|</span></span> <span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span> <span class="p"><span class="pre">|</span></span> <span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#e15190.utilities.root6.infer_tree_name" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em> or </em><em>iterables</em>) – Path(s) to the ROOT file(s) of interest.</p>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em>, or </em><em>sequence of str</em><em> or </em><em>pathlib.Path</em>) – Path(s) to the ROOT file(s) of interest.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>tree_name</strong> – Name of the tree.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – One of the following causes:
+    - No tree name found in the given path(s).
+    - Paths contain different tree names.
+    - Cannot infer tree name from the given path(s), e.g. no ROOT file
+    found, multiple trees, etc.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -84,7 +97,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

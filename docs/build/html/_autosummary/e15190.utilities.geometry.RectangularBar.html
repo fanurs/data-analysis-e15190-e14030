@@ -60,19 +60,19 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.draw_hit_pattern2d" title="e15190.utilities.geometry.RectangularBar.draw_hit_pattern2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_hit_pattern2d</span></code></a>(hits, ax[, frame, ...])</p></td>
 <td><p>Draw the hit pattern of the bar with 2D histogram.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape" title="e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency_alphashape</span></code></a>([cut])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape" title="e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency_alphashape</span></code></a>(delta, alpha)</p></td>
 <td><p>Calculate the geometry efficiency of the bar using the alphashape.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_hit_positions" title="e15190.utilities.geometry.RectangularBar.get_hit_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_hit_positions</span></code></a>([hit_t, frame, ...])</p></td>
 <td><p>Return the hit positions of the simulation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape" title="e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_theta_phi_alphashape</span></code></a>([delta, alpha, cut])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape" title="e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_theta_phi_alphashape</span></code></a>(delta, alpha[, cut])</p></td>
 <td><p>Calculate the alphashape of the bar in (theta, phi) coordinates.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle" title="e15190.utilities.geometry.RectangularBar.get_total_solid_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle</span></code></a>([method])</p></td>
 <td><p>Return the total solid angle of the bar.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape" title="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_alphashape</span></code></a>([return_error])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape" title="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_alphashape</span></code></a>(delta, alpha)</p></td>
 <td><p>Calculate the total solid angle of the bar using the alphashape.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo" title="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_monte_carlo</span></code></a>([n_rays, ...])</p></td>
@@ -216,7 +216,7 @@ are the points in <code class="docutils literal notranslate"><span class="pre">v
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.dimension">
-<span class="sig-name descname"><span class="pre">dimension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.dimension" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dimension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span> <span class="p"><span class="pre">|</span></span> <span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.dimension" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the dimension(s) of the bar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -325,7 +325,7 @@ as a 1D array.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.construct_plotly_mesh3d">
-<span class="sig-name descname"><span class="pre">construct_plotly_mesh3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.construct_plotly_mesh3d" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">construct_plotly_mesh3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.construct_plotly_mesh3d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update bar’s attribute <code class="docutils literal notranslate"><span class="pre">self.triangle_mesh</span></code>.</p>
 <p>Construct a
 <a class="reference internal" href="e15190.utilities.ray_triangle_intersection.TriangleMesh.html#e15190.utilities.ray_triangle_intersection.TriangleMesh" title="e15190.utilities.ray_triangle_intersection.TriangleMesh"><code class="xref py py-class docutils literal notranslate"><span class="pre">TriangleMesh</span></code></a>
@@ -343,7 +343,7 @@ only calculating geometrical intersections of random rays with the bar
 geometry.</p>
 <p>By default, this function would first identify the smallest rectangular
 region in the (theta, phi) space that fully contains the entire bar
-geometry.  Then, it would randomly emit rays toward this minimal region.
+geometry. Then, it would randomly emit rays toward this minimal region.
 Both theta range and phi range will be saved, so that user can calculate
 the actual solid angle later on.</p>
 <dl class="field-list simple">
@@ -426,12 +426,12 @@ tolerance to account for any floating point errors.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo">
-<span class="sig-name descname"><span class="pre">get_total_solid_angle_monte_carlo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_total_solid_angle_monte_carlo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_monte_carlo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the total solid angle of the bar by Monte Carlo simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n_rays</strong> (<em>int</em><em>, </em><em>default 1_000_000</em>) – The number of rays to simulate.</p></li>
+<li><p><strong>n_rays</strong> (<em>int</em><em>, </em><em>default 5_000_000</em>) – The number of rays to simulate.</p></li>
 <li><p><strong>random_seed</strong> (<em>int</em><em>, </em><em>default None</em>) – The random seed of the Monte Carlo simulation. If None, a time-based
 seed will be used, i.e. non-reproducible.</p></li>
 <li><p><strong>return_error</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to return the error (uncertainty) of the calculation.</p></li>
@@ -451,13 +451,13 @@ seed will be used, i.e. non-reproducible.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape">
-<span class="sig-name descname"><span class="pre">get_theta_phi_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_theta_phi_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_theta_phi_alphashape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the alphashape of the bar in (theta, phi) coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>delta</strong> (<em>int</em><em> or </em><em>array of size 3</em><em>, </em><em>default 1.0</em>) – Grid spacing in cm.</p></li>
-<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>default 10.0</em>) – The alphashape parameter. The larger the value, the greater the
+<li><p><strong>delta</strong> (<em>int</em><em> or </em><em>array of size 3</em>) – Grid spacing in cm.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – The alphashape parameter. The larger the value, the greater the
 curvature of the alphashape can be. When alpha is zero, the
 alphashape reduces into a convex hull; when alpha is too large, the
 alphashape could be “overfitted” to data points.</p></li>
@@ -498,7 +498,7 @@ and ‘lower’, the values are ndarrays of shape (n, 2).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape">
-<span class="sig-name descname"><span class="pre">get_total_solid_angle_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_total_solid_angle_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_total_solid_angle_alphashape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the total solid angle of the bar using the alphashape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -539,7 +539,7 @@ solid angle.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape">
-<span class="sig-name descname"><span class="pre">get_geometry_efficiency_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_geometry_efficiency_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">typing.Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">typing.Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.utilities.geometry.RectangularBar.get_geometry_efficiency_alphashape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the geometry efficiency of the bar using the alphashape.</p>
 <p>The geometry efficiency is defined as the effective azimuthal coverage
 ratio, i.e.
@@ -632,7 +632,7 @@ not ‘cartesian’, this argument has no effect.</p></li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

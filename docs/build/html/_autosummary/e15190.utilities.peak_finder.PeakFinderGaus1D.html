@@ -48,7 +48,12 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.utilities.peak_finder.PeakFinderGaus1D.__init__" title="e15190.utilities.peak_finder.PeakFinderGaus1D.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(x, hist_range, hist_bins)</p></td>
-<td><p></p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param x</dt>
+<dd class="field-odd"><p>x-values of the data</p>
+</dd>
+</dl>
+</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaus</span></code>(t, amplt, mean, sigma)</p></td>
 <td><p></p></td>
@@ -61,7 +66,16 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.peak_finder.PeakFinderGaus1D.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hist_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hist_bins</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.peak_finder.PeakFinderGaus1D.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>list-like of float</em>) – x-values of the data</p></li>
+<li><p><strong>hist_range</strong> (<em>2-tuple of float</em>) – Range of the histogram.</p></li>
+<li><p><strong>hist_bins</strong> (<em>int</em>) – Number of bins of the histogram.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.utilities.peak_finder.PeakFinderGaus1D._get_convoluted_y">
@@ -84,6 +98,35 @@ is used.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.utilities.peak_finder.PeakFinderGaus1D._find_highest_peak">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_find_highest_peak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kw_rough</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kw_fine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.utilities.peak_finder.PeakFinderGaus1D._find_highest_peak" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns Gaussian parameters of the highest peak in the histogram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – The x-values of the histogram.</p></li>
+<li><p><strong>y</strong> (<em>np.ndarray</em>) – The y-values of the histogram.</p></li>
+<li><p><strong>fit_range</strong> (<em>2-tuple of float</em><em>, </em><em>default None</em>) – The range of the histogram to fit. If None, the entire histogram is
+fit.</p></li>
+<li><p><strong>kw_rough</strong> (<em>dict</em><em>, </em><em>default None</em>) – Keyword arguments for the rough fit supplied to
+<code class="docutils literal notranslate"><span class="pre">scipy.optimize.curve_fit</span></code>.</p></li>
+<li><p><strong>kw_fine</strong> (<em>dict</em><em>, </em><em>default None</em>) – Keyword arguments for the fine fit supplied to
+<code class="docutils literal notranslate"><span class="pre">scipy.optimize.curve_fit</span></code>.</p></li>
+<li><p><strong>error</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, return the errors of the fit too.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>pars</strong> – The Gaussian parameters of the highest peak,
+<code class="docutils literal notranslate"><span class="pre">[amplt,</span> <span class="pre">mean,</span> <span class="pre">sigma]</span></code>. If <code class="docutils literal notranslate"><span class="pre">error</span></code> is True, the errors of the
+parameters are returned as well.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray of size 3 or 2-tuple of np.ndarray both of sizes 3</p>
 </dd>
 </dl>
 </dd></dl>
@@ -127,7 +170,7 @@ is used.</p></li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

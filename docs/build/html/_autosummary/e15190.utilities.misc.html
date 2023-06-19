@@ -47,10 +47,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.misc.convert_64_to_32.html#e15190.utilities.misc.convert_64_to_32" title="e15190.utilities.misc.convert_64_to_32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_64_to_32</span></code></a>(df)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="e15190.utilities.misc.randomize_columns.html#e15190.utilities.misc.randomize_columns" title="e15190.utilities.misc.randomize_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randomize_columns</span></code></a>(df, columns[, seed])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.utilities.misc.deco_pdseries_to_nparray.html#e15190.utilities.misc.deco_pdseries_to_nparray" title="e15190.utilities.misc.deco_pdseries_to_nparray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deco_pdseries_to_nparray</span></code></a>(func)</p></td>
+<td><p>Decorator that converts arguments of type pd.Series to np.ndarray.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.misc.randomize_columns.html#e15190.utilities.misc.randomize_columns" title="e15190.utilities.misc.randomize_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randomize_columns</span></code></a>(df, columns[, seed])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.misc.runs_hash.html#e15190.utilities.misc.runs_hash" title="e15190.utilities.misc.runs_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runs_hash</span></code></a>(runs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="e15190.utilities.misc.runs_hash.html#e15190.utilities.misc.runs_hash" title="e15190.utilities.misc.runs_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runs_hash</span></code></a>(runs)</p></td>
 <td><p>Returns a string that uniquely identifies the runs.</p></td>
 </tr>
 </tbody>
@@ -67,6 +70,12 @@
 </tr>
 </tbody>
 </table>
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.misc.deco_pdseries_to_nparray">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.misc.</span></span><span class="sig-name descname"><span class="pre">deco_pdseries_to_nparray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.misc.deco_pdseries_to_nparray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that converts arguments of type pd.Series to np.ndarray.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="e15190.utilities.misc.runs_hash">
 <span class="sig-prename descclassname"><span class="pre">e15190.utilities.misc.</span></span><span class="sig-name descname"><span class="pre">runs_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.misc.runs_hash" title="Permalink to this definition">¶</a></dt>
@@ -110,7 +119,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

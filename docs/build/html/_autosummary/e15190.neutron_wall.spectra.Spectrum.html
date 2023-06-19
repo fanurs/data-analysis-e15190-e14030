@@ -13,7 +13,6 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
@@ -40,101 +39,37 @@
 <h1>e15190.neutron_wall.spectra.Spectrum<a class="headerlink" href="#e15190-neutron-wall-spectra-spectrum" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.spectra.</span></span><span class="sig-name descname"><span class="pre">Spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'A'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'B'</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_runlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class for constructing neutron related spectra.</p>
-<p class="rubric">Examples</p>
-<p>We first import the libraries needed.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">ROOT</span>
-<span class="kn">from</span> <span class="nn">e15190.neutron_wall</span> <span class="kn">import</span> <span class="n">spectra</span> <span class="k">as</span> <span class="n">nw_spec</span>
-<span class="n">nw_spec</span><span class="o">.</span><span class="n">enable_implicit_multithreading</span><span class="p">()</span> <span class="c1"># optional</span>
-</pre></div>
-</div>
-<p>To construct the <a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum" title="e15190.neutron_wall.spectra.Spectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spectrum</span></code></a> object, we need to specify the paths
-to the ROOT files.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;$DATABASE_DIR/root_files/run-</span><span class="si">{</span><span class="n">run</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.root&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4100</span><span class="p">,</span> <span class="mi">4110</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="p">]</span>
-<span class="n">spec</span> <span class="o">=</span> <span class="n">nw_spec</span><span class="o">.</span><span class="n">Spectrum</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">paths</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>We can now look at, for example, the time-of-flight spectra:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># apply cuts</span>
-<span class="n">spec</span><span class="o">.</span><span class="n">filter_forward_array</span><span class="p">()</span>
-<span class="n">spec</span><span class="o">.</span><span class="n">filter_charged_particles</span><span class="p">()</span>
-<span class="n">spec</span><span class="o">.</span><span class="n">define_time_of_flight</span><span class="p">()</span> <span class="c1"># &#39;tof&#39; added to rdf</span>
-<span class="n">spec</span><span class="o">.</span><span class="n">define_nw_cut</span><span class="p">()</span> <span class="c1"># &#39;nw_cut&#39; added to rdf</span>
-<span class="n">spec</span><span class="o">.</span><span class="n">rdf</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rdf</span><span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="s1">&#39;tof_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;tof[nw_cut]&#39;</span><span class="p">)</span>
-
-<span class="c1"># plot</span>
-<span class="n">canv</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TCanvas</span><span class="p">()</span>
-<span class="n">h</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rdf</span><span class="o">.</span><span class="n">Histo1D</span><span class="p">((</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;No NW cut&#39;</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="s1">&#39;tof&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
-<span class="n">h_n</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rdf</span><span class="o">.</span><span class="n">Histo1D</span><span class="p">((</span><span class="s1">&#39;h_n&#39;</span><span class="p">,</span> <span class="s1">&#39;With NW cut&#39;</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="s1">&#39;tof_cut&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
-<span class="n">h</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="s1">&#39;HIST&#39;</span><span class="p">)</span>
-<span class="n">h_n</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="s1">&#39;HIST SAME&#39;</span><span class="p">)</span>
-<span class="n">canv</span><span class="o">.</span><span class="n">Draw</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>We can also look at the neutron wall hit pattern:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">spec</span><span class="o">.</span><span class="n">rdf</span> <span class="o">=</span> <span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">rdf</span> <span class="c1"># this is how you can write a long statement in multiple lines</span>
-    <span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="s1">&#39;theta_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;NWB_theta[nw_cut]&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="s1">&#39;phi_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;NWB_phi[nw_cut]&#39;</span><span class="p">)</span>
-<span class="p">)</span>
-<span class="n">canv</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TCanvas</span><span class="p">()</span>
-<span class="n">h2d</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rdf</span><span class="o">.</span><span class="n">Histo1D</span><span class="p">(</span>
-    <span class="p">(</span><span class="s1">&#39;h2d&#39;</span><span class="p">,</span> <span class="s1">&#39;Hit pattern&#39;</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
-    <span class="s1">&#39;theta_cut&#39;</span><span class="p">,</span> <span class="s1">&#39;phi_cut&#39;</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
-<span class="n">h2d</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="s1">&#39;COLZ&#39;</span><span class="p">)</span>
-<span class="n">canv</span><span class="o">.</span><span class="n">Draw</span><span class="p">()</span>
-</pre></div>
-</div>
-<p class="rubric">Functions</p>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.spectra.</span></span><span class="sig-name descname"><span class="pre">Spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.__init__" title="e15190.neutron_wall.spectra.Spectrum.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(AB, paths[, runs, check_runlog, ...])</p></td>
-<td><p>A class for constructing neutron related spectra.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.__init__" title="e15190.neutron_wall.spectra.Spectrum.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(runs)</p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.check_runlog_consistency" title="e15190.neutron_wall.spectra.Spectrum.check_runlog_consistency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_runlog_consistency</span></code></a>()</p></td>
-<td><p>To check the consistencies of runs.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.build_rdataframe" title="e15190.neutron_wall.spectra.Spectrum.build_rdataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_rdataframe</span></code></a>([tree_name, implicit_mt, ...])</p></td>
+<td><p>Build the RDataFrame and store it as <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.rdf</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.define_kinergy" title="e15190.neutron_wall.spectra.Spectrum.define_kinergy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">define_kinergy</span></code></a>([inplace])</p></td>
-<td><p>Calculate the kinetic energies of neutrons.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.define_energy" title="e15190.neutron_wall.spectra.Spectrum.define_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">define_energy</span></code></a>([name, rdf, inplace])</p></td>
+<td><p>Define the total relativistic energy of the neutron.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.define_lab_rapidity" title="e15190.neutron_wall.spectra.Spectrum.define_lab_rapidity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">define_lab_rapidity</span></code></a>([norm, inplace])</p></td>
-<td><p>Define the rapidity in the lab frame.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.define_neutron_cut" title="e15190.neutron_wall.spectra.Spectrum.define_neutron_cut"><code class="xref py py-obj docutils literal notranslate"><span class="pre">define_neutron_cut</span></code></a>([name, light_bias, ...])</p></td>
+<td><p>Define the neutron cut, <code class="docutils literal notranslate"><span class="pre">cut</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.define_nw_cut" title="e15190.neutron_wall.spectra.Spectrum.define_nw_cut"><code class="xref py py-obj docutils literal notranslate"><span class="pre">define_nw_cut</span></code></a>([light_threshold, psd_range, ...])</p></td>
-<td><p>Cuts that are applied to the Neutron Wall.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.filter_charged_particles" title="e15190.neutron_wall.spectra.Spectrum.filter_charged_particles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_charged_particles</span></code></a>([rdf, inplace])</p></td>
+<td><p>Veto charged particles.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.define_time_of_flight" title="e15190.neutron_wall.spectra.Spectrum.define_time_of_flight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">define_time_of_flight</span></code></a>([inplace])</p></td>
-<td><p>Define the time-of-flight in nanosecond.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.filter_microball_multiplicity" title="e15190.neutron_wall.spectra.Spectrum.filter_microball_multiplicity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_microball_multiplicity</span></code></a>([bhat_range, ...])</p></td>
+<td><p>Filter the RDataFrame by microball multiplicity.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.define_transverse_momentum" title="e15190.neutron_wall.spectra.Spectrum.define_transverse_momentum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">define_transverse_momentum</span></code></a>([inplace])</p></td>
-<td><p>Define the transverse momentum in MeV/c.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.filter_tdc" title="e15190.neutron_wall.spectra.Spectrum.filter_tdc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_tdc</span></code></a>(tdc_range[, tdc_branch_name, ...])</p></td>
+<td><p>Filter the RDataFrame by TDC.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.detection_efficiency" title="e15190.neutron_wall.spectra.Spectrum.detection_efficiency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detection_efficiency</span></code></a>([path])</p></td>
-<td><p>Returns the intrinsic or detection efficiency curve.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.filter_charged_particles" title="e15190.neutron_wall.spectra.Spectrum.filter_charged_particles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_charged_particles</span></code></a>([inplace])</p></td>
-<td><p>Select events with charged particle multiplicity equals to 0.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.filter_forward_array" title="e15190.neutron_wall.spectra.Spectrum.filter_forward_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_forward_array</span></code></a>([inplace])</p></td>
-<td><p>Select events with forward array multiplicity greater than 0.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.geometry_efficiency" title="e15190.neutron_wall.spectra.Spectrum.geometry_efficiency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_efficiency</span></code></a>([shadowed_bars, ...])</p></td>
-<td><p>Returns a function that describes the geometry efficiency.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.get_rdf" title="e15190.neutron_wall.spectra.Spectrum.get_rdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rdf</span></code></a>([tree_name])</p></td>
-<td><p>Construct the RDataFrame object.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.infer_runs_from_paths" title="e15190.neutron_wall.spectra.Spectrum.infer_runs_from_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_runs_from_paths</span></code></a>([inplace])</p></td>
-<td><p>Infer the run number for each path.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.get_coincidence_peak" title="e15190.neutron_wall.spectra.Spectrum.get_coincidence_peak"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coincidence_peak</span></code></a>([branch_name, rdf, ...])</p></td>
+<td><p>Get the coincidence peak of the TDC.</p></td>
 </tr>
 </tbody>
 </table>
@@ -145,246 +80,225 @@ to the ROOT files.</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">columns</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ROOT_FILE_DIR</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'A'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'B'</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_runlog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class for constructing neutron related spectra.</p>
-<p>Currently, only NWB is supported.</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum._infer_reaction">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_infer_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'target'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'beam'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'beam_energy'</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span> <span class="p"><span class="pre">|</span></span> <span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum._infer_reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer the reaction from the runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>runs</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – A list of runs.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>reaction</strong> – A dictionary containing the reaction information.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict[Literal[‘target’, ‘beam’, ‘beam_energy’], str | float]</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the runs are not from the same reaction.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum._infer_shadow_bar_present">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_infer_shadow_bar_present</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum._infer_shadow_bar_present" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer whether the shadow bar is present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>runs</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – A list of runs.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>presence</strong> – True if the shadow bar is present for all runs, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the runs have different shadow bar presence.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.build_rdataframe">
+<span class="sig-name descname"><span class="pre">build_rdataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">implicit_mt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">cppyy.gbl.ROOT.RDataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.build_rdataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the RDataFrame and store it as <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.rdf</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>AB</strong> (<em>'A'</em><em> or </em><em>'B'</em>) – Neutron wall. Behavior for ‘A’ has not been developed yet.</p></li>
-<li><p><strong>paths</strong> (<em>list of str</em><em> or </em><em>list of Path</em>) – Paths to the ROOT files.</p></li>
-<li><p><strong>runs</strong> (<em>'infer'</em><em> or </em><em>list of int</em>) – Run numbers. If ‘infer’, the run numbers are inferred from the
-paths. If list of int, the given run numbers are directly used
-without checking.</p></li>
-<li><p><strong>check_runlog</strong> (<em>bool</em>) – To check the consistency of the runs. See
-<a class="reference internal" href="#e15190.neutron_wall.spectra.Spectrum.check_runlog_consistency" title="e15190.neutron_wall.spectra.Spectrum.check_runlog_consistency"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_runlog_consistency()</span></code></a> for more details. When this is
-set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, any function that automatically modifies its
-behavior based on the runlog will not be working.</p></li>
-<li><p><strong>init_rdf</strong> (<em>bool</em>) – To initialize the RDataFrame object.</p></li>
+<li><p><strong>tree_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the tree, by default None. If None, the tree name will be
+inferred from the root file paths.</p></li>
+<li><p><strong>implicit_mt</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to enable implicit multi-threading.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to build the RDataFrame in place.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.infer_runs_from_paths">
-<span class="sig-name descname"><span class="pre">infer_runs_from_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.infer_runs_from_paths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Infer the run number for each path.</p>
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.filter_microball_multiplicity">
+<span class="sig-name descname"><span class="pre">filter_microball_multiplicity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bhat_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.filter_microball_multiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter the RDataFrame by microball multiplicity.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">runs</span></code> is updated inplace.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>runs</strong> – The inferred run numbers.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.check_runlog_consistency">
-<span class="sig-name descname"><span class="pre">check_runlog_consistency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.check_runlog_consistency" title="Permalink to this definition">¶</a></dt>
-<dd><p>To check the consistencies of runs.</p>
-<p>This function queries the run info for each run in <code class="xref py py-attr docutils literal notranslate"><span class="pre">runs</span></code> and
-check if they all share the same targets, beams, beam energies and
-shadow bar status. If not, an assertion error is raised. If the runs are
-consistent, then attributes like <code class="xref py py-attr docutils literal notranslate"><span class="pre">target</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">beam</span></code>,
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">beam_energy</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">shadow_bar</span></code> are defined and added
-to the object.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.get_rdf">
-<span class="sig-name descname"><span class="pre">get_rdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.get_rdf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct the RDataFrame object.</p>
-<dl class="simple">
-<dt>The following attributes will be added to the object:</dt><dd><ul class="simple">
-<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">tree_name</span></code>, the name of the tree.</p></li>
-<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf_raw</span></code>, the RDataFrame object, but it will not be modified.</p></li>
-<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>, the RDataFrame object that will be modified.</p></li>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bhat_range</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – The range of normalized impact parameter, e.g. (0.0, 0.4). If this
+is not provided, <code class="docutils literal notranslate"><span class="pre">multi_range</span></code> must be provided.</p></li>
+<li><p><strong>multi_range</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The inclusive range of microball multiplicity, e.g. (14, 30). If
+<code class="docutils literal notranslate"><span class="pre">bhat_range</span></code> is provided, this will be ignored.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to apply the filter in place.</p></li>
 </ul>
 </dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>tree_name</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – The name of the tree to be used. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the function attempts
-to infer the tree name from the ROOT files.</p>
-</dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>rdf</strong> – The RDataFrame object.</p>
+<dd class="field-even"><p><strong>rdf</strong> – The filtered RDataFrame. If <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>, returns None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>RDataFrame</p>
+<dd class="field-odd"><p>ROOT.RDataFrame or None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.filter_forward_array">
-<span class="sig-name descname"><span class="pre">filter_forward_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.filter_forward_array" title="Permalink to this definition">¶</a></dt>
-<dd><p>Select events with forward array multiplicity greater than 0.</p>
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.get_coincidence_peak">
+<span class="sig-name descname"><span class="pre">get_coincidence_peak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'TDC_mb_nw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdf</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_histogram</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'mean'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'stdev'</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span> <span class="p"><span class="pre">|</span></span> <span class="pre">ROOT.TH1</span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.get_coincidence_peak" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the coincidence peak of the TDC.</p>
+<p>You may want to apply the microball multiplicity filter before calling
+this function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.filter_tdc">
+<span class="sig-name descname"><span class="pre">filter_tdc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tdc_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdc_branch_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'TDC_mb_nw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdf</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.filter_tdc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter the RDataFrame by TDC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tdc_range</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – The range of TDC.</p></li>
+<li><p><strong>rdf</strong> (<em>ROOT.RDataFrame</em><em>, </em><em>optional</em>) – The RDataFrame to be filtered. If None, the RDataFrame stored in
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">self.rdf</span></code> will be used.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to apply the filter in place.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>rdf</strong> – The filtered RDataFrame. If <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>, returns None.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ROOT.RDataFrame or None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.filter_charged_particles">
-<span class="sig-name descname"><span class="pre">filter_charged_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.filter_charged_particles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Select events with charged particle multiplicity equals to 0.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_nw_cut">
-<span class="sig-name descname"><span class="pre">define_nw_cut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">light_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">4.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shadow_bar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'auto'</span><span class="p"><span class="pre">,</span> </span><span class="pre">True</span><span class="p"><span class="pre">,</span> </span><span class="pre">False</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd_perp_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-</span> <span class="pre">0.7,</span> <span class="pre">0.7)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cuts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_nw_cut" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cuts that are applied to the Neutron Wall.</p>
-<p>The cut will be named <code class="docutils literal notranslate"><span class="pre">'nw_cut'</span></code> in <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>.</p>
-<p>Implementation detail: <code class="docutils literal notranslate"><span class="pre">Filter()</span></code> cannot be used because the neutron
-wall observables are zigzag arrays. Instead, we define arrays of zigzag
-booleans, and use them to mask the arrays. This mask is named
-<code class="docutils literal notranslate"><span class="pre">'nw_cut'</span></code>.  Users can use <code class="docutils literal notranslate"><span class="pre">'nw_cut'</span></code> to select hits directly on
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>.</p>
+<span class="sig-name descname"><span class="pre">filter_charged_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdf</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.filter_charged_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Veto charged particles.</p>
+<p>This function will filter out charged particles by requiring the
+multiplicity of veto wall to be 0.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>light_threshold</strong> (<em>float</em><em>, </em><em>default 3.0</em>) – The light output threshold in MeVee. Only hits with light output
-above this threshold are kept.</p></li>
-<li><p><strong>psd_range</strong> (<em>(</em><em>float</em><em>, </em><em>float</em><em>)</em><em>, </em><em>default</em><em> (</em><em>0.5</em><em>, </em><em>4.0</em><em>)</em>) – The range of the PSD. The gamma-neutron separation line is at <code class="docutils literal notranslate"><span class="pre">0.5</span></code>.</p></li>
-<li><p><strong>shadow_bar</strong> (<em>'auto'</em><em> or </em><em>bool</em><em>, </em><em>default 'auto'</em>) – Whether to cut out the shadowed regions due to shadow bars. If
-<code class="docutils literal notranslate"><span class="pre">'auto'</span></code>, shadow bar cut is applied whenever the shadow bar is
-present for the runs. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, shadow bar cut is applied always.
-If <code class="docutils literal notranslate"><span class="pre">False</span></code>, shadow bar cut is never applied.</p></li>
-<li><p><strong>psd_perp_range</strong> (<em>(</em><em>float</em><em>, </em><em>float</em><em>)</em><em>, </em><em>default</em><em> (</em><em>-0.7</em><em>, </em><em>0.7</em><em>)</em>) – The range of the second axis of the two-dimensional PSD.</p></li>
-<li><p><strong>extra_cuts</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Additional cuts to be applied. The cuts will be joined with the
-operator AND, i.e. <code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code> in ROOT. Any syntax that is supported by
-RDataFrame should work here.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default True</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code> is updated inplace.</p></li>
+<li><p><strong>rdf</strong> (<em>ROOT.RDataFrame</em><em>, </em><em>optional</em>) – The RDataFrame to be filtered. If None, the RDataFrame stored in
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">self.rdf</span></code> will be used.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to apply the filter in place.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>rdf</strong> – The modified RDataFrame object.</p>
+<dd class="field-even"><p><strong>rdf</strong> – The filtered RDataFrame. If <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>, returns None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>RDataFrame</p>
+<dd class="field-odd"><p>ROOT.RDataFrame or None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_time_of_flight">
-<span class="sig-name descname"><span class="pre">define_time_of_flight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_time_of_flight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define the time-of-flight in nanosecond.</p>
-<p>The time-of-flight will be named <code class="docutils literal notranslate"><span class="pre">'tof'</span></code> in <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_kinergy">
-<span class="sig-name descname"><span class="pre">define_kinergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_kinergy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the kinetic energies of neutrons.</p>
-<dl class="simple">
-<dt>The following quantities will be added to <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>:</dt><dd><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">'beta'</span></code>, the speed divided by the speed of light.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'energy'</span></code>, the relativistic energy (including rest mass) in MeV.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'kinergy'</span></code>, the relativistic kinetic energy (excluding rest mass) in MeV.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Calculation of energy requires the knowledge of particle mass. Since we
-are interested in neutrons, we use the mass of the neutron for all hits.
-In other words, if you did not remove gammas, then you will get an
-enormously large energy, which is incorrect.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_transverse_momentum">
-<span class="sig-name descname"><span class="pre">define_transverse_momentum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_transverse_momentum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define the transverse momentum in MeV/c.</p>
-<dl class="simple">
-<dt>The following quantities will be added to <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>:</dt><dd><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">'momentum_mag'</span></code>, the magnitude of the momentum in MeV/c.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'momentum_transv'</span></code>, the transverse momentum <span class="math notranslate nohighlight">\(p_\mathrm{T}\)</span> in MeV/c.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_lab_rapidity">
-<span class="sig-name descname"><span class="pre">define_lab_rapidity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_lab_rapidity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define the rapidity in the lab frame.</p>
-<dl class="simple">
-<dt>The following quantities will be added to <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code>:</dt><dd><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">'momentum_z'</span></code>, the z component of the momentum in MeV/c.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'lab_rapidity'</span></code>, the rapidity in the lab frame.</p></li>
-</ul>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_energy">
+<span class="sig-name descname"><span class="pre">define_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'energy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdf</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the total relativistic energy of the neutron.</p>
+<p>This function will define a new column <code class="docutils literal notranslate"><span class="pre">energy</span></code> in the RDataFrame. It
+first computes the relativistic beta using time-of-flight and distance
+between the target and the hit position on NWB. Then it calculates the
+total energy assuming a mass of neutron. If charged particles and gamma
+rays have not been excluded, the energies for those hits will be off
+because they are not neutrons.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>norm</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to normalize the momentum to the beam rapidity in the lab frame.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default True</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">rdf</span></code> is updated inplace.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>default 'energy'</em>) – Name of the new column. The values will be in MeV.</p></li>
+<li><p><strong>rdf</strong> (<em>ROOT.RDataFrame</em><em>, </em><em>optional</em>) – The RDataFrame to be filtered. If None, the RDataFrame stored in
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">self.rdf</span></code> will be used.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to apply the definition in place.</p></li>
 </ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.geometry_efficiency">
-<span class="sig-name descname"><span class="pre">geometry_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shadowed_bars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_edges_bars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_bars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_cuts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.geometry_efficiency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a function that describes the geometry efficiency.</p>
-<p>This is a function of :math:`   heta` in radian, the polar angle with
-respect to the beam direction in lab frame. The function returns
-<span class="math notranslate nohighlight">\(\delta\phi\)</span> or <span class="math notranslate nohighlight">\(\delta\phi/2\pi\)</span> (when normalized), i.e.
-the azimuthal coverage of the detector at :math:`       heta`.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>shadowed_bars</strong> (<em>'auto'</em><em> or </em><em>bool</em><em> or </em><em>list of int</em>) – If ‘auto’, the shadow bar cut is automatically applied if the shadow
-bars were present in the run. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the shadow bar cut is
-applied to NWB bars 7, 8, 9, 15, 16, 17; if <code class="docutils literal notranslate"><span class="pre">False</span></code>, no shadow bar
-cut is applied. If a list of int, the shadow bar cut is applied to
-the specified bars.</p></li>
-<li><p><strong>cut_edges_bars</strong> (<em>'all'</em><em> or </em><em>list of int</em>) – If ‘all’, the cut edges cut is applied to all bars. If a list of int,
-the edge cut will only be applied to the specified bars.</p></li>
-<li><p><strong>skip_bars</strong> (<em>tuple of int</em><em>, </em><em>default</em><em> (</em><em>0</em><em>, </em><em>)</em>) – The bars to skip in the geometry efficiency. In the experiment, NWB-bar00
-is the bottommost bar that was blocked by the ground.</p></li>
-<li><p><strong>custom_cuts</strong> (<em>dict of int</em><em> or </em><em>list of int</em><em>, </em><em>default None</em>) – When custom cuts are applied, all the other cuts are ignored, so
-users should make sure the cuts are complete, e.g. edge cut, if
-desired, has to be specified manually. The only cut variable being
-supported is <code class="docutils literal notranslate"><span class="pre">'x'</span></code>.</p></li>
-<li><p><strong>norm</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to normalize the efficiency by <span class="math notranslate nohighlight">\(2\pi\)</span>.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.detection_efficiency">
-<span class="sig-name descname"><span class="pre">detection_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.detection_efficiency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the intrinsic or detection efficiency curve.</p>
-<p>This was previously given by SCINFUL-QMD, but now it is given by Geant4
-simulation or SCINFUL-PHITS.</p>
-<p>The efficiency curve is constructed using spline interpolation of the
-two-column data stored at <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>default None</em>) – The path to the efficiency data. The file should be a two-column
-ASCII file, with headers <code class="docutils literal notranslate"><span class="pre">'kinergy'</span></code> and <code class="docutils literal notranslate"><span class="pre">'efficiency'</span></code>. Columns
-are separated by spaces. The <code class="docutils literal notranslate"><span class="pre">'kinergy'</span></code> range should at least
-cover from 20 MeV to 200 MeV.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>eff_curve</strong> – A spline interpolation of the efficiency curve.</p>
+<dd class="field-even"><p><strong>rdf</strong> – The RDataFrame with the new column. If <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>, returns
+None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>UnivariateSpline object</p>
+<dd class="field-odd"><p>ROOT.RDataFrame or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum.define_neutron_cut">
+<span class="sig-name descname"><span class="pre">define_neutron_cut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cut'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">light_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_adc_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cuts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdf</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">cppyy.gbl.ROOT.RDataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum.define_neutron_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the neutron cut, <code class="docutils literal notranslate"><span class="pre">cut</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>default 'cut'</em>) – Name of the new column.</p></li>
+<li><p><strong>light_bias</strong> (<em>float</em><em>, </em><em>default 3.0</em>) – The light output bias in MeVee.</p></li>
+<li><p><strong>position_cut</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to apply the position cut. Shadow bar cuts are applied
+automatically if shadow bars are present in those runs. See <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.shadow_bar_present</span></code>.</p></li>
+<li><p><strong>positive_adc_cut</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to apply the positive ADC cut. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, all the fast and
+total ADCs must be positive.</p></li>
+<li><p><strong>extra_cuts</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Extra cuts to be applied. Each cut should be a string that can be
+parsed by PyROOT. Any columns that are defined in the RDF can be
+used in the cut. The cuts will be joined by <code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code>.</p></li>
+<li><p><strong>rdf</strong> (<em>ROOT.RDataFrame</em><em>, </em><em>optional</em>) – The RDataFrame to be filtered. If None, the RDataFrame stored in</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to apply the cut in place.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.spectra.Spectrum._drop_spectrum_outliers">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_drop_spectrum_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_outliers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.spectra.Spectrum._drop_spectrum_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop outliers in the dataframe.</p>
+<p>This function assumes outliers only occur at the ends of the spectrum.
+In other words, if a point in the middle is an outlier, it will not be
+dropped. This decision is made to keep the resulting spectrum
+continuous. Empirically, for this purpose, if an outlier happens in the
+middle, it is likely that there is some problem with the data anyway.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – The dataframe to drop outliers from. Must have a column named defined by
+<cite>yname</cite>.</p></li>
+<li><p><strong>drop_outliers</strong> (<em>float</em>) – Outliers are defined as points whose ratio to the neighboring point is
+larger than <cite>drop_outliers</cite>.</p></li>
+<li><p><strong>yname</strong> (<em>str</em><em>, </em><em>default 'y'</em>) – The name of the column in <cite>df</cite> that contains the values to check for
+outliers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – The dataframe with outliers dropped.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -428,7 +342,7 @@ cover from 20 MeV to 200 MeV.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

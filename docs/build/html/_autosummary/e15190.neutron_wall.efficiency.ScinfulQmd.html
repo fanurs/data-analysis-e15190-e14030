@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>e15190.neutron_wall.efficiency.ScinfulQmd &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.efficiency.ScinfulQmd</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="e15190-neutron-wall-efficiency-scinfulqmd">
+<h1>e15190.neutron_wall.efficiency.ScinfulQmd<a class="headerlink" href="#e15190-neutron-wall-efficiency-scinfulqmd" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.efficiency.ScinfulQmd">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.efficiency.</span></span><span class="sig-name descname"><span class="pre">ScinfulQmd</span></span><a class="headerlink" href="#e15190.neutron_wall.efficiency.ScinfulQmd" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.efficiency.ScinfulQmd.__init__" title="e15190.neutron_wall.efficiency.ScinfulQmd.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.efficiency.ScinfulQmd.calculate_efficiency" title="e15190.neutron_wall.efficiency.ScinfulQmd.calculate_efficiency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_efficiency</span></code></a>(light_response[, bias])</p></td>
+<td><p>Calculate the efficiency from the light response table.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.efficiency.ScinfulQmd.get_efficiency_curve" title="e15190.neutron_wall.efficiency.ScinfulQmd.get_efficiency_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_efficiency_curve</span></code></a>([from_raw_output, save_txt])</p></td>
+<td><p>Returns the efficiency curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.efficiency.ScinfulQmd.read_efficiency_curve" title="e15190.neutron_wall.efficiency.ScinfulQmd.read_efficiency_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_efficiency_curve</span></code></a>(mode, energy_range)</p></td>
+<td><p>Read in the efficiency curve from the &quot;res00.out&quot; files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.efficiency.ScinfulQmd.read_response" title="e15190.neutron_wall.efficiency.ScinfulQmd.read_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_response</span></code></a>(energy, mode)</p></td>
+<td><p>Read in the light response table from &quot;res00.out&quot; file.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PATH_FMT</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">RESULT_PATH</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.efficiency.ScinfulQmd.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.efficiency.ScinfulQmd.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.efficiency.ScinfulQmd.get_efficiency_curve">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_efficiency_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">from_raw_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_txt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.efficiency.ScinfulQmd.get_efficiency_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the efficiency curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>from_raw_output</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, the efficiency curve is calculated from the “res00.out” files. Otherwise, the
+efficiency curve is read from the file specified by <code class="xref py py-attr docutils literal notranslate"><span class="pre">RESULT_PATH</span></code>.</p></li>
+<li><p><strong>save_txt</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, the efficiency curve is saved to the file specified by <code class="xref py py-attr docutils literal notranslate"><span class="pre">RESULT_PATH</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>efficiency_curve</strong> – The efficiency curve, with columns ‘energy’, ‘efficiency’, and ‘mode’.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.efficiency.ScinfulQmd.read_response">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">read_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'scinful'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'qmd'</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.efficiency.ScinfulQmd.read_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in the light response table from “res00.out” file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> (<em>int</em>) – The energy of the incident neutron in MeV.</p></li>
+<li><p><strong>mode</strong> (<em>{'scinful'</em><em>, </em><em>'qmd'}</em>) – The mode of the simulation. Scinful is used for energies below 80
+MeV, and QMD is used for energies above 80 MeV.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>light_response</strong> – The light response table, with columns ‘light’, ‘resp’, and ‘err’.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.efficiency.ScinfulQmd.calculate_efficiency">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calculate_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">light_response</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#e15190.neutron_wall.efficiency.ScinfulQmd.calculate_efficiency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the efficiency from the light response table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>light_response</strong> (<em>pd.DataFrame</em>) – The light response table, containing at least columns ‘light’ and ‘resp’.</p></li>
+<li><p><strong>bias</strong> (<em>float</em><em>, </em><em>default 3.0</em>) – The bias light output in MeVee. This serves as the lower bound of the
+integral.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>efficiency</strong> – The detection efficiency.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.efficiency.ScinfulQmd.read_efficiency_curve">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">read_efficiency_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'scinful'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'qmd'</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.neutron_wall.efficiency.ScinfulQmd.read_efficiency_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in the efficiency curve from the “res00.out” files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> (<em>{'scinful'</em><em>, </em><em>'qmd'}</em>) – The mode of the simulation.</p></li>
+<li><p><strong>energy_range</strong> (<em>tuple of int</em>) – The inclusive energy range of the incident neutron in MeV. Scinful
+mode offers a range from 1 to 300 MeV, and QMD mode offers a range
+from 131 to 300 MeV.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>efficiency_curve</strong> – The efficiency curve, with columns ‘energy’ and ‘efficiency’.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.efficiency.ScinfulQmd</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

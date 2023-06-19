@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator &#8212; Data Analysis for E15190-E14030  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="e15190-neutron-wall-time-of-flight-calibration-timeofflightcalibrator">
+<h1>e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator<a class="headerlink" href="#e15190-neutron-wall-time-of-flight-calibration-timeofflightcalibrator" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.time_of_flight_calibration.</span></span><span class="sig-name descname"><span class="pre">TimeOfFlightCalibrator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.__init__" title="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(AB, run[, init_rdf])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_all_lazy</span></code>(bars)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_base_rdf</span></code>([multithread])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.declare_all_to_root_interpreter" title="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.declare_all_to_root_interpreter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">declare_all_to_root_interpreter</span></code></a>()</p></td>
+<td><p>Declare all relevant functions and variables to the ROOT interpreter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_bar</span></code>(bar)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_distance_of_flight_stats</span></code>(bar[, lazy])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_time_of_flight_histograms</span></code>(bar[, lazy])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_distance_of_flight_histogram</span></code>(bar[, lazy])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_distance_range</span></code>(bar)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_first_peak" title="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_first_peak"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_first_peak</span></code></a>(x, y)</p></td>
+<td><p>Find the first peak from the left.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_input_path</span></code>(run[, directory, filename_fmt])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_prompt_gamma_fits</span></code>(bar_tof_histos)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_speed_of_flight_fit</span></code>(prompt_gamma_fit_params)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stdev_distance_of_flight</span></code>(bar[, lazy])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_time_of_flight_histogram" title="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_time_of_flight_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time_of_flight_histogram</span></code></a>(bar[, ...])</p></td>
+<td><p>Returns the time of flight histogram for a given bar.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_parameters</span></code>([path])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Properties</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">CALIB_FILE_FMT</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DATABASE_DIR</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DIST_RANGE_N_STEPS</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DIST_RANGE_WIDTH</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">POS_RANGE</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SPEED_OF_LIGHT_IN_AIR</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.declare_all_to_root_interpreter">
+<span class="sig-name descname"><span class="pre">declare_all_to_root_interpreter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.declare_all_to_root_interpreter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare all relevant functions and variables to the ROOT interpreter.</p>
+<dl class="simple">
+<dt>Functions that are declared are:</dt><dd><ul class="simple">
+<li><p>GetPositionParam0(bar)</p></li>
+<li><p>GetPositionParam1(bar)</p></li>
+<li><p>GetDistParam0(bar)</p></li>
+<li><p>GetDistParam1(bar)</p></li>
+<li><p>GetDistParam2(bar)</p></li>
+<li><p>GetPosition(time_L, time_R, p0, p1)</p></li>
+<li><p>GetDistance(pos, p0, p1, p2)</p></li>
+</ul>
+</dd>
+</dl>
+<p>This function is called only when <code class="docutils literal notranslate"><span class="pre">ROOT_DECLARED</span></code> is False. The
+variable is set to True after this function is called. To call this
+function again, user have to set <code class="docutils literal notranslate"><span class="pre">ROOT_DECLARED</span></code> to False manually,
+though such action would most likely cause an error in the ROOT
+interpreter due to multiple declarations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p0</strong> (<em>np.array</em>) – Array of intercepts. The indices have to match the bar numbers. Pad
+with zeros if necessary.</p></li>
+<li><p><strong>p1</strong> (<em>np.array</em>) – Array of slopes. The indices have to match the bar numbers. Pad with
+zeros if necessary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_time_of_flight_histogram">
+<span class="sig-name descname"><span class="pre">get_time_of_flight_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_cut</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lazy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_time_of_flight_histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the time of flight histogram for a given bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bar</strong> (<em>int</em>) – Bar number.</p></li>
+<li><p><strong>dist_cut</strong> (<em>2-tuple of strings</em><em>, </em><em>default None</em>) – Optional distance cut. When provided, it is user’s responsibility to
+ensure there is non-zero count after the cut. Default is None, where
+no cut is applied.</p></li>
+<li><p><strong>lazy</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, return a lazy result pointer to the histogram. If False,
+return the histogram instantly.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>histogram</strong> – The time-of-flight spectrum.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>RResultPtr or TH1D</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_first_peak">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_first_peak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator.get_first_peak" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the first peak from the left.</p>
+<p>Useful when locating the prompt gamma peak in a time-of-flight spectrum.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Data Analysis for E15190-E14030  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">e15190.neutron_wall.time_of_flight_calibration.TimeOfFlightCalibrator</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

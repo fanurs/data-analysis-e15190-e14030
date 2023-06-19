@@ -39,7 +39,7 @@
 <h1>e15190.hira.spectra.HiraFile<a class="headerlink" href="#e15190-hira-spectra-hirafile" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.hira.spectra.HiraFile">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.hira.spectra.</span></span><span class="sig-name descname"><span class="pre">HiraFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.hira.spectra.HiraFile" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.hira.spectra.</span></span><span class="sig-name descname"><span class="pre">HiraFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.hira.spectra.HiraFile" title="Permalink to this definition">¶</a></dt>
 <dd><p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -48,19 +48,19 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.hira.spectra.HiraFile.__init__" title="e15190.hira.spectra.HiraFile.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(reaction)</p></td>
-<td><p></p></td>
+<td><p>Create a file object to interact with ROOT files produced by Rensheng that contains HiRA spectra.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.hira.spectra.HiraFile.convert_particle" title="e15190.hira.spectra.HiraFile.convert_particle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_particle</span></code></a>(notation)</p></td>
-<td><p>Convert notation into Rensheng's convention.</p></td>
+<td><p>Convert particle notation into Rensheng's convention.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_histograms</span></code>([particle])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.hira.spectra.HiraFile.get_all_histogram_names" title="e15190.hira.spectra.HiraFile.get_all_histogram_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_histogram_names</span></code></a>([particle])</p></td>
+<td><p>Return a list of all histogram names in the file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_particles</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.hira.spectra.HiraFile.get_all_particles" title="e15190.hira.spectra.HiraFile.get_all_particles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_particles</span></code></a>()</p></td>
+<td><p>Return a list of all particles symbols in the file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_root_histogram</span></code>([h_name, particle, keyword])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.hira.spectra.HiraFile.get_root_histogram" title="e15190.hira.spectra.HiraFile.get_root_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_root_histogram</span></code></a>([h_name, particle, ...])</p></td>
+<td><p>Return a ROOT histogram object.</p></td>
 </tr>
 </tbody>
 </table>
@@ -71,20 +71,107 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PATH_KEY</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DIRECTORY</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.hira.spectra.HiraFile.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.hira.spectra.HiraFile.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.hira.spectra.HiraFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a file object to interact with ROOT files produced by Rensheng
+that contains HiRA spectra.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>reaction</strong> (<em>str</em>) – Reaction notation, e.g. “ca40ni58e140”. Some intellisense has been
+implemented in <a class="reference internal" href="e15190.runlog.query.ReactionParser.html#e15190.runlog.query.ReactionParser" title="e15190.runlog.query.ReactionParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">e15190.runlog.query.ReactionParser</span></code></a> to
+automatically convert the reaction notation into the correct format.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.hira.spectra.HiraFile.get_all_particles">
+<span class="sig-name descname"><span class="pre">get_all_particles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.hira.spectra.HiraFile.get_all_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all particles symbols in the file.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.hira.spectra.HiraFile.convert_particle">
-<span class="sig-name descname"><span class="pre">convert_particle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">notation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.hira.spectra.HiraFile.convert_particle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert notation into Rensheng’s convention.</p>
+<span class="sig-name descname"><span class="pre">convert_particle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">notation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#e15190.hira.spectra.HiraFile.convert_particle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert particle notation into Rensheng’s convention.</p>
+<p>The ROOT file contains spectra for multiple particles. This function
+converts user’s particle notation into the one that is used to named to
+spectra in the ROOT file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>notation</strong> (<em>str</em>) – Particle notation, e.g. “H1”, “He4”.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>converted</strong> – Converted particle notation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p>:raises KeyError : If the particle is not found in the file.:</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">HiraFile</span><span class="p">(</span><span class="s1">&#39;ca48ni64e140&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">file</span><span class="o">.</span><span class="n">convert_particle</span><span class="p">(</span><span class="s1">&#39;H1&#39;</span><span class="p">)</span>
+<span class="go">&#39;p&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.hira.spectra.HiraFile.get_all_histogram_names">
+<span class="sig-name descname"><span class="pre">get_all_histogram_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.hira.spectra.HiraFile.get_all_histogram_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all histogram names in the file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>particle</strong> (<em>str</em><em>, </em><em>default None</em>) – If None, return all histogram names. Otherwise, return only
+histogram names for the specified particle. The particle notation
+has some intellisense implemented.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>histogram_names</strong> – List of histogram names.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.hira.spectra.HiraFile.get_root_histogram">
+<span class="sig-name descname"><span class="pre">get_root_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyword</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_multiple_matches</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">cppyy.gbl.TH2D</span></span></span><a class="headerlink" href="#e15190.hira.spectra.HiraFile.get_root_histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a ROOT histogram object.</p>
+<p>Provide either the exact histogram name, or a particle with one or more
+keywords, to specify the histogram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h_name</strong> (<em>str</em><em>, </em><em>default None</em>) – Histogram name. If None, the histogram name will be inferred from
+the particle and keyword(s). If specified, the particle and
+keyword(s) will be ignored.</p></li>
+<li><p><strong>particle</strong> (<em>str</em><em>, </em><em>default None</em>) – Particle notation, e.g. “H1”, “He4”. Intellisense implemented.
+Keyword(s) must be provided too if this is specified.</p></li>
+<li><p><strong>keyword</strong> (<em>str</em><em> or </em><em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>default None</em>) – Keyword(s) to search for in the histogram name.</p></li>
+<li><p><strong>ignore_multiple_matches</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, ignore the case where multiple histograms are found with
+the same keyword(s); only the one with the longest matching name
+will be returned. If False, raise an error if multiple histograms
+are found with the same keyword(s).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>hist</strong> – ROOT’s 2D histogram object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ROOT.TH2D</p>
+</dd>
+</dl>
+<p>:raises KeyError : No histogram found for …:
+:raises KeyError : Multiple histograms found for …:</p>
 </dd></dl>
 
 </dd></dl>
@@ -126,7 +213,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

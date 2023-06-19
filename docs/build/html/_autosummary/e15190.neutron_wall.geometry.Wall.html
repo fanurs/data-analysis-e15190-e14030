@@ -13,7 +13,6 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
@@ -40,7 +39,7 @@
 <h1>e15190.neutron_wall.geometry.Wall<a class="headerlink" href="#e15190-neutron-wall-geometry-wall" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.geometry.</span></span><span class="sig-name descname"><span class="pre">Wall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contain_pyrex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh_from_inventor_readings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">e15190.neutron_wall.geometry.</span></span><span class="sig-name descname"><span class="pre">Wall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contain_pyrex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh_from_inventor_readings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall" title="Permalink to this definition">¶</a></dt>
 <dd><p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -51,16 +50,11 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.__init__" title="e15190.neutron_wall.geometry.Wall.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(AB[, contain_pyrex, ...])</p></td>
 <td><p>Construct a neutron wall, A or B.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.get_geometry_efficiency" title="e15190.neutron_wall.geometry.Wall.get_geometry_efficiency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency</span></code></a>(shadowed_bars[, ...])</p></td>
-<td><p><dl class="field-list simple">
-<dt class="field-odd">param shadowed_bars</dt>
-<dd class="field-odd"><p>If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 15, 16,</p>
-</dd>
-</dl>
-</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.get_geometry_efficiency" title="e15190.neutron_wall.geometry.Wall.get_geometry_efficiency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency</span></code></a>(shadowed_bars, skip_bars)</p></td>
+<td><p>A simple wrapper around <code class="xref py py-func docutils literal notranslate"><span class="pre">_get_geometry_efficiency_from_cpp_executable()</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.read_from_inventor_readings" title="e15190.neutron_wall.geometry.Wall.read_from_inventor_readings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_inventor_readings</span></code></a>(filepath)</p></td>
-<td><p>Reads in Inventor measurements and returns <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p></td>
+<td><p>Reads in Inventor measurements and returns a list of <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.save_pca_to_database" title="e15190.neutron_wall.geometry.Wall.save_pca_to_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_pca_to_database</span></code></a>(AB, filepath, bars)</p></td>
 <td><p>Save the principal components of the bars to database.</p></td>
@@ -84,7 +78,7 @@
 <td><p>Neutron wall name in lowercase.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.database_dir" title="e15190.neutron_wall.geometry.Wall.database_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">database_dir</span></code></a></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">PROJECT_DIR</span> <span class="pre">/</span> <span class="pre">'database/neutron_wall/geometry'</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'$PROJECT_DIR/database/neutron_wall/geometry'</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Wall.path_inventor_readings" title="e15190.neutron_wall.geometry.Wall.path_inventor_readings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_inventor_readings</span></code></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">self.database_dir</span> <span class="pre">/</span> <span class="pre">f'inventor_readings_NW{self.AB}.txt'</span></code></p></td>
@@ -105,7 +99,7 @@
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contain_pyrex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh_from_inventor_readings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contain_pyrex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh_from_inventor_readings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct a neutron wall, A or B.</p>
 <p>A neutron wall is a collection of bars, <code class="docutils literal notranslate"><span class="pre">self.bars</span></code>.</p>
 <dl class="field-list simple">
@@ -113,7 +107,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>AB</strong> (<em>'A'</em><em> or </em><em>'B'</em>) – The wall to construct. Currently only ‘B’ is actively maintained and
 tested.</p></li>
-<li><p><strong>contain_pyrex</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether the bars contain pyrex.</p></li>
+<li><p><strong>contain_pyrex</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether the bars contain pyrex.</p></li>
 <li><p><strong>refresh_from_inventor_readings</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, the geometry will be loaded from the inventor readings;
 if <cite>False</cite>, the geometry will be loaded from the existing database,
 stored in <code class="docutils literal notranslate"><span class="pre">*.dat</span></code> files.</p></li>
@@ -147,7 +141,7 @@ stored in <code class="docutils literal notranslate"><span class="pre">*.dat</sp
 <dl class="py attribute">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.database_dir">
 <span class="sig-name descname"><span class="pre">database_dir</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.database_dir" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">PROJECT_DIR</span> <span class="pre">/</span> <span class="pre">'database/neutron_wall/geometry'</span></code></p>
+<dd><p><code class="docutils literal notranslate"><span class="pre">'$PROJECT_DIR/database/neutron_wall/geometry'</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
@@ -215,7 +209,7 @@ was not used because it was shadowed.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.read_from_inventor_readings">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">read_from_inventor_readings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.read_from_inventor_readings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads in Inventor measurements and returns <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p>
+<dd><p>Reads in Inventor measurements and returns a list of <a class="reference internal" href="e15190.neutron_wall.geometry.Bar.html#e15190.neutron_wall.geometry.Bar" title="e15190.neutron_wall.geometry.Bar"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bar</span></code></a> objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – The path to the file containing the Inventor measurements, e.g.
@@ -264,22 +258,38 @@ the topmost bar will be numbered 24.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Wall.get_geometry_efficiency">
-<span class="sig-name descname"><span class="pre">get_geometry_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shadowed_bars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_edges_bars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_bars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_cuts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.get_geometry_efficiency" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<span class="sig-name descname"><span class="pre">get_geometry_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shadowed_bars</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_bars</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_cuts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">'monte-carlo'</span><span class="p"><span class="pre">,</span> </span><span class="pre">'delta-phi'</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'delta-phi'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">float</span> <span class="p"><span class="pre">|</span></span> <span class="pre">np.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span> <span class="p"><span class="pre">|</span></span> <span class="pre">np.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Wall.get_geometry_efficiency" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple wrapper around
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_get_geometry_efficiency_from_cpp_executable()</span></code>. The function
+has a persistent cache saved to
+<cite>$PROJECT_DIR/database/neutron_wall/geometry/efficiency_cache.pkl</cite>.
+Simply remove the file if you do not want to use the cached results.</p>
+<p>First time calling this function will take a while. Subsequent calls
+with the exact same arguments will be much faster due to caching.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>shadowed_bars</strong> (<em>bool</em><em> or </em><em>list of int</em>) – If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 15, 16,
-17. If False, no shadow bar cut is applied. If a list of int, shadow
-bar cut will only be applied to the bars in the list.</p></li>
-<li><p><strong>cut_edges_bars</strong> (<code class="docutils literal notranslate"><span class="pre">'all'</span></code> or list of int, default ‘all’) – If <code class="docutils literal notranslate"><span class="pre">'all'</span></code>, edge cut will be applied to all bars. If a list of int,
-edge cut will only be applied to the bars in the list.</p></li>
-<li><p><strong>skip_bars</strong> (<em>list of int</em><em>, </em><em>default</em><em> (</em><em>0</em><em>, </em><em>)</em>) – Bars to be skipped. In the experiment, NWB-bar00 is the bottommost bar
-that was blocked by the ground.</p></li>
+<li><p><strong>shadowed_bars</strong> (<em>bool</em>) – If True, shadow bar cut will be applied to NWB bars 7, 8, 9, 10, 15,
+16, 17. If False, no shadow bar cut is applied.</p></li>
+<li><p><strong>skip_bars</strong> (<em>list of int</em>) – Bars to be skipped. Remember, in the experiment, NWB-bar00 is the
+bottommost bar that was blocked by the ground.</p></li>
+<li><p><strong>cut_edges</strong> (<em>bool</em><em>, </em><em>default True</em>) – If <code class="docutils literal notranslate"><span class="pre">'all'</span></code>, edge cut will be applied to all bars. If a list of
+int, edge cut will only be applied to the bars in the list.</p></li>
 <li><p><strong>custom_cuts</strong> (<em>dict of int to list of str</em><em>, </em><em>default None</em>) – When custom cuts are applied, all the other cuts are ignored, so
-users should make sure the cuts are complete, e.g. edge cut is
+users should make sure the cuts are complete, e.g. edge cut has to be
 included. The only cut variable being supported is <code class="docutils literal notranslate"><span class="pre">'x'</span></code>.</p></li>
-<li><p><strong>norm</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to normalize the efficiency by <span class="math notranslate nohighlight">\(2\pi\)</span>.</p></li>
+<li><p><strong>method</strong> (<em>'monte-carlo'</em><em> or </em><em>'delta-phi'</em><em>, </em><em>default 'delta-phi'</em>) – Method to calculate the geometry efficiency.</p></li>
+<li><p><strong>n_rays</strong> (<em>int</em><em>, </em><em>default 1_000_000</em>) – Number of rays to be used in the Monte Carlo method. This argument
+is ignored if <cite>method</cite> is not <cite>‘monte-carlo’</cite>.</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em><em>, </em><em>default 30</em>) – Number of steps to be used in the delta-phi method. This argument
+is ignored if <cite>method</cite> is not <cite>‘delta-phi’</cite>.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>geometry_efficiency</strong> – A function that takes a theta (radian) and returns the geometry efficiency.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Callable[[float | np.ndarray], float | np.ndarray]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -323,7 +333,7 @@ included. The only cut variable being supported is <code class="docutils literal
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

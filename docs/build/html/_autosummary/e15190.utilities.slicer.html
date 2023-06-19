@@ -44,11 +44,31 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.slicer.create_ranges.html#e15190.utilities.slicer.create_ranges" title="e15190.utilities.slicer.create_ranges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_ranges</span></code></a>(low, upp, width[, step])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="e15190.utilities.slicer.create_ranges.html#e15190.utilities.slicer.create_ranges" title="e15190.utilities.slicer.create_ranges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_ranges</span></code></a>(low, upp, width[, step, n_steps])</p></td>
+<td><p>Create a list of ranges.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py function">
+<dt class="sig sig-object py" id="e15190.utilities.slicer.create_ranges">
+<span class="sig-prename descclassname"><span class="pre">e15190.utilities.slicer.</span></span><span class="sig-name descname"><span class="pre">create_ranges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.utilities.slicer.create_ranges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of ranges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>low</strong> (<em>float</em>) – The lower bound of the range.</p></li>
+<li><p><strong>upp</strong> (<em>float</em>) – The upper bound of the range.</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – The width of each range.</p></li>
+<li><p><strong>step</strong> (<em>float</em><em>, </em><em>default None</em>) – The distance between consecutive ranges, measuered at the range
+midpoints. Default is None, in which the step is equal to the width.</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em><em>, </em><em>default None</em>) – The number of steps or the number of ranges to generate. Default is
+None, in which it follows the behavior specified by the <code class="docutils literal notranslate"><span class="pre">step</span></code>
+parameter. <code class="docutils literal notranslate"><span class="pre">step</span></code> is ignored if <code class="docutils literal notranslate"><span class="pre">n_steps</span></code> is specified.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -86,7 +106,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
