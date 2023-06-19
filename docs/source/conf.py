@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath(str(PROJECT_DIR / 'e15190')))
 # -- Project information -----------------------------------------------------
 
 project = 'Data Analysis for E15190-E14030'
-copyright = '2018-2022, MSU/FRIB HiRA group'
+copyright = '2018-2023, MSU/FRIB HiRA group'
 author = 'Fanurs, et al.'
 
 # The full version, including alpha/beta/rc tags
