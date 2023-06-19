@@ -53,8 +53,8 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_setup</span></code>([rings_and_dets])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_coverage</span></code>(**kwargs)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.microball.geometry.Geometry.draw_coverage" title="e15190.microball.geometry.Geometry.draw_coverage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_coverage</span></code></a>(**kwargs)</p></td>
+<td><p>Draw the coverage of the Microball.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_phi_range</span></code>(ring, det)</p></td>
 <td><p></p></td>
@@ -83,6 +83,24 @@
 <dt class="sig sig-object py" id="e15190.microball.geometry.Geometry.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">build_setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.microball.geometry.Geometry.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.microball.geometry.Geometry.draw_coverage">
+<span class="sig-name descname"><span class="pre">draw_coverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.figure.Figure</span><span class="p"><span class="pre">,</span> </span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.microball.geometry.Geometry.draw_coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the coverage of the Microball.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>dict</em>) – Keyword arguments passed to <cite>matplotlib.pyplot.subplots</cite>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fig</strong> (<em>matplotlib.pyplot.Figure</em>) – The figure.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.pyplot.Axes</em>) – The axes.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -123,7 +141,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

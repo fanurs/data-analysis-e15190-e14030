@@ -149,16 +149,22 @@ LIMIT and WHERE to select a subset of the database for inspection.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch" title="e15190.runlog.query.Query.get_batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch</span></code></a>(ibatch)</p></td>
 <td><p>Returns a sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in <a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch_info" title="e15190.runlog.query.Query.get_batch_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch_info</span></code></a>(ibatch[, include_comments])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch_info" title="e15190.runlog.query.Query.get_batch_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch_info</span></code></a>(ibatch[, include_comments, ...])</p></td>
 <td><p>Returns a dictionary of properties for a given batch.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cosmic_run_info</span></code>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_batch_runs" title="e15190.runlog.query.Query.get_batch_runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch_runs</span></code></a>(ibatch)</p></td>
+<td><p>Returns runs in a given batch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cosmic_run_info</span></code>()</p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_ibatch" title="e15190.runlog.query.Query.get_ibatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ibatch</span></code></a>(run)</p></td>
+<td><p>Returns the batch number of the run</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_n_batches" title="e15190.runlog.query.Query.get_n_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_n_batches</span></code></a>()</p></td>
 <td><p>Returns the number of batches in the database.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_run_info" title="e15190.runlog.query.Query.get_run_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_run_info</span></code></a>(run)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_run_info" title="e15190.runlog.query.Query.get_run_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_run_info</span></code></a>(run[, include_ibatch])</p></td>
 <td><p>Returns a dictionary of properties for a given run.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.runlog.query.Query.get_runscalernames" title="e15190.runlog.query.Query.get_runscalernames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_runscalernames</span></code></a>(source)</p></td>
@@ -223,8 +229,19 @@ LIMIT and WHERE to select a subset of the database for inspection.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.get_ibatch">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_ibatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_ibatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the batch number of the run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run</strong> (<em>int</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query._get_run_query">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_get_run_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query._get_run_query" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_get_run_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query._get_run_query" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in
 <a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given run.</p>
 <dl class="field-list simple">
@@ -236,7 +253,7 @@ LIMIT and WHERE to select a subset of the database for inspection.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.get_run_info">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_run_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.get_run_info" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_run_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_ibatch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_run_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary of properties for a given run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -247,7 +264,7 @@ LIMIT and WHERE to select a subset of the database for inspection.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query._get_batch_query">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_get_batch_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query._get_batch_query" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">_get_batch_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query._get_batch_query" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in
 <a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p>
 <dl class="field-list simple">
@@ -259,7 +276,7 @@ LIMIT and WHERE to select a subset of the database for inspection.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.is_good">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">is_good</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.is_good" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">is_good</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.is_good" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns whether a given run is good.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -277,7 +294,7 @@ skipped in data analysis.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.are_good">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">are_good</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.are_good" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">are_good</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.are_good" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns whether a list of runs are good.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -295,7 +312,7 @@ in data analysis.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.get_batch">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.get_batch" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_batch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sub-dataframe of <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df" title="e15190.runlog.query.ElogQuery.df"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElogQuery.df</span></code></a> in
 <a class="reference internal" href="#e15190.runlog.query.Query.elog" title="e15190.runlog.query.Query.elog"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Query.elog</span></code></a> for a given batch number.</p>
 <p>The sub-dataframe has been re-indexed from zero.</p>
@@ -307,8 +324,19 @@ in data analysis.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="e15190.runlog.query.Query.get_batch_runs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_batch_runs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_batch_runs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns runs in a given batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ibatch</strong> (<em>int</em>) – Batch number (0-indexed).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.get_batch_info">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_batch_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_comments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.get_batch_info" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_batch_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ibatch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_comments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_batch_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary of properties for a given batch.</p>
 <p>This function basically reads off from the
 <a class="reference internal" href="e15190.runlog.query.ElogQuery.html#e15190.runlog.query.ElogQuery.df_batches" title="e15190.runlog.query.ElogQuery.df_batches"><code class="xref py py-class docutils literal notranslate"><span class="pre">ElogQuery.df_batches</span></code></a> dataframe.</p>
@@ -321,6 +349,10 @@ the comments are included as a list of strings, sorted from the most
 common to the least common; if there is only one comment, the list
 is reduced into a string. If False, the comments are not included,
 i.e. the key <code class="docutils literal notranslate"><span class="pre">'comment'</span></code> is mapped to None.</p></li>
+<li><p><strong>include_runs</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to include the runs in the returned dictionary. If True,
+the runs are included as a list of integers, sorted from the smallest
+to the largest. If False, the runs are not included, and the key
+<code class="docutils literal notranslate"><span class="pre">'runs'</span></code> will not be found in the returned dictionary.</p></li>
 </ul>
 </dd>
 </dl>
@@ -328,31 +360,31 @@ i.e. the key <code class="docutils literal notranslate"><span class="pre">'comme
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.get_n_batches">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_n_batches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.get_n_batches" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_n_batches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.get_n_batches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the number of batches in the database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.targets">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.targets" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.targets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all distinct target names in the database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.beams">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">beams</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.beams" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">beams</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.beams" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all distinct beam names in the database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.beam_energies">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">beam_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.beam_energies" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">beam_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.beam_energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all distinct beam energies in the database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.select_runs">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">select_runs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.select_runs" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">select_runs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw_comment</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.select_runs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of run numbers that satisfy the given cuts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -420,7 +452,7 @@ substring <code class="docutils literal notranslate"><span class="pre">'mb</span
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.runlog.query.Query.select_batches">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">select_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.runlog.query.Query.select_batches" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">select_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.runlog.query.Query.select_batches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of batch numbers that satisfy the given cuts.</p>
 <p>Comment cut is not supported. But users can easily use this function to
 first select the batches of interest, then invoke
@@ -555,7 +587,7 @@ Michigan University (WMU).</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>

@@ -6,7 +6,6 @@ from typing import Callable, Literal, Optional
 
 from astropy import constants
 import numpy as np
-from numpy.typing import ArrayLike
 import pandas as pd
 import ROOT
 from scipy.integrate import quad
@@ -507,7 +506,7 @@ class LabPtransverseRapidity(Spectrum):
         )
 
     @staticmethod
-    def theta_curve(theta: float, mass=MASS_NEUTRON) -> Callable[[float | ArrayLike], float | ArrayLike]:
+    def theta_curve(theta: float, mass=MASS_NEUTRON) -> Callable[[float | np.ndarray], float | np.ndarray]:
         """Return a function that calculates the transverse momentum for a given rapidity.
 
         The theta and mass (particle) are fixed.
@@ -521,17 +520,17 @@ class LabPtransverseRapidity(Spectrum):
 
         Returns
         -------
-        transverse_momentum : Callable[[float | ArrayLike], float | ArrayLike
+        transverse_momentum : Callable[[float | np.ndarray], float | np.ndarray
             Function that calculates the transverse momentum for a given (unnormalized) rapidity in MeV/c.
         """
-        def transverse_momentum(rapidity: float | ArrayLike) -> float | ArrayLike:
+        def transverse_momentum(rapidity: float | np.ndarray) -> float | np.ndarray:
             st = np.sinh(rapidity) * np.tan(theta)
             quantity = 1 - st**2
             return mass * st / np.sqrt(np.where(quantity > 0, quantity, np.nan))
         return transverse_momentum
     
     @staticmethod
-    def kinergy_curve(kinergy: float, mass=MASS_NEUTRON) -> Callable[[float | ArrayLike], float | ArrayLike]:
+    def kinergy_curve(kinergy: float, mass=MASS_NEUTRON) -> Callable[[float | np.ndarray], float | np.ndarray]:
         """Return a function that calculates the transverse momentum for a given rapidity.
 
         The kinetic energy and mass (particle) are fixed.
@@ -547,10 +546,10 @@ class LabPtransverseRapidity(Spectrum):
         
         Returns
         -------
-        transverse_momentum : Callable[[float | ArrayLike], float | ArrayLike
+        transverse_momentum : Callable[[float | np.ndarray], float | np.ndarray
             Function that calculates the transverse momentum for a given rapidity in MeV/c.
         """
-        def transverse_momentum(rapidity: float | ArrayLike) -> float | ArrayLike:
+        def transverse_momentum(rapidity: float | np.ndarray) -> float | np.ndarray:
             quantity = (kinergy + mass)**2 / np.cosh(rapidity)**2 - mass**2
             return np.sqrt(np.where(quantity > 0, quantity, np.nan))
         return transverse_momentum
@@ -580,7 +579,7 @@ class LabPtransverseRapidity(Spectrum):
         return tuple(LabPtransverseRapidity.kinergy_curve(kinergy) for kinergy in LabPtransverseRapidity.kinergy_range)
 
     @staticmethod
-    def is_inside(rapidity: float | ArrayLike, transverse_momentum: float | ArrayLike) -> bool | ArrayLike:
+    def is_inside(rapidity: float | np.ndarray, transverse_momentum: float | np.ndarray) -> bool | np.ndarray:
         """Check if the given points are inside the phase space.
 
         Under the hood, this method converts back both rapidity and transverse
@@ -589,14 +588,14 @@ class LabPtransverseRapidity(Spectrum):
 
         Parameters
         ----------
-        rapidity : float or ArrayLike
+        rapidity : float or np.ndarray
             The (unnormalized) rapidity in lab frame.
-        transverse_momentum : float or ArrayLike
+        transverse_momentum : float or np.ndarray
             The transverse momentum in MeV/c.
 
         Returns
         -------
-        is_inside : bool or ArrayLike
+        is_inside : bool or np.ndarray
             True if the given points are inside the phase space, False
             otherwise. Points on the boundary are considered inside.
         """
@@ -611,8 +610,9 @@ class LabPtransverseRapidity(Spectrum):
         ], axis=0)
 
     @staticmethod
-    def coverage_curve(rapidity_range: tuple[float, float]) -> Callable[[float | ArrayLike], float | ArrayLike]:
-        """
+    def coverage_curve(rapidity_range: tuple[float, float]) -> Callable[[float | np.ndarray], float | np.ndarray]:
+        """Returns a function that calculates the phase space coverage for a given transverse momentum.
+
         Parameters
         ----------
         rapidity_range : tuple[float, float]
@@ -620,7 +620,7 @@ class LabPtransverseRapidity(Spectrum):
         
         Returns
         -------
-        coverage : Callable[[float | ArrayLike], float | ArrayLike]
+        coverage : Callable[[float | np.ndarray], float | np.ndarray]
             A function that calculates the coverage of the phase space for a
             given transverse momentum in MeV/c.
         """
@@ -643,8 +643,9 @@ class LabPtransverseRapidity(Spectrum):
         return lambda _pt: np.interp(_pt, ptransverse, coverage, left=0.0, right=0.0)
     
     @staticmethod
-    def get_average_coverages(rapidity_range: tuple[float, float], transverse_momentum_ranges: ArrayLike) -> ArrayLike:
-        """
+    def get_average_coverages(rapidity_range: tuple[float, float], transverse_momentum_ranges: np.ndarray) -> np.ndarray:
+        """Get average phase space coverages at various transverse momentum ranges.
+
         Parameters
         ----------
         rapidity_range : tuple[float, float]

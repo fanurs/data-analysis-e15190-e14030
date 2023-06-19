@@ -19,7 +19,8 @@ Useful links
 
 - `GitHub repository <https://github.com/Fanurs/data-analysis-e15190-e14030>`__
 - `Plotly: Infographics <https://groups.nscl.msu.edu/hira/15190-14030/fanurs/index.html>`__
-- `Run log (WMU) <http://neutronstar.physics.wmich.edu/runlog/index.php?op=list>`__
+- `Streamlit: Web app <https://e15190-runlog.streamlit.app/>`__
+- `WMU Run log (static only) <https://htmlpreview.github.io/?https://github.com/fanurs/data-analysis-e15190-e14030/blob/main/database/runlog/downloads/elogs.html>`__
 - `Experiment homepage (original) <https://groups.nscl.msu.edu/hira/15190-14030/index.htm>`__
 - :doc:`API reference <./_autosummary/e15190>`
 - :ref:`modindex`
@@ -27,7 +28,7 @@ Useful links
 Documentation
 =============
 
-All the Python source code is documented at :doc:`here <./_autosummary/e15190>`.
+All the Python APIs are documented at :doc:`HERE <./_autosummary/e15190>`.
 
 C++ source code and standalone scripts are currently not being documented.
 

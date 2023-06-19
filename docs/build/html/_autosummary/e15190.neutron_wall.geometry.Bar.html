@@ -63,40 +63,43 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.draw_hit_pattern2d" title="e15190.neutron_wall.geometry.Bar.draw_hit_pattern2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_hit_pattern2d</span></code></a>(hits, ax[, frame, ...])</p></td>
 <td><p>Draw the hit pattern of the bar with 2D histogram.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_geometry_efficiency_alphashape" title="e15190.neutron_wall.geometry.Bar.get_geometry_efficiency_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency_alphashape</span></code></a>([cut])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_empirical_distance_bounds" title="e15190.neutron_wall.geometry.Bar.get_empirical_distance_bounds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_empirical_distance_bounds</span></code></a>([n_pts, n_iters])</p></td>
+<td><p>Returns the empirical bounds of the relation between local x and distance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_geometry_efficiency_alphashape" title="e15190.neutron_wall.geometry.Bar.get_geometry_efficiency_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_efficiency_alphashape</span></code></a>(delta, alpha)</p></td>
 <td><p>Calculate the geometry efficiency of the bar using the alphashape.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_hit_positions" title="e15190.neutron_wall.geometry.Bar.get_hit_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_hit_positions</span></code></a>([hit_t, frame, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_hit_positions" title="e15190.neutron_wall.geometry.Bar.get_hit_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_hit_positions</span></code></a>([hit_t, frame, ...])</p></td>
 <td><p>Return the hit positions of the simulation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_theta_phi_alphashape" title="e15190.neutron_wall.geometry.Bar.get_theta_phi_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_theta_phi_alphashape</span></code></a>([delta, alpha, cut])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_theta_phi_alphashape" title="e15190.neutron_wall.geometry.Bar.get_theta_phi_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_theta_phi_alphashape</span></code></a>(delta, alpha[, cut])</p></td>
 <td><p>Calculate the alphashape of the bar in (theta, phi) coordinates.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle" title="e15190.neutron_wall.geometry.Bar.get_total_solid_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle</span></code></a>([method])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle" title="e15190.neutron_wall.geometry.Bar.get_total_solid_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle</span></code></a>([method])</p></td>
 <td><p>Return the total solid angle of the bar.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_alphashape" title="e15190.neutron_wall.geometry.Bar.get_total_solid_angle_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_alphashape</span></code></a>([return_error])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_alphashape" title="e15190.neutron_wall.geometry.Bar.get_total_solid_angle_alphashape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_alphashape</span></code></a>(delta, alpha)</p></td>
 <td><p>Calculate the total solid angle of the bar using the alphashape.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_monte_carlo" title="e15190.neutron_wall.geometry.Bar.get_total_solid_angle_monte_carlo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_monte_carlo</span></code></a>([n_rays, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_monte_carlo" title="e15190.neutron_wall.geometry.Bar.get_total_solid_angle_monte_carlo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_total_solid_angle_monte_carlo</span></code></a>([n_rays, ...])</p></td>
 <td><p>Calculate the total solid angle of the bar by Monte Carlo simulation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.is_inside" title="e15190.neutron_wall.geometry.Bar.is_inside"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_inside</span></code></a>(coordinates[, frame, tol])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.is_inside" title="e15190.neutron_wall.geometry.Bar.is_inside"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_inside</span></code></a>(coordinates[, frame, tol])</p></td>
 <td><p>Check if the given coordinates are inside the bar.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.randomize_from_local_x" title="e15190.neutron_wall.geometry.Bar.randomize_from_local_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randomize_from_local_x</span></code></a>(local_x[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.randomize_from_local_x" title="e15190.neutron_wall.geometry.Bar.randomize_from_local_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randomize_from_local_x</span></code></a>(local_x[, ...])</p></td>
 <td><p>Returns randomized point(s) from the given local x coordinate(s).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.remove_pyrex" title="e15190.neutron_wall.geometry.Bar.remove_pyrex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_pyrex</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.remove_pyrex" title="e15190.neutron_wall.geometry.Bar.remove_pyrex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_pyrex</span></code></a>()</p></td>
 <td><p>Remove Pyrex thickness from the bar.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.simple_simulation" title="e15190.neutron_wall.geometry.Bar.simple_simulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_simulation</span></code></a>([n_rays, random_seed, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.simple_simulation" title="e15190.neutron_wall.geometry.Bar.simple_simulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_simulation</span></code></a>([n_rays, random_seed, ...])</p></td>
 <td><p>A simple ray simulation on the bar.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.to_lab_coordinates" title="e15190.neutron_wall.geometry.Bar.to_lab_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_lab_coordinates</span></code></a>(local_coordinates)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.to_lab_coordinates" title="e15190.neutron_wall.geometry.Bar.to_lab_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_lab_coordinates</span></code></a>(local_coordinates)</p></td>
 <td><p>Converts coordinates from local frame to lab frame.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.to_local_coordinates" title="e15190.neutron_wall.geometry.Bar.to_local_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_local_coordinates</span></code></a>(lab_coordinates)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#e15190.neutron_wall.geometry.Bar.to_local_coordinates" title="e15190.neutron_wall.geometry.Bar.to_local_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_local_coordinates</span></code></a>(lab_coordinates)</p></td>
 <td><p>Converts coordinates from lab frame to local frame.</p></td>
 </tr>
 </tbody>
@@ -180,21 +183,21 @@ y and z directions in the local (bar) coordinate system.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.length">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">length</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.length" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">length</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Length of the bar.</p>
 <p>Should be around 76 inches without Pyrex.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.height">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">height</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.height" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.height" title="Permalink to this definition">¶</a></dt>
 <dd><p>Height of the bar.</p>
 <p>Should be around 3.0 inches without Pyrex.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.thickness">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">thickness</span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.thickness" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">thickness</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.thickness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Longitudinal thickness of the bar.</p>
 <p>Should be around 2.5 inches without Pyrex.</p>
 </dd></dl>
@@ -227,7 +230,7 @@ the Pyrex thickness will be removed from the bar.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.randomize_from_local_x">
-<span class="sig-name descname"><span class="pre">randomize_from_local_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_ynorm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-</span> <span class="pre">0.5,</span> <span class="pre">0.5]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_znorm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-</span> <span class="pre">0.5,</span> <span class="pre">0.5]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.randomize_from_local_x" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">randomize_from_local_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_ynorm</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span> <span class="p"><span class="pre">|</span></span> <span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(-</span> <span class="pre">0.5,</span> <span class="pre">0.5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_znorm</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span> <span class="p"><span class="pre">|</span></span> <span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(-</span> <span class="pre">0.5,</span> <span class="pre">0.5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.randomize_from_local_x" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns randomized point(s) from the given local x coordinate(s).</p>
 <p>This is useful for getting a uniform hit distribution within the bulk of
 the bar. Experimentally, we can only determine the local x coordinate
@@ -237,11 +240,11 @@ for each hit.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>local_x</strong> (<em>float</em><em> or </em><em>list of floats</em>) – The local x coordinate(s) of the point(s) in centimeters.</p></li>
 <li><p><strong>return_frame</strong> (<em>'lab'</em><em> or </em><em>'local'</em><em>, </em><em>default 'lab'</em>) – The frame of the returned point(s) in Cartesian coordinates.</p></li>
-<li><p><strong>local_ynorm</strong> (<em>float</em><em> or </em><em>2-tuple of floats</em><em>, </em><em>default</em><em> [</em><em>-0.5</em><em>, </em><em>0.5</em><em>]</em>) – The range of randomization in the local y coordinate. If float, no
+<li><p><strong>local_ynorm</strong> (<em>float</em><em> or </em><em>2-tuple of floats</em><em>, </em><em>default</em><em> (</em><em>-0.5</em><em>, </em><em>0.5</em><em>)</em>) – The range of randomization in the local y coordinate. If float, no
 randomization is performed. Center is at <cite>0.0</cite>; the top surface is
 <cite>+0.5</cite>; the bottom surface is <cite>-0.5</cite>. Values outside this range will
 still be calculated, but those points will be outside the bar.</p></li>
-<li><p><strong>local_znorm</strong> (<em>float</em><em> or </em><em>2-tuple of floats</em><em>, </em><em>default</em><em> [</em><em>-0.5</em><em>, </em><em>0.5</em><em>]</em>) – The range of randomization in the local z coordinate. If float, no
+<li><p><strong>local_znorm</strong> (<em>float</em><em> or </em><em>2-tuple of floats</em><em>, </em><em>default</em><em> (</em><em>-0.5</em><em>, </em><em>0.5</em><em>)</em>) – The range of randomization in the local z coordinate. If float, no
 randomization is performed. Center is at <cite>0.0</cite>; the front surface is
 <cite>+0.5</cite>; the back surface is <cite>-0.5</cite>. Values outside this range will
 still be calculated, but those points will be outside the bar.</p></li>
@@ -254,6 +257,27 @@ non-reproducible.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>3-tuple or list of 3-tuples</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.get_empirical_distance_bounds">
+<span class="sig-name descname"><span class="pre">get_empirical_distance_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_empirical_distance_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the empirical bounds of the relation between local x and distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_pts</strong> (<em>int</em><em>, </em><em>default 50_000</em>) – The number of points to be used for the empirical calculation.</p></li>
+<li><p><strong>n_iters</strong> (<em>int</em><em>, </em><em>default 6</em>) – The number of iterations to be used to refine the bounds.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fit_low</strong> (<em>np.array of size 3</em>) – The coefficients of the lower bound quadratic fit.</p></li>
+<li><p><strong>fit_high</strong> (<em>np.array of size 3</em>) – The coefficients of the upper bound quadratic fit.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -362,7 +386,7 @@ and ‘lower’, the values are ndarrays of shape (n, 2).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.construct_plotly_mesh3d">
-<span class="sig-name descname"><span class="pre">construct_plotly_mesh3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.construct_plotly_mesh3d" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">construct_plotly_mesh3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.construct_plotly_mesh3d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update bar’s attribute <code class="docutils literal notranslate"><span class="pre">self.triangle_mesh</span></code>.</p>
 <p>Construct a
 <a class="reference internal" href="e15190.utilities.ray_triangle_intersection.TriangleMesh.html#e15190.utilities.ray_triangle_intersection.TriangleMesh" title="e15190.utilities.ray_triangle_intersection.TriangleMesh"><code class="xref py py-class docutils literal notranslate"><span class="pre">TriangleMesh</span></code></a>
@@ -372,7 +396,7 @@ object, i.e. a triangular mesh for the geometry of the bar, and save as
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.dimension">
-<span class="sig-name descname"><span class="pre">dimension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.dimension" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dimension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span> <span class="p"><span class="pre">|</span></span> <span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.dimension" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the dimension(s) of the bar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -416,7 +440,7 @@ not ‘cartesian’, this argument has no effect.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.get_geometry_efficiency_alphashape">
-<span class="sig-name descname"><span class="pre">get_geometry_efficiency_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_geometry_efficiency_alphashape" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_geometry_efficiency_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">typing.Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">typing.Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_geometry_efficiency_alphashape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the geometry efficiency of the bar using the alphashape.</p>
 <p>The geometry efficiency is defined as the effective azimuthal coverage
 ratio, i.e.
@@ -485,13 +509,13 @@ tolerance to account for any floating point errors.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.get_theta_phi_alphashape">
-<span class="sig-name descname"><span class="pre">get_theta_phi_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_theta_phi_alphashape" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_theta_phi_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_theta_phi_alphashape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the alphashape of the bar in (theta, phi) coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>delta</strong> (<em>int</em><em> or </em><em>array of size 3</em><em>, </em><em>default 1.0</em>) – Grid spacing in cm.</p></li>
-<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>default 10.0</em>) – The alphashape parameter. The larger the value, the greater the
+<li><p><strong>delta</strong> (<em>int</em><em> or </em><em>array of size 3</em>) – Grid spacing in cm.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – The alphashape parameter. The larger the value, the greater the
 curvature of the alphashape can be. When alpha is zero, the
 alphashape reduces into a convex hull; when alpha is too large, the
 alphashape could be “overfitted” to data points.</p></li>
@@ -532,7 +556,7 @@ solid angle.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.get_total_solid_angle_alphashape">
-<span class="sig-name descname"><span class="pre">get_total_solid_angle_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_alphashape" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_total_solid_angle_alphashape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_alphashape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the total solid angle of the bar using the alphashape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -551,12 +575,12 @@ solid angle.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="e15190.neutron_wall.geometry.Bar.get_total_solid_angle_monte_carlo">
-<span class="sig-name descname"><span class="pre">get_total_solid_angle_monte_carlo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_monte_carlo" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_total_solid_angle_monte_carlo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_rays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#e15190.neutron_wall.geometry.Bar.get_total_solid_angle_monte_carlo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the total solid angle of the bar by Monte Carlo simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n_rays</strong> (<em>int</em><em>, </em><em>default 1_000_000</em>) – The number of rays to simulate.</p></li>
+<li><p><strong>n_rays</strong> (<em>int</em><em>, </em><em>default 5_000_000</em>) – The number of rays to simulate.</p></li>
 <li><p><strong>random_seed</strong> (<em>int</em><em>, </em><em>default None</em>) – The random seed of the Monte Carlo simulation. If None, a time-based
 seed will be used, i.e. non-reproducible.</p></li>
 <li><p><strong>return_error</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to return the error (uncertainty) of the calculation.</p></li>
@@ -605,7 +629,7 @@ only calculating geometrical intersections of random rays with the bar
 geometry.</p>
 <p>By default, this function would first identify the smallest rectangular
 region in the (theta, phi) space that fully contains the entire bar
-geometry.  Then, it would randomly emit rays toward this minimal region.
+geometry. Then, it would randomly emit rays toward this minimal region.
 Both theta range and phi range will be saved, so that user can calculate
 the actual solid angle later on.</p>
 <dl class="field-list simple">
@@ -758,7 +782,7 @@ to further simplify the intersection points.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018-2022, MSU/FRIB HiRA group.
+        &#169; Copyright 2018-2023, MSU/FRIB HiRA group.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
