@@ -36,7 +36,7 @@ In the rest of this writing, I will use ``$CONDA_DIR`` to denote the directory w
 
 This step is definitely not mandatory, but I find a few settings are very useful to have, so you might as well want to just add them in since the very beginning. First, create a file ``~/.condarc`` if you don't already have it. Open it with your favorite text editor. Here, I provide just three settings that I believe should be the most useful ones for one to get started.
 ::
-   env_prompt: '($(basename) {default_env})) '
+   env_prompt: '($(basename {default_env})) '
    channels:
       - defaults
       - conda-forge
